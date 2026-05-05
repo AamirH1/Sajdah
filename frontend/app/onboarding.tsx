@@ -63,7 +63,7 @@ export default function OnboardingScreen() {
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep((prev) => prev + 1);
     } else {
       handleFinish();
     }
@@ -78,15 +78,12 @@ export default function OnboardingScreen() {
     router.replace('/(tabs)');
   };
 
-  const step = STEPS[currentStep];
-  const isLast = currentStep === STEPS.length - 1;
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       {/* Skip button */}
       <View style={styles.topBar}>
         <View />
-        {!isLast && (
+        {currentStep < STEPS.length - 1 && (
           <TouchableOpacity testID="onboarding-skip-btn" onPress={handleSkip}>
             <Text style={[styles.skipText, { color: themeColors.textSecondary }]}>Skip</Text>
           </TouchableOpacity>
@@ -94,15 +91,15 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Content */}
-      <View style={styles.content}>
-        <View style={[styles.iconCircle, { backgroundColor: step.color + '15' }]}>
-          <Ionicons name={step.icon} size={64} color={step.color} />
+      <View style={styles.content} key={currentStep}>
+        <View style={[styles.iconCircle, { backgroundColor: STEPS[currentStep].color + '15' }]}>
+          <Ionicons name={STEPS[currentStep].icon} size={64} color={STEPS[currentStep].color} />
         </View>
         <Text testID="onboarding-title" style={[styles.title, { color: themeColors.textPrimary }]}>
-          {step.title}
+          {STEPS[currentStep].title}
         </Text>
         <Text style={[styles.description, { color: themeColors.textSecondary }]}>
-          {step.description}
+          {STEPS[currentStep].description}
         </Text>
       </View>
 
@@ -114,7 +111,7 @@ export default function OnboardingScreen() {
             style={[
               styles.dot,
               {
-                backgroundColor: i === currentStep ? step.color : themeColors.border,
+                backgroundColor: i === currentStep ? STEPS[currentStep].color : themeColors.border,
                 width: i === currentStep ? 24 : 8,
               },
             ]}
@@ -126,14 +123,14 @@ export default function OnboardingScreen() {
       <View style={styles.bottomSection}>
         <TouchableOpacity
           testID="onboarding-next-btn"
-          style={[styles.nextBtn, { backgroundColor: step.color }]}
+          style={[styles.nextBtn, { backgroundColor: STEPS[currentStep].color }]}
           onPress={handleNext}
           activeOpacity={0.8}
         >
           <Text style={styles.nextBtnText}>
-            {isLast ? 'Get Started' : 'Next'}
+            {currentStep === STEPS.length - 1 ? 'Get Started' : 'Next'}
           </Text>
-          <Ionicons name={isLast ? 'checkmark' : 'arrow-forward'} size={20} color="#fff" />
+          <Ionicons name={currentStep === STEPS.length - 1 ? 'checkmark' : 'arrow-forward'} size={20} color="#fff" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>

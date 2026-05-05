@@ -82,6 +82,9 @@ export default function QuranScreen() {
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={30}
+        maxToRenderPerBatch={20}
+        windowSize={10}
       />
     </SafeAreaView>
   );

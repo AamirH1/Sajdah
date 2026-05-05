@@ -44,7 +44,6 @@ export default function LocationPickerScreen() {
   const router = useRouter();
   const { setLocation, location } = useSettings();
   const [loading, setLoading] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<string>(location.city);
 
   const handleGPS = async () => {
     setLoading(true);
@@ -68,7 +67,6 @@ export default function LocationPickerScreen() {
         longitude: loc.coords.longitude,
         city: cityName,
       });
-      setSelectedCity(cityName);
       Alert.alert('Location Updated', `Prayer times set for ${cityName}`);
     } catch (error) {
       Alert.alert('Error', 'Unable to get your location. Please select a city manually.');
@@ -82,7 +80,6 @@ export default function LocationPickerScreen() {
       longitude: city.longitude,
       city: city.name,
     });
-    setSelectedCity(city.name);
   };
 
   return (
@@ -118,7 +115,7 @@ export default function LocationPickerScreen() {
       <View style={[styles.currentSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Ionicons name="location" size={18} color={colors.primary} />
         <Text style={[styles.currentText, { color: colors.textPrimary }]}>
-          Current: {selectedCity}
+          Current: {location.city}
         </Text>
       </View>
 
@@ -136,8 +133,8 @@ export default function LocationPickerScreen() {
             style={[
               styles.cityItem,
               {
-                backgroundColor: selectedCity === item.name ? colors.accentLight : colors.surface,
-                borderColor: selectedCity === item.name ? colors.primary : colors.border,
+                backgroundColor: location.city === item.name ? colors.accentLight : colors.surface,
+                borderColor: location.city === item.name ? colors.primary : colors.border,
               },
             ]}
             onPress={() => handleCitySelect(item)}
@@ -146,7 +143,7 @@ export default function LocationPickerScreen() {
               <Text style={[styles.cityName, { color: colors.textPrimary }]}>{item.name}</Text>
               <Text style={[styles.cityCountry, { color: colors.textSecondary }]}>{item.country}</Text>
             </View>
-            {selectedCity === item.name && (
+            {location.city === item.name && (
               <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
             )}
           </TouchableOpacity>
