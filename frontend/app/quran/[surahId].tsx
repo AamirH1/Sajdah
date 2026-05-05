@@ -6,14 +6,14 @@ import { useThemeColors } from '../../src/hooks/useThemeColors';
 import { spacing, radius, typography } from '../../src/theme';
 import { SURAHS, SURAH_DATA } from '../../src/data/quran';
 import { useSettings } from '../../src/store/useSettings';
-import { useEntitlements } from '../../src/store/useEntitlements';
+import { useEntitlements, useCanUse } from '../../src/store/useEntitlements';
 
 export default function QuranReaderScreen() {
   const { surahId } = useLocalSearchParams<{ surahId: string }>();
   const colors = useThemeColors();
   const router = useRouter();
   const { translationLang } = useSettings();
-  const { canUse } = useEntitlements();
+  const canUseMultiLang = useCanUse('quran.multipleLanguages');
 
   const surahIdNum = parseInt(surahId || '1', 10);
   const surah = SURAHS.find((s) => s.id === surahIdNum);
@@ -73,7 +73,7 @@ export default function QuranReaderScreen() {
       )}
 
       {/* Pro language warning */}
-      {isProLang && !canUse('quran.multipleLanguages') && (
+      {isProLang && !canUseMultiLang && (
         <View style={[styles.proWarning, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' }]}>
           <Ionicons name="lock-closed" size={16} color="#D97706" />
           <Text style={styles.proWarningText}>

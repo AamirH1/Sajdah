@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { useThemeColors } from '../../src/hooks/useThemeColors';
 import { spacing, radius, typography } from '../../src/theme';
 import { useSettings } from '../../src/store/useSettings';
@@ -50,10 +50,10 @@ export default function HomeScreen() {
   }, [nextPrayer]);
 
   const quickActions = [
-    { icon: 'book-outline' as const, label: 'Quran', route: '/quran' },
-    { icon: 'sunny-outline' as const, label: 'Morning\nAzkar', route: '/azkar/morning' },
-    { icon: 'moon-outline' as const, label: 'Evening\nAzkar', route: '/azkar/evening' },
-    { icon: 'radio-button-on-outline' as const, label: 'Tasbih', route: '/tasbih' },
+    { icon: 'book-outline' as const, label: 'Quran', href: '/(tabs)/quran' as const },
+    { icon: 'sunny-outline' as const, label: 'Morning\nAzkar', href: '/azkar/morning' as const },
+    { icon: 'moon-outline' as const, label: 'Evening\nAzkar', href: '/azkar/evening' as const },
+    { icon: 'radio-button-on-outline' as const, label: 'Tasbih', href: '/tasbih' as const },
   ];
 
   return (
@@ -137,18 +137,22 @@ export default function HomeScreen() {
         </View>
         <View testID="quick-actions" style={styles.quickActionsGrid}>
           {quickActions.map((action) => (
-            <TouchableOpacity
+            <Link
               key={action.label}
-              testID={`quick-action-${action.label.replace(/\n/g, '-').toLowerCase()}`}
-              style={[styles.quickActionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              onPress={() => router.push(action.route as any)}
-              activeOpacity={0.7}
+              href={action.href as any}
+              asChild
             >
-              <View style={[styles.quickActionIcon, { backgroundColor: colors.accentLight }]}>
-                <Ionicons name={action.icon} size={24} color={colors.primary} />
-              </View>
-              <Text style={[styles.quickActionLabel, { color: colors.textPrimary }]}>{action.label}</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                testID={`quick-action-${action.label.replace(/\n/g, '-').toLowerCase()}`}
+                style={[styles.quickActionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.quickActionIcon, { backgroundColor: colors.accentLight }]}>
+                  <Ionicons name={action.icon} size={24} color={colors.primary} />
+                </View>
+                <Text style={[styles.quickActionLabel, { color: colors.textPrimary }]}>{action.label}</Text>
+              </TouchableOpacity>
+            </Link>
           ))}
         </View>
       </ScrollView>

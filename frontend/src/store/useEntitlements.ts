@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Plan = 'free' | 'pro';
 
-interface FeatureFlags {
+export interface FeatureFlags {
   'quran.multipleLanguages': boolean;
   'prayer.smartFajrAlarm': boolean;
   'ui.themes.pro': boolean;
@@ -32,7 +32,6 @@ interface EntitlementsState {
   plan: Plan;
   featureFlags: FeatureFlags;
   togglePlan: () => void;
-  canUse: (featureKey: keyof FeatureFlags) => boolean;
 }
 
 export const useEntitlements = create<EntitlementsState>()(
@@ -41,14 +40,12 @@ export const useEntitlements = create<EntitlementsState>()(
       plan: 'free',
       featureFlags: FREE_FLAGS,
       togglePlan: () => {
-        const newPlan = get().plan === 'free' ? 'pro' : 'free';
+        const currentPlan = get().plan;
+        const newPlan: Plan = currentPlan === 'free' ? 'pro' : 'free';
         set({
           plan: newPlan,
           featureFlags: newPlan === 'pro' ? PRO_FLAGS : FREE_FLAGS,
         });
-      },
-      canUse: (featureKey: keyof FeatureFlags) => {
-        return get().featureFlags[featureKey];
       },
     }),
     {
@@ -57,3 +54,9 @@ export const useEntitlements = create<EntitlementsState>()(
     }
   )
 );
+
+// Helper hook to check feature access
+export function useCanUse(featureKey: keyof FeatureFlags): boolean {
+  const featureFlags = useEntitlements((state) => state.featureFlags);
+  return featureFlags[featureKey];
+}

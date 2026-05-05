@@ -4,12 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemeColors } from '../../src/hooks/useThemeColors';
 import { spacing, radius, typography } from '../../src/theme';
 import { useSettings } from '../../src/store/useSettings';
-import { useEntitlements } from '../../src/store/useEntitlements';
+import { useEntitlements, useCanUse } from '../../src/store/useEntitlements';
 
 export default function SettingsScreen() {
   const colors = useThemeColors();
   const settings = useSettings();
-  const { plan, togglePlan, canUse } = useEntitlements();
+  const { plan, togglePlan } = useEntitlements();
+  const canUseMultiLang = useCanUse('quran.multipleLanguages');
+  const canUseSmartFajr = useCanUse('prayer.smartFajrAlarm');
 
   const methods = ['Karachi', 'MuslimWorldLeague', 'Egyptian', 'UmmAlQura', 'Dubai', 'NorthAmerica'] as const;
   const madhhabOptions = ['Hanafi', 'Shafi'] as const;
@@ -99,7 +101,7 @@ export default function SettingsScreen() {
             <View style={styles.switchRow}>
               <View>
                 <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Smart Fajr Alarm</Text>
-                {!canUse('prayer.smartFajrAlarm') && (
+                {!canUseSmartFajr && (
                   <View style={styles.proBadgeInline}>
                     <Ionicons name="lock-closed" size={10} color="#D97706" />
                     <Text style={styles.proText}>PRO</Text>
@@ -110,13 +112,13 @@ export default function SettingsScreen() {
                 testID="notification-smart-fajr"
                 value={settings.notifications.smartFajr}
                 onValueChange={(v) => {
-                  if (canUse('prayer.smartFajrAlarm')) {
+                  if (canUseSmartFajr) {
                     settings.setNotification('smartFajr', v);
                   }
                 }}
                 trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor="#fff"
-                disabled={!canUse('prayer.smartFajrAlarm')}
+                disabled={!canUseSmartFajr}
               />
             </View>
           </View>
@@ -146,9 +148,9 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   key={lang}
                   testID={`lang-${lang}`}
-                  style={[styles.chip, { backgroundColor: colors.accentLight, opacity: canUse('quran.multipleLanguages') ? 1 : 0.5 }]}
+                  style={[styles.chip, { backgroundColor: colors.accentLight, opacity: canUseMultiLang ? 1 : 0.5 }]}
                   onPress={() => {
-                    if (canUse('quran.multipleLanguages')) {
+                    if (canUseMultiLang) {
                       settings.setTranslationLang(lang);
                     }
                   }}
@@ -156,7 +158,7 @@ export default function SettingsScreen() {
                   <Text style={[styles.chipText, { color: colors.primary }]}>
                     {lang.charAt(0).toUpperCase() + lang.slice(1)}
                   </Text>
-                  {!canUse('quran.multipleLanguages') && <Ionicons name="lock-closed" size={10} color="#D97706" style={{ marginLeft: 4 }} />}
+                  {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color="#D97706" style={{ marginLeft: 4 }} />}
                 </TouchableOpacity>
               ))}
             </View>
