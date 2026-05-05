@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useThemeColors } from '../../src/hooks/useThemeColors';
 import { spacing, radius, typography } from '../../src/theme';
 import { useSettings } from '../../src/store/useSettings';
@@ -8,6 +9,7 @@ import { useEntitlements, useCanUse } from '../../src/store/useEntitlements';
 
 export default function SettingsScreen() {
   const colors = useThemeColors();
+  const router = useRouter();
   const settings = useSettings();
   const { plan, togglePlan } = useEntitlements();
   const canUseMultiLang = useCanUse('quran.multipleLanguages');
@@ -30,9 +32,10 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Location</Text>
-              <TouchableOpacity testID="location-selector" style={[styles.valueBtn, { backgroundColor: colors.accentLight }]}>
+              <TouchableOpacity testID="location-selector" style={[styles.valueBtn, { backgroundColor: colors.accentLight }]} onPress={() => router.push('/location')}>
                 <Ionicons name="location" size={14} color={colors.primary} />
                 <Text style={[styles.valueText, { color: colors.primary }]}>{settings.location.city}</Text>
+                <Ionicons name="chevron-forward" size={14} color={colors.primary} />
               </TouchableOpacity>
             </View>
 

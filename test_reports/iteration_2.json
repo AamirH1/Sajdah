@@ -1,0 +1,95 @@
+{
+  "summary": "Frontend testing of 4 new features: Onboarding flow, Location picker, Expanded Quran data (114 surahs), and Notification service. Found 4 critical/medium bugs preventing new features from working correctly. Onboarding screen loads but state doesn't update between steps. Location picker loads but city selection doesn't work. Quran list only shows 10 surahs instead of 114. Settings navigation to location picker doesn't work.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Onboarding Screen",
+        "issue": "Onboarding step state not updating - title stays 'Accurate Prayer Times' for all 4 steps instead of changing to 'Read the Quran', 'Daily Azkar & Tasbih', 'Never Miss a Prayer'. Button text stays 'Next' on last step instead of 'Get Started'. Skip button still visible on step 4 (should be hidden). Root cause: currentStep state updates via setCurrentStep() but UI does not re-render to reflect changes.",
+        "testID": "onboarding-title, onboarding-next-btn, onboarding-skip-btn",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "Quran Tab - Surah List",
+        "issue": "Only 10 surahs render in DOM instead of all 114. FlatList data prop has all 114 surahs from SURAHS array, but only initialNumToRender (default 10) items appear. Scrolling does not load more items. This completely breaks the 'all 114 surahs' feature. Root cause: FlatList virtualization not working - items beyond initial 10 never render even when scrolling.",
+        "testID": "surah-list, surah-item-{id}",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "Location Picker - City Selection",
+        "issue": "Clicking a city (e.g., Mumbai) does not update the 'Current:' label or show checkmark icon. handleCitySelect() calls setLocation() and setSelectedCity() but UI does not update. The selectedCity local state is initialized from store on mount but doesn't sync when store updates. Root cause: State update not triggering re-render, or click handler not executing.",
+        "testID": "city-{name}, location-selector",
+        "priority": "MEDIUM"
+      },
+      {
+        "component": "Settings - Location Selector Navigation",
+        "issue": "Clicking location selector button in Settings does not navigate to /location route. URL stays at /settings. Code uses router.push('/location') which should work. This is the same router navigation issue from iteration_1. Root cause: Expo Router push() not working for programmatic navigation.",
+        "testID": "location-selector",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "All screens",
+        "issues": [
+          "Same deprecation warnings from iteration_1: shadow* props, pointerEvents, package version mismatches",
+          "Console errors: 'Cannot use import.meta outside a module' (from CDN scripts, not app code)"
+        ]
+      }
+    ],
+    "react_native_issues": [
+      {
+        "component": "FlatList (Quran screen)",
+        "issue": "FlatList not rendering items beyond initialNumToRender. Virtualization appears broken - scrolling doesn't trigger rendering of additional items. May need explicit initialNumToRender, windowSize, or maxToRenderPerBatch props."
+      }
+    ]
+  },
+  "test_report_links": [
+    "/tmp/onboarding_step1.png",
+    "/tmp/onboarding_step4.png",
+    "/tmp/location_picker.png",
+    "/tmp/location_mumbai_selected.png",
+    "/tmp/quran_list_top.png",
+    "/tmp/quran_list_middle.png",
+    "/tmp/quran_list_bottom.png",
+    "/tmp/settings_location_btn.png",
+    "/tmp/quran_surah_114.png",
+    "/tmp/location_after_mumbai_click.png",
+    "/tmp/settings_location_nav_result.png"
+  ],
+  "action_items": [
+    "CRITICAL: Fix Onboarding state updates - Investigate why setCurrentStep() doesn't trigger re-render. Check if there's a React state batching issue or if component needs key prop to force remount. Verify STEPS array is being accessed correctly with currentStep index.",
+    "CRITICAL: Fix Quran FlatList rendering - Add explicit FlatList props: initialNumToRender={20}, windowSize={10}, maxToRenderPerBatch={10}. Verify FlatList has proper height/flex styling. Check if there's a parent container constraining height. Test with getItemLayout for better performance.",
+    "MEDIUM: Fix Location picker city selection - The selectedCity local state (line 47) initializes from store but doesn't sync when store updates. Solution: Either (1) Remove local state and use store directly: const { location } = useSettings() and use location.city everywhere, OR (2) Add useEffect to sync local state when store changes: useEffect(() => setSelectedCity(location.city), [location.city])",
+    "MEDIUM: Fix Settings > Location navigation - router.push('/location') not working. Try alternatives: (1) Use Link component: <Link href='/location' asChild><TouchableOpacity>...</TouchableOpacity></Link>, (2) Use router.replace() instead of push(), (3) Check if route needs to be registered differently in _layout.tsx",
+    "Add FlatList performance props to prevent rendering issues",
+    "Consider using React DevTools to debug why state updates aren't triggering re-renders"
+  ],
+  "critical_code_review_comments": [
+    "✅ All 4 new features have code implemented correctly",
+    "✅ Onboarding screen has proper testIDs and 4-step flow logic",
+    "✅ Location picker has GPS button, city list (22 cities), and proper testIDs",
+    "✅ Quran data file has all 114 surahs (verified in quran.ts)",
+    "✅ Notification service code exists (not testable on web preview)",
+    "✅ All React Native components used correctly",
+    "⚠️ CRITICAL: Onboarding useState not triggering re-renders - possible React state management issue",
+    "⚠️ CRITICAL: FlatList only rendering 10 items - virtualization broken or height constraint issue",
+    "⚠️ Location picker has local state + store state conflict - selectedCity not syncing",
+    "⚠️ Router navigation still not working (same issue as iteration_1)",
+    "⚠️ FlatList missing performance optimization props (initialNumToRender, windowSize, etc.)"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A - Frontend only app",
+    "frontend": "40% - New features implemented but not working due to state/rendering bugs"
+  },
+  "seed_data_creation": "No seed data needed - app uses static local data",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "4 new features added but all have bugs. Onboarding loads at /onboarding but state doesn't update between steps. Location picker loads at /location but clicking cities doesn't work. Quran list has all 114 surahs in data but FlatList only renders 10. Settings > Location button doesn't navigate. All issues point to React state/rendering problems - state updates are called but UI doesn't re-render. Previous iteration_1 had similar router navigation issue. Test using direct routes: /onboarding and /location work, but interactions within those screens fail.",
+  "rca_of_issue": "Root Cause Analysis:\n\n1. Onboarding State Not Updating:\n   - Symptom: Title stays 'Accurate Prayer Times', button stays 'Next', Skip button visible on step 4\n   - Code: handleNext() calls setCurrentStep(currentStep + 1) which should update state\n   - Root Cause: React state update not triggering component re-render. Possible causes: (a) State batching issue, (b) Stale closure in event handler, (c) Component not properly mounted\n   - Evidence: Tested clicking Next 3 times, title never changed from step 1 to steps 2/3/4\n   - Fix: Add console.log in handleNext to verify it's being called. Check if STEPS[currentStep] is evaluating correctly. Consider adding key prop to force remount.\n\n2. Quran List Only Shows 10 Surahs:\n   - Symptom: Only surahs 1-10 in DOM, surahs 20+ not found even after scrolling\n   - Code: FlatList data={filteredSurahs} where filteredSurahs = SURAHS (114 items)\n   - Root Cause: FlatList default initialNumToRender=10, and virtualization not loading more items on scroll. Likely a height/flex constraint preventing FlatList from detecting scroll events.\n   - Evidence: Tested scrolling and checking DOM - only 10 items ever exist. SURAHS array confirmed to have all 114 items.\n   - Fix: (1) Add initialNumToRender={20} to FlatList, (2) Verify FlatList has flex:1 or explicit height, (3) Check parent SafeAreaView styling, (4) Add getItemLayout for better virtualization\n\n3. Location Picker City Selection Not Working:\n   - Symptom: Clicking Mumbai doesn't update 'Current: New Delhi' label or show checkmark\n   - Code: handleCitySelect() calls setLocation() (Zustand) and setSelectedCity() (local state)\n   - Root Cause: Local state selectedCity initialized from store on mount (line 47) but doesn't sync when store updates. When clicking city, both states should update but UI shows old value.\n   - Evidence: After clicking Mumbai, 'Current:' still shows 'New Delhi', no checkmark icon appears\n   - Fix: Remove local state and use store directly, OR add useEffect to sync: useEffect(() => setSelectedCity(location.city), [location.city])\n\n4. Settings Navigation Not Working:\n   - Symptom: Clicking location selector doesn't navigate, URL stays /settings\n   - Code: onPress={() => router.push('/location')}\n   - Root Cause: Expo Router push() not working for programmatic navigation (same issue as iteration_1 quick actions)\n   - Evidence: URL before and after click both show /settings, no navigation occurs\n   - Fix: Use Link component with href='/location' instead of router.push(), or try router.replace()"
+}
