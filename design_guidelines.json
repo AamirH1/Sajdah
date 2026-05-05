@@ -1,0 +1,132 @@
+{
+  "theme": "light_and_dark",
+  "archetype": "1 (Organic & Earthy)",
+  "domain": "Religion / Wellness Mobile App",
+  "colors": {
+    "light": {
+      "primary_accent": "#059669", 
+      "primary_accent_hover": "#047857",
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "text_primary": "#0F172A",
+      "text_secondary": "#64748B",
+      "border": "#E2E8F0",
+      "error": "#EF4444",
+      "success": "#10B981"
+    },
+    "dark": {
+      "primary_accent": "#10B981",
+      "primary_accent_hover": "#34D399",
+      "background": "#0F172A",
+      "surface": "#1E293B",
+      "text_primary": "#F8FAFC",
+      "text_secondary": "#94A3B8",
+      "border": "#334155",
+      "error": "#F87171",
+      "success": "#34D399"
+    }
+  },
+  "typography": {
+    "headings": {
+      "family": "Outfit, system-ui",
+      "weight": "700",
+      "tracking": "tracking-tight"
+    },
+    "body": {
+      "family": "Work Sans, system-ui",
+      "weight": "400",
+      "tracking": "tracking-normal"
+    },
+    "arabic": {
+      "family": "Amiri, Scheherazade New, system-ui",
+      "weight": "400",
+      "description": "For clear Quranic text reading"
+    },
+    "scale": {
+      "h1": "text-4xl",
+      "h2": "text-2xl",
+      "h3": "text-xl",
+      "body": "text-base",
+      "small": "text-sm",
+      "xs": "text-xs"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous Spacing (p-4 to p-8) to ensure calm and readable surfaces. Mobile-first layout with bottom tab navigation.",
+    "screen_padding": "px-4 md:px-6",
+    "card_padding": "p-4 or p-6",
+    "border_radius": {
+      "cards": "rounded-2xl",
+      "buttons": "rounded-full",
+      "small_elements": "rounded-lg"
+    },
+    "shadows": {
+      "light": "shadow-sm to shadow-md, subtle ambient shadows with a hint of emerald (e.g. shadow-[0_8px_30px_rgba(5,150,105,0.05)])",
+      "dark": "shadow-none, rely on 1px border (#334155) and surface color differences"
+    }
+  },
+  "components_strategy": {
+    "navigation": {
+      "bottom_tabs": "Clean, label-less or small label tabs. Active tab highlighted with the emerald primary accent.",
+      "headers": "Translucent glassmorphism (backdrop-blur-xl) or solid background depending on scroll."
+    },
+    "cards": {
+      "style": "Subtle rounded cards (rounded-2xl) with minimal borders. Avoid heavy shadows."
+    },
+    "buttons": {
+      "primary": "Solid emerald background, pill-shaped (rounded-full), bold text.",
+      "secondary": "Outline or subtle tonal background (bg-emerald-100 dark:bg-emerald-900/30) with primary color text."
+    },
+    "tasbih_counter": {
+      "style": "Massive circular touch area. Tactile neumorphic or subtle glow effect to invite tapping. Needs tactile/haptic feedback on interaction."
+    }
+  },
+  "screens": {
+    "home_tab": {
+      "next_prayer_card": "Hero element. Use a subtle geometric Islamic pattern background with an emerald overlay. Large countdown timer in a monospaced or clean sans font.",
+      "today_prayer_list": "Dense vertical list. Highlight the active/next prayer with a distinct background tint (e.g., bg-emerald-50) and a subtle left border (border-l-4 border-emerald-500).",
+      "quick_actions": "Horizontal scrollable row or a 2x2 bento grid for actions like 'Read Quran', 'Daily Duas', etc."
+    },
+    "quran_tab": {
+      "surah_list": "List view. Each row should have a subtle number indicator, English name on left, beautiful Arabic calligraphy on right.",
+      "reading_screen": "Distraction-free mode. Large Arabic text centered, clear English translation below it. Floating action button for quick settings (font size, translations) and bookmarking.",
+      "pro_gating": "Subtle lock icons on premium translations/reciters, styled elegantly without being aggressive."
+    },
+    "azkar_tab": {
+      "category_grid": "2-column grid. Soft pastel/neutral tinted cards with minimal line icons for Morning, Evening, Travel, etc.",
+      "tasbih_counter": "Focus on the tap interaction. Large central touch zone, counter clearly visible at top. Reset and Settings as smaller secondary actions."
+    },
+    "settings_tab": {
+      "layout": "Standard categorized list layout. Grouped by 'Prayer Settings', 'Quran', 'Preferences', and 'Account'.",
+      "pro_toggle": "Premium-looking banner or toggle card using perhaps a deeper shade of emerald or a subtle gold/yellow accent to denote 'Pro'."
+    }
+  },
+  "motion_and_interactions": {
+    "general": "Smooth, subtle transitions. No jarring animations.",
+    "tasbih_tap": "Scale down slightly (scale-95) on press, with haptic feedback.",
+    "list_entrance": "Staggered fade-up for Surah lists and Azkar categories."
+  },
+  "media": {
+    "image_urls": [
+      {
+        "url": "https://images.pexels.com/photos/7055488/pexels-photo-7055488.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "hero_background",
+        "description": "Silhouette of a mosque dome at sunset. Can be used behind the next prayer card with an overlay."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1699703507470-29073099e28d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzZ8MHwxfHNlYXJjaHwzfHxxdXJhbiUyMHJlYWRpbmclMjBpc2xhbWljfGVufDB8fHx8MTc3ODAxNjA4NHww&ixlib=rb-4.1.0&q=85",
+        "category": "content_illustration",
+        "description": "Man sitting reading a book in mosque. Good for empty states or welcome screens."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1762537628473-d76edd20f316?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxpc2xhbWljJTIwZ2VvbWV0cmljJTIwcGF0dGVybiUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzc4MDE2MDg0fDA&ixlib=rb-4.1.0&q=85",
+        "category": "pattern_background",
+        "description": "Islamic geometric mosaic pattern. Great to use with low opacity (e.g., 5-10%) as a texture on the Home or Quran screens."
+      }
+    ]
+  },
+  "testing": {
+    "instructions": "All touchable elements, list items, and key textual information MUST have a `data-testid` attribute (e.g. `data-testid=\"next-prayer-card\"`, `data-testid=\"tasbih-counter-button\"`)."
+  },
+  "instructions_to_main_agent": "Use standard React Native components (View, Text, TouchableOpacity, ScrollView, FlatList). Style using NativeWind/Tailwind applying the provided color palette and spacing rules. Ensure bottom tab navigation is implemented using React Navigation. Follow the light/dark mode variables strictly. The app should feel premium, calm, and highly readable."
+}
