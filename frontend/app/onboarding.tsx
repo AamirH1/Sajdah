@@ -39,6 +39,18 @@ const STEPS: OnboardingStep[] = [
     description: 'Get timely notifications before each prayer. Enable Smart Fajr alarm for a gentle wake-up reminder.',
     color: '#EF4444',
   },
+  {
+    icon: 'color-palette-outline',
+    title: 'Customizable Experience',
+    description: 'Personalize your app with Light and Dark themes. Choose your preferred calculation method and Madhhab for accurate Asr times.',
+    color: '#8B5CF6',
+  },
+  {
+    icon: 'shield-checkmark-outline',
+    title: 'Offline & Private',
+    description: 'Your data stays on your device. Sajdah works completely offline without needing constant internet access, ensuring your privacy.',
+    color: '#3B82F6',
+  },
 ];
 
 const ONBOARDING_KEY = 'onboarding_complete';
@@ -91,7 +103,7 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Content */}
-      <View style={styles.content} key={currentStep}>
+      <View style={styles.content}>
         <View style={[styles.iconCircle, { backgroundColor: STEPS[currentStep].color + '15' }]}>
           <Ionicons name={STEPS[currentStep].icon} size={64} color={STEPS[currentStep].color} />
         </View>

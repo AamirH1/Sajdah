@@ -1,19 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, ActivityIndicator, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, Link } from 'expo-router';
-import { useThemeColors } from '../../src/hooks/useThemeColors';
-import { spacing, radius, typography } from '../../src/theme';
+import { Link } from 'expo-router';
+import { useTheme } from '../../src/ui/hooks/useTheme';
+import { spacing, typography, radius } from '../../src/ui/theme';
+import { ScreenContainer, ScreenHeader } from '../../src/ui/components';
+
 import { useSettings } from '../../src/store/useSettings';
 import { useEntitlements, useCanUse } from '../../src/store/useEntitlements';
+import { pingBackend, getDeviceId } from '../../src/services/api';
 
 export default function SettingsScreen() {
-  const colors = useThemeColors();
-  const router = useRouter();
+  const { colors } = useTheme();
   const settings = useSettings();
-  const { plan, togglePlan } = useEntitlements();
+  const plan = useEntitlements((state) => state.plan);
+  const togglePlan = useEntitlements((state) => state.togglePlan);
   const canUseMultiLang = useCanUse('quran.multipleLanguages');
   const canUseSmartFajr = useCanUse('prayer.smartFajrAlarm');
+  
+  const [backendStatus, setBackendStatus] = useState<{ message: string, success: boolean } | null>(null);
+  const [isPinging, setIsPinging] = useState(false);
+  const [deviceId, setDeviceId] = useState<string | null>(null);
 
   const methods = ['Karachi', 'MuslimWorldLeague', 'Egyptian', 'UmmAlQura', 'Dubai', 'NorthAmerica'] as const;
   const madhhabOptions = ['Hanafi', 'Shafi'] as const;
@@ -21,10 +28,30 @@ export default function SettingsScreen() {
   const languages = ['english', 'urdu'] as const;
   const proLanguages = ['hindi', 'bangla', 'tamil'] as const;
 
+  useEffect(() => {
+    getDeviceId().then(setDeviceId);
+  }, []);
+
+  const handlePingBackend = async () => {
+    setIsPinging(true);
+    setBackendStatus(null);
+    try {
+      const res = await pingBackend();
+      setBackendStatus({ message: `Connected! Ping ID: ${res.id.substring(0, 8)}`, success: true });
+    } catch (e) {
+      setBackendStatus({ message: 'Connection Failed. Is backend running?', success: false });
+    } finally {
+      setIsPinging(false);
+    }
+  };
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScreenContainer scrollable>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>Settings</Text>
+        <ScreenHeader title="Settings" />
+
+        <Text style={styles.sectionSpacer} />
+
 
         {/* Prayer Settings */}
         <View style={styles.section}>
@@ -33,10 +60,9 @@ export default function SettingsScreen() {
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Location</Text>
               <Link href="/location" asChild>
-                <TouchableOpacity testID="location-selector" style={[styles.valueBtn, { backgroundColor: colors.accentLight }]}>
-                  <Ionicons name="location" size={14} color={colors.primary} />
-                  <Text style={[styles.valueText, { color: colors.primary }]}>{settings.location.city}</Text>
-                  <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+                <TouchableOpacity testID="location-selector" style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1, maxWidth: '70%' }}>
+                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.settingValue, { color: colors.textSecondary, flexShrink: 1 }]}>{settings.location.city}</Text>
+                  <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
                 </TouchableOpacity>
               </Link>
             </View>
@@ -108,8 +134,8 @@ export default function SettingsScreen() {
                 <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Smart Fajr Alarm</Text>
                 {!canUseSmartFajr && (
                   <View style={styles.proBadgeInline}>
-                    <Ionicons name="lock-closed" size={10} color="#D97706" />
-                    <Text style={styles.proText}>PRO</Text>
+                    <Ionicons name="lock-closed" size={10} color={colors.primary} />
+                    <Text style={[styles.proText, { color: colors.primary }]}>PRO</Text>
                   </View>
                 )}
               </View>
@@ -163,7 +189,7 @@ export default function SettingsScreen() {
                   <Text style={[styles.chipText, { color: colors.primary }]}>
                     {lang.charAt(0).toUpperCase() + lang.slice(1)}
                   </Text>
-                  {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color="#D97706" style={{ marginLeft: 4 }} />}
+                  {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color={colors.primary} style={{ marginLeft: 4 }} />}
                 </TouchableOpacity>
               ))}
             </View>
@@ -221,9 +247,9 @@ export default function SettingsScreen() {
         {/* Account / Pro */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>ACCOUNT</Text>
-          <View style={[styles.proCard, { backgroundColor: plan === 'pro' ? '#059669' : colors.surface, borderColor: plan === 'pro' ? '#059669' : colors.border }]}>
+          <View style={[styles.proCard, { backgroundColor: plan === 'pro' ? colors.primary : colors.surface, borderColor: plan === 'pro' ? colors.primary : colors.border }]}>
             <View style={styles.proCardContent}>
-              <Ionicons name={plan === 'pro' ? 'star' : 'star-outline'} size={24} color={plan === 'pro' ? '#fff' : '#D97706'} />
+              <Ionicons name={plan === 'pro' ? 'star' : 'star-outline'} size={24} color={plan === 'pro' ? '#fff' : colors.primary} />
               <View style={{ marginLeft: spacing.md, flex: 1 }}>
                 <Text style={[styles.planTitle, { color: plan === 'pro' ? '#fff' : colors.textPrimary }]}>
                   {plan === 'pro' ? 'Pro Plan Active' : 'Free Plan'}
@@ -235,7 +261,7 @@ export default function SettingsScreen() {
             </View>
             <TouchableOpacity
               testID="toggle-plan-btn"
-              style={[styles.upgradeBtn, { backgroundColor: plan === 'pro' ? 'rgba(255,255,255,0.2)' : '#D97706' }]}
+              style={[styles.upgradeBtn, { backgroundColor: plan === 'pro' ? 'rgba(255,255,255,0.2)' : colors.primary }]}
               onPress={togglePlan}
             >
               <Text style={styles.upgradeBtnText}>
@@ -243,22 +269,150 @@ export default function SettingsScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Hybrid Cloud Sync Card */}
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border, marginTop: spacing.md }]}>
+             <View style={styles.settingRow}>
+               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                 <Ionicons name="cloud-done" size={24} color={colors.primary} />
+                 <View>
+                   <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Cloud Backup & Sync</Text>
+                   <Text style={[styles.settingValue, { color: colors.textSecondary }]}>ID: {deviceId ? `${deviceId.substring(0, 8)}...` : 'Loading...'}</Text>
+                 </View>
+               </View>
+             </View>
+             <View style={[styles.divider, { backgroundColor: colors.border }]} />
+             <TouchableOpacity style={{ alignItems: 'center', paddingVertical: spacing.xs }}>
+                <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>Link Email to Sync Devices</Text>
+             </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Privacy & Legal */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>PRIVACY & LEGAL</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Link href="/privacy" asChild>
+              <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <Ionicons name="shield-checkmark-outline" size={20} color={colors.textSecondary} />
+                  <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Privacy Policy</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </Link>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <Link href="/terms" asChild>
+              <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <Ionicons name="document-text-outline" size={20} color={colors.textSecondary} />
+                  <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Terms & Conditions</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </Link>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <Link href="/analytics" asChild>
+              <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <Ionicons name="stats-chart-outline" size={20} color={colors.textSecondary} />
+                  <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Analytics Data (EU)</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </View>
+
+        {/* Support & Feedback */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>SUPPORT & FEEDBACK</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <TouchableOpacity onPress={() => {}} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <Ionicons name="star-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Rate the App</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com?subject=Sajdah%20Feedback')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Feedback</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com?subject=Sajdah%20Bug%20Report')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <Ionicons name="bug-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Report a Bug</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Contact Us</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Developer / Backend */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>DEVELOPER</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.settingRow}>
+              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Backend Sync</Text>
+              <TouchableOpacity
+                testID="ping-backend-btn"
+                style={[styles.valueBtn, { backgroundColor: isPinging ? colors.border : colors.primary }]}
+                onPress={handlePingBackend}
+                disabled={isPinging}
+              >
+                {isPinging ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="cloud-upload-outline" size={14} color="#fff" />}
+                <Text style={[styles.valueText, { color: '#fff', marginLeft: 4 }]}>Ping Server</Text>
+              </TouchableOpacity>
+            </View>
+            {backendStatus && (
+              <Text style={{ ...typography.xs, color: backendStatus.success ? '#10B981' : '#EF4444', marginTop: spacing.sm }}>
+                {backendStatus.message}
+              </Text>
+            )}
+          </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { padding: spacing.lg, paddingBottom: spacing.huge },
-  title: { ...typography.h2, marginBottom: spacing.xl },
-  section: { marginBottom: spacing.xxl },
-  sectionTitle: { ...typography.xs, fontWeight: '700', letterSpacing: 1, marginBottom: spacing.sm, paddingLeft: spacing.xs },
-  card: { borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1 },
+  scrollContent: { padding: 16, paddingBottom: 96 },
+  sectionSpacer: { height: 8 },
+
+  title: { fontSize: 28, fontWeight: '700', marginBottom: 24 },
+  section: { marginBottom: 40 },
+  sectionTitle: { fontSize: 12, fontWeight: '700', letterSpacing: 1, marginBottom: 10, paddingLeft: 4 },
+  card: { borderRadius: 20, padding: 16, borderWidth: 1 },
+
   settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
   settingLabel: { ...typography.body, fontWeight: '500' },
-  settingValue: { ...typography.small },
+  settingValue: { ...typography.label },
   valueBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.full, gap: 4 },
   valueText: { ...typography.xs, fontWeight: '600' },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm },
@@ -267,11 +421,11 @@ const styles = StyleSheet.create({
   chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.full },
   chipText: { fontSize: 12, fontWeight: '600' },
   proBadgeInline: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  proText: { fontSize: 10, fontWeight: '700', color: '#D97706' },
+  proText: { fontSize: 10, fontWeight: '700' },
   proCard: { borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1 },
   proCardContent: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
-  planTitle: { ...typography.bodyBold },
-  planDesc: { ...typography.small, marginTop: 2 },
+  planTitle: { ...typography.body, fontWeight: '700' },
+  planDesc: { ...typography.label, marginTop: 2 },
   upgradeBtn: { borderRadius: radius.full, paddingVertical: spacing.md, alignItems: 'center' },
   upgradeBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });

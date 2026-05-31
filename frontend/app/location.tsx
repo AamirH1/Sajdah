@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Modal, FlatList, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { useThemeColors } from '../src/hooks/useThemeColors';
+import { useTheme } from '../src/ui/hooks/useTheme';
 import { spacing, radius, typography } from '../src/theme';
 import { useSettings } from '../src/store/useSettings';
 import { useRouter } from 'expo-router';
@@ -37,10 +37,13 @@ const CITIES: City[] = [
   { name: 'Mecca', latitude: 21.3891, longitude: 39.8579, country: 'Saudi Arabia' },
   { name: 'Medina', latitude: 24.5247, longitude: 39.5692, country: 'Saudi Arabia' },
   { name: 'Dubai', latitude: 25.2048, longitude: 55.2708, country: 'UAE' },
+  { name: 'London', latitude: 51.5074, longitude: -0.1278, country: 'United Kingdom' },
+  { name: 'Toronto', latitude: 43.6532, longitude: -79.3832, country: 'Canada' },
+  { name: 'New York', latitude: 40.7128, longitude: -74.0060, country: 'United States' },
 ];
 
 export default function LocationPickerScreen() {
-  const colors = useThemeColors();
+  const { colors } = useTheme();
   const router = useRouter();
   const { setLocation, location } = useSettings();
   const [loading, setLoading] = useState(false);
@@ -87,9 +90,9 @@ export default function LocationPickerScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity testID="location-back-btn" onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={colors.onBackground} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Select Location</Text>
+        <Text style={[styles.headerTitle, { color: colors.onBackground }]}>Select Location</Text>
         <View style={{ width: 32 }} />
       </View>
 
@@ -114,13 +117,13 @@ export default function LocationPickerScreen() {
       {/* Current Location */}
       <View style={[styles.currentSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Ionicons name="location" size={18} color={colors.primary} />
-        <Text style={[styles.currentText, { color: colors.textPrimary }]}>
+        <Text style={[styles.currentText, { color: colors.onSurface }]}>
           Current: {location.city}
         </Text>
       </View>
 
       {/* City List */}
-      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>SELECT A CITY</Text>
+      <Text style={[styles.sectionLabel, { color: colors.onSurfaceSecondary }]}>SELECT A CITY</Text>
       <FlatList
         testID="city-list"
         data={CITIES}
@@ -133,15 +136,18 @@ export default function LocationPickerScreen() {
             style={[
               styles.cityItem,
               {
-                backgroundColor: location.city === item.name ? colors.accentLight : colors.surface,
+                backgroundColor: location.city === item.name ? colors.surfaceElevated : colors.surface,
                 borderColor: location.city === item.name ? colors.primary : colors.border,
               },
             ]}
-            onPress={() => handleCitySelect(item)}
+            onPress={() => {
+              handleCitySelect(item);
+              router.back();
+            }}
           >
             <View style={styles.cityInfo}>
-              <Text style={[styles.cityName, { color: colors.textPrimary }]}>{item.name}</Text>
-              <Text style={[styles.cityCountry, { color: colors.textSecondary }]}>{item.country}</Text>
+              <Text style={[styles.cityName, { color: colors.onSurface }]}>{item.name}</Text>
+              <Text style={[styles.cityCountry, { color: colors.onSurfaceSecondary }]}>{item.country}</Text>
             </View>
             {location.city === item.name && (
               <Ionicons name="checkmark-circle" size={22} color={colors.primary} />

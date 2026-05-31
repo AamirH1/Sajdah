@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useThemeColors } from '../../src/hooks/useThemeColors';
+import { useTheme } from '../../src/ui/hooks/useTheme';
 import { spacing, radius, typography } from '../../src/theme';
 import { AZKAR_CATEGORIES } from '../../src/data/azkar';
 
 export default function AzkarScreen() {
-  const colors = useThemeColors();
+  const { colors } = useTheme();
   const router = useRouter();
 
   const renderCategory = ({ item, index }: { item: typeof AZKAR_CATEGORIES[0]; index: number }) => (
@@ -20,9 +20,9 @@ export default function AzkarScreen() {
       <View style={[styles.categoryIcon, { backgroundColor: item.color + '20' }]}>
         <Ionicons name={item.icon as any} size={28} color={item.color} />
       </View>
-      <Text style={[styles.categoryName, { color: colors.textPrimary }]}>{item.name}</Text>
-      <Text style={[styles.categoryArabic, { color: colors.textSecondary }]}>{item.nameArabic}</Text>
-      <View style={[styles.countBadge, { backgroundColor: colors.accentLight }]}>
+      <Text style={[styles.categoryName, { color: colors.onSurface }]}>{item.name}</Text>
+      <Text style={[styles.categoryArabic, { color: colors.onSurfaceSecondary }]}>{item.nameArabic}</Text>
+      <View style={[styles.countBadge, { backgroundColor: colors.surfaceElevated }]}>
         <Text style={[styles.countText, { color: colors.primary }]}>{item.count} duas</Text>
       </View>
     </TouchableOpacity>
@@ -33,8 +33,8 @@ export default function AzkarScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Azkar & Duas</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Daily Remembrance</Text>
+          <Text style={[styles.title, { color: colors.onBackground }]}>Azkar & Duas</Text>
+          <Text style={[styles.subtitle, { color: colors.onSurfaceSecondary }]}>Daily Remembrance</Text>
         </View>
         <TouchableOpacity
           testID="open-tasbih-btn"
