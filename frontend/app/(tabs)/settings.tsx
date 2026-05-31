@@ -7,7 +7,7 @@ import { spacing, typography, radius } from '../../src/ui/theme';
 import { ScreenContainer, ScreenHeader } from '../../src/ui/components';
 
 import { useSettings } from '../../src/store/useSettings';
-import { useEntitlements, useCanUse } from '../../src/store/useEntitlements';
+import { useEntitlements } from '../../src/store/useEntitlements';
 import { pingBackend, getDeviceId } from '../../src/services/api';
 
 export default function SettingsScreen() {
@@ -15,8 +15,9 @@ export default function SettingsScreen() {
   const settings = useSettings();
   const plan = useEntitlements((state) => state.plan);
   const togglePlan = useEntitlements((state) => state.togglePlan);
-  const canUseMultiLang = useCanUse('quran.multipleLanguages');
-  const canUseSmartFajr = useCanUse('prayer.smartFajrAlarm');
+  
+  const canUseMultiLang = plan === 'pro';
+  const canUseSmartFajr = plan === 'pro';
   
   const [backendStatus, setBackendStatus] = useState<{ message: string, success: boolean } | null>(null);
   const [isPinging, setIsPinging] = useState(false);
@@ -26,7 +27,7 @@ export default function SettingsScreen() {
   const madhhabOptions = ['Hanafi', 'Shafi'] as const;
   const themeOptions = ['light', 'dark', 'system'] as const;
   const languages = ['english', 'urdu'] as const;
-  const proLanguages = ['hindi', 'bangla', 'tamil'] as const;
+  const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'] as const;
 
   useEffect(() => {
     getDeviceId().then(setDeviceId);
@@ -78,7 +79,7 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   key={m}
                   testID={`method-${m}`}
-                  style={[styles.chip, settings.calculationMethod === m ? { backgroundColor: colors.primary } : { backgroundColor: colors.accentLight }]}
+                  style={[styles.chip, settings.calculationMethod === m ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceElevated }]}
                   onPress={() => settings.setCalculationMethod(m)}
                 >
                   <Text style={[styles.chipText, { color: settings.calculationMethod === m ? '#fff' : colors.primary }]}>
@@ -98,7 +99,7 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   key={m}
                   testID={`madhhab-${m}`}
-                  style={[styles.chip, settings.madhhab === m ? { backgroundColor: colors.primary } : { backgroundColor: colors.accentLight }]}
+                  style={[styles.chip, settings.madhhab === m ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceElevated }]}
                   onPress={() => settings.setMadhhab(m)}
                 >
                   <Text style={[styles.chipText, { color: settings.madhhab === m ? '#fff' : colors.primary }]}>{m}</Text>
@@ -167,7 +168,7 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   key={lang}
                   testID={`lang-${lang}`}
-                  style={[styles.chip, settings.translationLang === lang ? { backgroundColor: colors.primary } : { backgroundColor: colors.accentLight }]}
+                  style={[styles.chip, settings.translationLang === lang ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceElevated }]}
                   onPress={() => settings.setTranslationLang(lang)}
                 >
                   <Text style={[styles.chipText, { color: settings.translationLang === lang ? '#fff' : colors.primary }]}>
@@ -179,17 +180,21 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   key={lang}
                   testID={`lang-${lang}`}
-                  style={[styles.chip, { backgroundColor: colors.accentLight, opacity: canUseMultiLang ? 1 : 0.5 }]}
+                  style={[
+                    styles.chip, 
+                    settings.translationLang === lang ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceElevated },
+                    { opacity: canUseMultiLang ? 1 : 0.5 }
+                  ]}
                   onPress={() => {
                     if (canUseMultiLang) {
                       settings.setTranslationLang(lang);
                     }
                   }}
                 >
-                  <Text style={[styles.chipText, { color: colors.primary }]}>
+                  <Text style={[styles.chipText, { color: settings.translationLang === lang ? '#fff' : colors.primary }]}>
                     {lang.charAt(0).toUpperCase() + lang.slice(1)}
                   </Text>
-                  {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color={colors.primary} style={{ marginLeft: 4 }} />}
+                  {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color={settings.translationLang === lang ? '#fff' : colors.primary} style={{ marginLeft: 4 }} />}
                 </TouchableOpacity>
               ))}
             </View>
@@ -204,7 +209,7 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   key={s}
                   testID={`script-${s}`}
-                  style={[styles.chip, settings.quranScript === s ? { backgroundColor: colors.primary } : { backgroundColor: colors.accentLight }]}
+                  style={[styles.chip, settings.quranScript === s ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceElevated }]}
                   onPress={() => settings.setQuranScript(s)}
                 >
                   <Text style={[styles.chipText, { color: settings.quranScript === s ? '#fff' : colors.primary }]}>{s}</Text>
@@ -226,7 +231,7 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   key={t}
                   testID={`theme-${t}`}
-                  style={[styles.chip, settings.theme === t ? { backgroundColor: colors.primary } : { backgroundColor: colors.accentLight }]}
+                  style={[styles.chip, settings.theme === t ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceElevated }]}
                   onPress={() => settings.setTheme(t)}
                 >
                   <Ionicons

@@ -26,8 +26,11 @@ export const AZKAR_CATEGORIES: AzkarCategory[] = [
   { id: 'travel', name: 'Travel Duas', nameArabic: 'أدعية السفر', icon: 'airplane-outline', count: 4, color: '#06B6D4' },
   { id: 'food', name: 'Food & Drink', nameArabic: 'أذكار الطعام', icon: 'restaurant-outline', count: 4, color: '#F43F5E' },
   { id: 'protection', name: 'Protection', nameArabic: 'أذكار الحماية', icon: 'shield-outline', count: 5, color: '#8B5CF6' },
+  { id: 'ramadan', name: 'Fasting (Ramadan)', nameArabic: 'أذكار الصيام', icon: 'moon-outline', count: 3, color: '#10B981' },
+  { id: 'hajj', name: 'Hajj & Umrah', nameArabic: 'الحج والعمرة', icon: 'cube-outline', count: 4, color: '#14B8A6' },
+  { id: 'family', name: 'Family & Home', nameArabic: 'الأسرة والمنزل', icon: 'home-outline', count: 3, color: '#F59E0B' },
+  { id: 'nature', name: 'Rain & Weather', nameArabic: 'المطر والطقس', icon: 'rainy-outline', count: 2, color: '#3B82F6' },
 ];
-
 export const AZKAR_ITEMS: DhikrItem[] = [
   // Morning Adhkar
   { id: 'm1', categoryId: 'morning', arabic: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ', translation: 'We have reached the morning and at this very time the whole kingdom belongs to Allah. All praise is for Allah. None has the right to be worshipped except Allah alone.', transliteration: 'Asbahna wa asbahal mulku lillah, walhamdu lillah, la ilaha illallahu wahdahu la sharika lah', repeat: 1, reference: 'Muslim' },
@@ -88,4 +91,24 @@ export const AZKAR_ITEMS: DhikrItem[] = [
   { id: 'p3', categoryId: 'protection', arabic: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ', translation: 'I seek refuge in Allah from Satan the accursed.', transliteration: 'A\'udhu billahi minash-Shaytanir-rajim', repeat: 1, reference: 'Bukhari & Muslim' },
   { id: 'p4', categoryId: 'protection', arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ', translation: 'O Allah, I seek refuge in You from anxiety and sorrow.', transliteration: 'Allahumma inni a\'udhu bika minal-hammi wal-hazan', repeat: 1, reference: 'Bukhari' },
   { id: 'p5', categoryId: 'protection', arabic: 'لَا إِلَٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ', translation: 'There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers.', transliteration: 'La ilaha illa anta subhanaka inni kuntu minaz-zalimin', repeat: 3, reference: 'Tirmidhi' },
+
+  // Fasting (Ramadan)
+  { id: 'r1', categoryId: 'ramadan', arabic: 'ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ', translation: 'The thirst is gone, the veins are moistened, and the reward is confirmed, if Allah wills.', transliteration: 'Dhahabaz-zama\'u wabtallatil-\'uruqu, wa thabatal-ajru in sha\'a Allah', repeat: 1, reference: 'Abu Dawud' },
+  { id: 'r2', categoryId: 'ramadan', arabic: 'اللَّهُمَّ أَطْعِمْ مَنْ أَطْعَمَنِي وَاسْقِ مَنْ سَقَانِي', translation: 'O Allah, feed him who fed me, and give him drink who gave me drink.', transliteration: 'Allahumma at\'im man at\'amani wasqi man saqani', repeat: 1, reference: 'Muslim' },
+  { id: 'r3', categoryId: 'ramadan', arabic: 'اللَّهُمَّ أَهِلَّهُ عَلَيْنَا بِالْيُمْنِ وَالْإِيمَانِ، وَالسَّلَامَةِ وَالْإِسْلَامِ، رَبِّي وَرَبُّكَ اللَّهُ', translation: 'O Allah, let this moon appear on us with security and faith; with safety and Islam. Your Lord and my Lord is Allah.', transliteration: 'Allahumma ahillahu alayna bil-yumni wal-iman, was-salamati wal-Islam, Rabbi wa Rabbuk-Allah', repeat: 1, reference: 'Tirmidhi' },
+  
+  // Hajj & Umrah
+  { id: 'h1', categoryId: 'hajj', arabic: 'لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيكَ لَكَ لَبَّيْكَ', translation: 'Here I am, O Allah, here I am. Here I am, You have no partner, here I am.', transliteration: 'Labbayk Allahumma labbayk, labbayk la sharika laka labbayk', repeat: 1, reference: 'Bukhari & Muslim' },
+  { id: 'h2', categoryId: 'hajj', arabic: 'اللَّهُ أَكْبَرُ', translation: 'Allah is the Greatest. (To be said at the Black Stone)', transliteration: 'Allahu Akbar', repeat: 1, reference: 'Bukhari' },
+  { id: 'h3', categoryId: 'hajj', arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ', translation: 'Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire.', transliteration: 'Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan waqina adhaban-nar', repeat: 1, reference: 'Abu Dawud' },
+  { id: 'h4', categoryId: 'hajj', arabic: 'إِنَّ الصَّفَا وَالْمَرْوَةَ مِن شَعَائِرِ اللَّهِ', translation: 'Indeed, as-Safa and al-Marwah are among the symbols of Allah.', transliteration: 'Innas-Safa wal-Marwata min sha\'a\'irillah', repeat: 1, reference: 'Muslim' },
+
+  // Family & Home
+  { id: 'fam1', categoryId: 'family', arabic: 'بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى اللَّهِ رَبِّنَا تَوَكَّلْنَا', translation: 'In the name of Allah we enter, in the name of Allah we leave, and upon our Lord we depend.', transliteration: 'Bismillahi walajna, wa bismillahi kharajna, wa \'ala Rabbina tawakkalna', repeat: 1, reference: 'Abu Dawud' },
+  { id: 'fam2', categoryId: 'family', arabic: 'بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', translation: 'In the name of Allah, I trust in Allah; there is no might and no power but in Allah. (When leaving the home)', transliteration: 'Bismillahi tawakkaltu alAllah, la hawla wa la quwwata illa billah', repeat: 1, reference: 'Abu Dawud' },
+  { id: 'fam3', categoryId: 'family', arabic: 'رَّبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا', translation: 'My Lord, have mercy upon them [my parents] as they brought me up [when I was] small.', transliteration: 'Rabbirhamhuma kama rabbayani saghira', repeat: 1, reference: 'Quran 17:24' },
+  
+  // Rain & Weather
+  { id: 'nat1', categoryId: 'nature', arabic: 'اللَّهُمَّ صَيِّبًا نَافِعًا', translation: 'O Allah, (bring) beneficial rain clouds.', transliteration: 'Allahumma sayyiban nafi\'an', repeat: 1, reference: 'Bukhari' },
+  { id: 'nat2', categoryId: 'nature', arabic: 'سُبْحَانَ الَّذِي يُسَبِّحُ الرَّعْدُ بِحَمْدِهِ وَالْمَلَائِكَةُ مِنْ خِيفَتِهِ', translation: 'Glory is to Him Whom thunder and angels extol from fear of Him.', transliteration: 'Subhanal-ladhi yusabbihur-ra\'du bihamdihi wal-mala\'ikatu min khifatih', repeat: 1, reference: 'Muwatta Malik' },
 ];

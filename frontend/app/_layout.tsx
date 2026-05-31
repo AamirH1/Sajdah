@@ -38,6 +38,7 @@ export default function RootLayout() {
         <Stack.Screen name="quran/[surahId]" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="azkar/[categoryId]" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="tasbih" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="hadith/[bookId]" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="location" options={{ headerShown: false, presentation: 'card' }} />
       </Stack>
     </>

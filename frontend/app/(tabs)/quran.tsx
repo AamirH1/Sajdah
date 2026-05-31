@@ -8,6 +8,7 @@ import {
   TextInput,
   ActivityIndicator,
   SafeAreaView,
+  Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -15,7 +16,15 @@ import { Audio } from 'expo-av';
 
 import { SURAHS } from '../../src/data/quran';
 import { useTheme } from '../../src/ui/hooks/useTheme';
+import { ScreenHeader, IconButton } from '../../src/ui/components';
 import { spacing, radius, typography } from '../../src/theme';
+
+const RECITERS = [
+  { id: 'afs', name: 'Mishary Rashid Alafasy', server: 'server8' },
+  { id: 'basit', name: 'Abdul Basit (Murattal)', server: 'server7' },
+  { id: 'sds', name: 'Abdur-Rahman as-Sudais', server: 'server11' },
+  { id: 'shur', name: 'Saud ash-Shuraym', server: 'server7' },
+];
 
 export default function QuranScreen() {
   const { colors } = useTheme();
@@ -25,6 +34,8 @@ export default function QuranScreen() {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [playingId, setPlayingId] = useState<number | null>(null);
   const [isLoadingAudio, setIsLoadingAudio] = useState<number | null>(null);
+  const [showReciterModal, setShowReciterModal] = useState(false);
+  const [selectedReciter, setSelectedReciter] = useState(RECITERS[0]);
 
   useEffect(() => {
     return sound
@@ -45,9 +56,8 @@ export default function QuranScreen() {
       setIsLoadingAudio(surahId);
       if (sound) await sound.unloadAsync();
 
-      // Mishary Rashid Alafasy recitation from open mp3quran.net API
       const paddedId = String(surahId).padStart(3, '0');
-      const url = `https://server8.mp3quran.net/afs/${paddedId}.mp3`;
+      const url = `https://${selectedReciter.server}.mp3quran.net/${selectedReciter.id}/${paddedId}.mp3`;
 
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
@@ -159,13 +169,16 @@ export default function QuranScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.onSurface }]}>{'Quran'}</Text>
-        <Text style={[styles.subtitle, { color: colors.onSurfaceSecondary }]}>
-          {'Read & Reflect'}
-        </Text>
-      </View>
+      <ScreenHeader 
+        title="Quran" 
+        subtitle="Read & Reflect"
+        rightAction={
+          <TouchableOpacity onPress={() => setShowReciterModal(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.surfaceElevated, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999 }}>
+            <Ionicons name="musical-notes-outline" size={14} color={colors.primary} />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>Reciter</Text>
+          </TouchableOpacity>
+        }
+      />
 
       {/* Search */}
       <View
@@ -210,6 +223,33 @@ export default function QuranScreen() {
         windowSize={21}
         removeClippedSubviews={false}
       />
+
+      {/* Reciter Modal */}
+      <Modal visible={showReciterModal} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 48 }}>
+            <Text style={[typography.headline, { color: colors.onSurface, marginBottom: 16 }]}>Choose Reciter</Text>
+            {RECITERS.map(reciter => (
+              <TouchableOpacity 
+                key={reciter.id}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                onPress={() => {
+                  setSelectedReciter(reciter);
+                  setShowReciterModal(false);
+                  if (sound) sound.stopAsync();
+                  setPlayingId(null);
+                }}
+              >
+                <Text style={[typography.body, { color: selectedReciter.id === reciter.id ? colors.primary : colors.onSurface, fontWeight: selectedReciter.id === reciter.id ? '600' : '400' }]}>{reciter.name}</Text>
+                {selectedReciter.id === reciter.id && <Ionicons name="checkmark-circle" size={24} color={colors.primary} />}
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={{ marginTop: 24, alignItems: 'center' }} onPress={() => setShowReciterModal(false)}>
+              <Text style={[typography.label, { color: colors.onSurfaceSecondary }]}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -271,4 +311,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-

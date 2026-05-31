@@ -11,8 +11,15 @@ export interface Ayah {
   number: number;
   arabic: string;
   translations: {
-    english: string;
-    urdu: string;
+    english?: string;
+    urdu?: string;
+    hindi?: string;
+    bangla?: string;
+    tamil?: string;
+    malayalam?: string;
+    telugu?: string;
+    kannada?: string;
+    [key: string]: string | undefined;
   };
 }
 
@@ -135,13 +142,13 @@ export const SURAHS: Surah[] = [
 
 export const SURAH_DATA: Record<number, Ayah[]> = {
   1: [
-    { number: 1, arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', translations: { english: 'In the name of Allah, the Most Gracious, the Most Merciful', urdu: 'اللہ کے نام سے جو بڑا مہربان نہایت رحم والا ہے' } },
-    { number: 2, arabic: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ', translations: { english: 'All praise is due to Allah, Lord of the worlds', urdu: 'سب تعریف اللہ کے لیے ہے جو تمام جہانوں کا پالنے والا ہے' } },
-    { number: 3, arabic: 'الرَّحْمَٰنِ الرَّحِيمِ', translations: { english: 'The Most Gracious, the Most Merciful', urdu: 'بڑا مہربان نہایت رحم والا' } },
-    { number: 4, arabic: 'مَالِكِ يَوْمِ الدِّينِ', translations: { english: 'Master of the Day of Judgment', urdu: 'روز جزا کا مالک' } },
-    { number: 5, arabic: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ', translations: { english: 'You alone we worship, and You alone we ask for help', urdu: 'ہم تیری ہی عبادت کرتے ہیں اور تجھ ہی سے مدد مانگتے ہیں' } },
-    { number: 6, arabic: 'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ', translations: { english: 'Guide us to the straight path', urdu: 'ہمیں سیدھا راستہ دکھا' } },
-    { number: 7, arabic: 'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ', translations: { english: 'The path of those upon whom You have bestowed favor, not of those who have earned anger nor of those who are astray', urdu: 'ان لوگوں کا راستہ جن پر تو نے انعام فرمایا، نہ ان کا جن پر غضب ہوا اور نہ گمراہوں کا' } },
+    { number: 1, arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', translations: { english: 'In the name of Allah, the Most Gracious, the Most Merciful', urdu: 'اللہ کے نام سے جو بڑا مہربان نہایت رحم والا ہے', hindi: 'अल्लाह के नाम से जो अत्यंत कृपालु और दयालु है', bangla: 'পরম করুণাময় অসীম দয়ালু আল্লাহর নামে', tamil: 'அளவற்ற அருளாளனும் நிகரற்ற அன்புடையோனுமாகிய அல்லாஹ்வின் திருப்பெயரால்' } },
+    { number: 2, arabic: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ', translations: { english: 'All praise is due to Allah, Lord of the worlds', urdu: 'سب تعریف اللہ کے لیے ہے جو تمام جہانوں کا پالنے والا ہے', hindi: 'सब प्रशंसा अल्लाह के लिए है, जो सम्पूर्ण ब्रह्मांड का पालनहार है', bangla: 'যাবতীয় প্রশংসা জগতসমূহের প্রতিপালক আল্লাহর জন্য', tamil: 'எல்லாப் புகழும் அகிலங்கள் அனைத்தையும் படைத்து வளர்த்துப் பரிபாலிக்கும் அல்லாஹ்வுக்கே ஆகும்' } },
+    { number: 3, arabic: 'الرَّحْمَٰنِ الرَّحِيمِ', translations: { english: 'The Most Gracious, the Most Merciful', urdu: 'بڑا مہربان نہایت رحم والا', hindi: 'जो अत्यंत कृपालु और दयालु है', bangla: 'যিনি পরম করুণাময়, অসীম দয়ালু', tamil: 'அவன் அளவற்ற அருளாளன், நிகரற்ற அன்புடையோன்' } },
+    { number: 4, arabic: 'مَالِكِ يَوْمِ الدِّينِ', translations: { english: 'Master of the Day of Judgment', urdu: 'روز جزا کا مالک', hindi: 'जो न्याय के दिन का स्वामी है', bangla: 'যিনি বিচার দিনের মালিক', tamil: 'தீர்ப்பு நாளின் அதிபதி' } },
+    { number: 5, arabic: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ', translations: { english: 'You alone we worship, and You alone we ask for help', urdu: 'ہم تیری ہی عبادت کرتے ہیں اور تجھ ہی سے مدد مانگتے ہیں', hindi: 'हम केवल तेरी ही आराधना करते हैं और केवल तुझी से सहायता मांगते हैं', bangla: 'আমরা কেবল তোমারই ইবাদত করি এবং কেবল তোমারই সাহায্য প্রার্থনা করি', tamil: 'உன்னை மட்டுமே நாங்கள் வணங்குகிறோம், உன்னிடமே நாங்கள் உதவியும் தேடுகிறோம்' } },
+    { number: 6, arabic: 'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ', translations: { english: 'Guide us to the straight path', urdu: 'ہمیں سیدھا راستہ دکھا', hindi: 'हमें सीधा मार्ग दिखा', bangla: 'আমাদেরকে সরল পথ প্রদর্শন করুন', tamil: 'எங்களை நேர்வழியில் நடத்துவாயாக' } },
+    { number: 7, arabic: 'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ', translations: { english: 'The path of those upon whom You have bestowed favor, not of those who have earned anger nor of those who are astray', urdu: 'ان لوگوں کا راستہ جن پر تو نے انعام فرمایا، نہ ان کا جن پر غضب ہوا اور نہ گمراہوں کا', hindi: 'उन लोगों का मार्ग जिन पर तूने कृपा की है, न कि उनका जिन पर तेरा क्रोध हुआ और न ही पथभ्रष्ट लोगों का', bangla: 'তাদের পথ, যাদেরকে তুমি নেয়ামত দান করেছ; তাদের পথ নয়, যারা গযবপ্রাপ্ত এবং পথভ্রষ্ট', tamil: 'அது நீ எவர்களுக்கு அருள்புரிந்தாயோ அந்த மக்களின் வழி. (உன்) கோபத்திற்கு ஆளானவர்கள் வழியுமல்ல; வழிதவறியவர்கள் வழியுமல்ல' } },
   ],
   36: [
     { number: 1, arabic: 'يس', translations: { english: 'Ya, Sin.', urdu: 'یٰسٓ' } },

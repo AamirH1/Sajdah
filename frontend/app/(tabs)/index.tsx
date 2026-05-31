@@ -25,7 +25,7 @@ export default function HomeScreen() {
 
   const calculateTimes = (date: Date): PrayerTimeResult[] => {
     try {
-      return getPrayerTimes(
+      const rawTimes = getPrayerTimes(
         date,
         location.latitude,
         location.longitude,
@@ -33,6 +33,37 @@ export default function HomeScreen() {
         madhhab,
         offsets
       );
+
+      // Clone times so we can safely mutate the Date objects
+      const times = rawTimes.map(p => ({ ...p, time: new Date(p.time) }));
+      
+      const fajr = times.find(t => t.name === 'fajr');
+      const sunrise = times.find(t => t.name === 'sunrise');
+      const maghrib = times.find(t => t.name === 'maghrib');
+      const isha = times.find(t => t.name === 'isha');
+
+      if (fajr && isha && maghrib && sunrise) {
+        const fH = fajr.time.getHours();
+        const fM = fajr.time.getMinutes();
+        const iH = isha.time.getHours();
+        const iM = isha.time.getMinutes();
+        
+        // High Latitude Bug Fix:
+        // For extreme latitudes (like London) in summer, standard calculation fallbacks
+        // force Fajr and Isha to converge to the exact same minute (e.g., 12:58 AM).
+        // We intercept this and apply the trusted 'Seventh of the Night' calculation.
+        if (fH === iH && Math.abs(fM - iM) <= 1) {
+          console.log('High latitude convergence detected (Fajr/Isha match). Applying Seventh of the Night correction.');
+          const dayDuration = maghrib.time.getTime() - sunrise.time.getTime();
+          const nightDurationMs = (24 * 3600000) - dayDuration;
+          const portionMs = nightDurationMs / 7;
+
+          isha.time = new Date(maghrib.time.getTime() + portionMs);
+          fajr.time = new Date(sunrise.time.getTime() - portionMs);
+        }
+      }
+
+      return times;
     } catch (e) {
       // Fallback prayer times
       const base = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -84,19 +115,6 @@ export default function HomeScreen() {
       seconds: Math.floor((diffMs % (1000 * 60)) / 1000),
     };
   }, [now, nextPrayer]);
-
-  useEffect(() => {
-    console.log('Prayer calc inputs', {
-      city: location.city,
-      lat: location.latitude,
-      lng: location.longitude,
-      calculationMethod,
-      madhhab,
-      now: now.toString(),
-      nextPrayerName: nextPrayer?.label,
-      nextPrayerTime: nextPrayer?.time.toString(),
-    });
-  }, [location.city, calculationMethod, madhhab, nextPrayer?.label]);
 
   const getPrayerGradient = (prayerName?: string) => {
     switch(prayerName) {
