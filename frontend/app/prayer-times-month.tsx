@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../src/ui/hooks/useTheme';
 import { Button, Card, IconButton, ScreenContainer } from '../src/ui/components';
 import { useSettings } from '../src/store/useSettings';
+import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 import {
   getMonthlyPrayerTimes,
   MonthlyPrayerTimesDay,
@@ -71,9 +72,7 @@ export default function PrayerTimesMonthScreen() {
     };
   }, [hasHydrated, location?.latitude, location?.longitude, calculationMethod, madhhab]);
 
-  const heroGradient = isDark
-    ? [colors.background, colors.surfaceAlt]
-    : [colors.primarySoft, colors.background];
+  const heroGradient = getDynamicScreenGradient(colors, isDark);
 
   const todayKey = useMemo(() => {
     const today = new Date();
@@ -86,7 +85,7 @@ export default function PrayerTimesMonthScreen() {
   const todayItem = data?.days.find((day) => day.gregorianDate === todayKey || day.dayLabel?.includes(todayKey));
 
   return (
-    <ScreenContainer scrollable={false} heroGradient={heroGradient as readonly [string, string]}>
+    <ScreenContainer scrollable={false} heroGradient={heroGradient}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>

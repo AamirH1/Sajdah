@@ -8,6 +8,7 @@ import { AsmaUlHusnaItem, getAsmaUlHusna } from '../src/services/duaApi';
 import { getAsmaUlHusnaByLanguage, getAsmaUlHusnaLanguageLabel, hasIslamicApiKey } from '../src/services/asmaUlHusnaApi';
 import { useEntitlements } from '../src/store/useEntitlements';
 import { useSettings } from '../src/store/useSettings';
+import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 
 export default function AsmaUlHusnaScreen() {
   const { colors, typography, spacing, shadows, isDark } = useTheme();
@@ -73,9 +74,7 @@ export default function AsmaUlHusnaScreen() {
     };
   }, [effectiveLanguage, translationLang, canUseTranslations]);
 
-  const heroGradient = isDark
-    ? [colors.background, colors.surfaceAlt]
-    : [colors.primarySoft, colors.background];
+  const heroGradient = getDynamicScreenGradient(colors, isDark);
 
   const activeLanguageLabel = getAsmaUlHusnaLanguageLabel(effectiveLanguage);
 
@@ -101,7 +100,7 @@ export default function AsmaUlHusnaScreen() {
   );
 
   return (
-    <ScreenContainer scrollable={false} heroGradient={heroGradient as readonly [string, string]}>
+    <ScreenContainer scrollable={false} heroGradient={heroGradient}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>

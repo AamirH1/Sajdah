@@ -5,6 +5,7 @@ import { Link, useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { spacing, typography, radius } from '../../src/ui/theme';
 import { ScreenContainer, ScreenHeader } from '../../src/ui/components';
+import { getDynamicScreenGradient } from '../../src/ui/colorUtils';
 
 import { useSettings } from '../../src/store/useSettings';
 import { useEntitlements } from '../../src/store/useEntitlements';
@@ -38,6 +39,7 @@ export default function SettingsScreen() {
   const standardLanguages = ['english', 'urdu'] as const;
   const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'] as const;
   const comingSoonLanguages = new Set(['telugu', 'kannada']);
+  const screenGradient = getDynamicScreenGradient(colors, isDark);
 
   useEffect(() => {
     getDeviceId().then(setDeviceId);
@@ -117,7 +119,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScreenContainer scrollable>
+    <ScreenContainer scrollable heroGradient={screenGradient}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <ScreenHeader title="Settings" />
 

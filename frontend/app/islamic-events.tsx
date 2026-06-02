@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../src/ui/hooks/useTheme';
 import { Button, Card, IconButton, ScreenContainer } from '../src/ui/components';
 import { getIslamicEvents, IslamicEventsResponse } from '../src/services/islamicEventsApi';
+import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 
 export default function IslamicEventsScreen() {
   const { colors, typography, spacing, shadows, isDark } = useTheme();
@@ -39,15 +40,13 @@ export default function IslamicEventsScreen() {
     };
   }, []);
 
-  const heroGradient = isDark
-    ? [colors.background, colors.surfaceAlt]
-    : [colors.primarySoft, colors.background];
+  const heroGradient = getDynamicScreenGradient(colors, isDark);
 
   const currentHijri = data?.currentHijriDate.hijri;
   const currentGregorian = data?.currentHijriDate.gregorian;
 
   return (
-    <ScreenContainer scrollable={false} heroGradient={heroGradient as readonly [string, string]}>
+    <ScreenContainer scrollable={false} heroGradient={heroGradient}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>

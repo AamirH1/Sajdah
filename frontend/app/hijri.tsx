@@ -7,6 +7,7 @@ import { useTheme } from '../src/ui/hooks/useTheme';
 import { ScreenContainer, Card, Button, IconButton } from '../src/ui/components';
 import { useEntitlements } from '../src/store/useEntitlements';
 import { convertGregorianToHijri, getIslamicMonths, getTodayHijri, HijriDateResult, IslamicMonth } from '../src/services/hijriApi';
+import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 
 const formatGregorian = (date: Date) => {
   const yyyy = date.getFullYear();
@@ -136,15 +137,13 @@ export default function HijriScreen() {
     setShowDatePicker((current) => !current);
   };
 
-  const heroGradient = isDark
-    ? [colors.background, colors.surfaceAlt]
-    : [colors.primarySoft, colors.background];
+  const heroGradient = getDynamicScreenGradient(colors, isDark);
 
   const sourceLabel = todayHijri ? (todayHijri.source === 'api' ? 'Updated today' : 'Saved result') : 'Loading';
 
   if (!canUseHijri) {
     return (
-      <ScreenContainer scrollable={false} heroGradient={heroGradient as readonly [string, string]}>
+      <ScreenContainer scrollable={false} heroGradient={heroGradient}>
         <View style={styles.lockedContainer}>
           <Card style={[styles.lockedCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.md]}>
             <View style={[styles.lockedIconWrap, { backgroundColor: colors.primarySoft }]}>
@@ -174,7 +173,7 @@ export default function HijriScreen() {
   }
 
   return (
-    <ScreenContainer scrollable={false} heroGradient={heroGradient as readonly [string, string]}>
+    <ScreenContainer scrollable={false} heroGradient={heroGradient}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>

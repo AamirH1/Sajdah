@@ -23,16 +23,7 @@ import {
   IconButton,
   Card,
 } from '../src/ui/components';
-
-const hexToRgba = (hex: string, alpha: number) => {
-  const normalized = hex.replace('#', '');
-  if (normalized.length !== 6) return hex;
-  const value = parseInt(normalized, 16);
-  const r = (value >> 16) & 255;
-  const g = (value >> 8) & 255;
-  const b = value & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
+import { getDynamicHeroGradient, getDynamicScreenGradient } from '../src/ui/colorUtils';
 
 export default function TasbihScreen() {
   const { colors, typography, spacing, shadows, isDark } = useTheme();
@@ -86,12 +77,8 @@ export default function TasbihScreen() {
   const isComplete = activeCounter
     ? activeCounter.count >= activeCounter.target
     : false;
-  const heroGradient = isDark
-    ? ['#111C14', '#2A3420'] as const
-    : [colors.primary, hexToRgba(colors.primary, 0.76)] as const;
-  const screenGradient = isDark
-    ? [colors.background, colors.surfaceAlt] as const
-    : [colors.primarySoft, colors.background] as const;
+  const heroGradient = getDynamicHeroGradient(colors, isDark);
+  const screenGradient = getDynamicScreenGradient(colors, isDark);
 
   return (
     <ScreenContainer scrollable={false} heroGradient={screenGradient}>

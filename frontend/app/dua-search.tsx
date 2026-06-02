@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../src/ui/hooks/useTheme';
 import { Button, Card, IconButton, ScreenContainer } from '../src/ui/components';
 import { DuaSearchItem, searchDuas } from '../src/services/duaApi';
+import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 
 const SUGGESTIONS = ['morning', 'sleep', 'travel', 'forgiveness'];
 
@@ -18,9 +19,7 @@ export default function DuaSearchScreen() {
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
 
-  const heroGradient = isDark
-    ? [colors.background, colors.surfaceAlt]
-    : [colors.primarySoft, colors.background];
+  const heroGradient = getDynamicScreenGradient(colors, isDark);
 
   const runSearch = async (rawQuery: string) => {
     const trimmed = rawQuery.trim();
@@ -52,7 +51,7 @@ export default function DuaSearchScreen() {
   };
 
   return (
-    <ScreenContainer scrollable={false} heroGradient={heroGradient as readonly [string, string]}>
+    <ScreenContainer scrollable={false} heroGradient={heroGradient}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>
