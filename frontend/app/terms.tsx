@@ -35,13 +35,13 @@ export default function TermsScreen() {
           {"\n\n"}
           <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>3. Intellectual Property</Text>
           {"\n"}
-          The application&apos;s original design, features, and functionality are owned by the developers of Sajdah. The Arabic text of the Quran and its public domain translations remain the property of their respective copyright holders where applicable.
+          The application&apos;s original design, features, and functionality are owned by Sajdah, built by Aamir Hussain. The Arabic text of the Quran and its public domain translations remain the property of their respective copyright holders where applicable.
           {"\n\n"}
           <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>4. Limitation of Liability</Text>
           {"\n"}
-          In no event shall Sajdah or its developers be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the application.
+          In no event shall Sajdah or Aamir Hussain be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the application.
           {"\n\n"}
-          For support or inquiries, contact us at <Text style={{ color: colors.primary }}>hello.aamirdev@gmail.com</Text>.
+          For support or inquiries, contact Aamir Hussain at <Text style={{ color: colors.primary }}>hello.aamirdev@gmail.com</Text>. Website: <Text style={{ color: colors.primary }}>https://www.aamirdev.co.uk/about</Text>.
         </Text>
       </ScrollView>
     </SafeAreaView>

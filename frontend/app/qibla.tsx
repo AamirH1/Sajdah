@@ -11,7 +11,7 @@ import { getQiblaLookup } from '../src/services/qiblaApi';
 const { width } = Dimensions.get('window');
 
 export default function QiblaScreen() {
-  const { colors, typography, spacing, radius, shadows } = useTheme();
+  const { colors, typography, spacing, shadows } = useTheme();
   const router = useRouter();
   const { location } = useSettings();
   
@@ -82,8 +82,8 @@ export default function QiblaScreen() {
           setHeading(smoothed);
           setLoading(false);
         });
-      } catch (e) {
-        setError('Compass is not available on this device.');
+      } catch {
+        setError('This device cannot use the compass right now.');
         setLoading(false);
       }
     };

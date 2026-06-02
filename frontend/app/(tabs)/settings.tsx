@@ -9,6 +9,7 @@ import { ScreenContainer, ScreenHeader } from '../../src/ui/components';
 import { useSettings } from '../../src/store/useSettings';
 import { useEntitlements } from '../../src/store/useEntitlements';
 import { getDeviceId, syncBackup } from '../../src/services/api';
+import { getAsmaUlHusnaLanguageLabel } from '../../src/services/asmaUlHusnaApi';
 import {
   requestNotificationPermission,
   schedulePrayerNotificationsFromSettings,
@@ -34,9 +35,9 @@ export default function SettingsScreen() {
   const methods = ['Karachi', 'MuslimWorldLeague', 'Egyptian', 'UmmAlQura', 'Dubai', 'NorthAmerica'] as const;
   const madhhabOptions = ['Hanafi', 'Shafi'] as const;
   const themeOptions = ['light', 'dark', 'system'] as const;
-const languages = ['english', 'urdu'] as const;
-const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'] as const;
-const comingSoonLanguages = new Set(['telugu', 'kannada']);
+  const standardLanguages = ['english', 'urdu'] as const;
+  const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'] as const;
+  const comingSoonLanguages = new Set(['telugu', 'kannada']);
 
   useEffect(() => {
     getDeviceId().then(setDeviceId);
@@ -73,7 +74,7 @@ const comingSoonLanguages = new Set(['telugu', 'kannada']);
         setNotificationStatus({ message: 'Prayer reminders scheduled.', success: true });
       } catch (error) {
         console.warn('Unable to sync prayer notifications:', error);
-        setNotificationStatus({ message: 'Unable to schedule reminders. Use a development build for reliable testing.', success: false });
+        setNotificationStatus({ message: 'We could not set up reminders right now. Please try again later.', success: false });
       } finally {
         setIsSyncingNotifications(false);
       }
@@ -84,10 +85,10 @@ const comingSoonLanguages = new Set(['telugu', 'kannada']);
     setIsPinging(true);
     setBackendStatus(null);
     try {
-      const res = await syncBackup();
-      setBackendStatus({ message: `Synced! Backup ID: ${res.id.substring(0, 8)}`, success: true });
+      await syncBackup();
+      setBackendStatus({ message: 'Your backup is up to date.', success: true });
     } catch {
-      setBackendStatus({ message: 'Sync failed. Is backend running?', success: false });
+      setBackendStatus({ message: 'We could not back up your data right now. Please try again later.', success: false });
     } finally {
       setIsPinging(false);
     }
@@ -295,15 +296,25 @@ const comingSoonLanguages = new Set(['telugu', 'kannada']);
           </Text>
         )}
 
-        {/* Quran */}
+        {/* Translation Language */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>QURAN</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>TRANSLATION LANGUAGE</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <View style={styles.settingRow}>
-              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Translation</Text>
+              <View style={{ flex: 1, paddingRight: spacing.md }}>
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Preferred Language</Text>
+                <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 4, lineHeight: 18 }]}>
+                  Applies to Quran and 99 Names when that language is available. If not, Sajdah shows English.
+                </Text>
+              </View>
+              <View style={[styles.activeLanguageBadge, { backgroundColor: colors.primarySoft }]}>
+                <Text style={[typography.xs, { color: colors.primary, fontWeight: '700' }]}>
+                  {getAsmaUlHusnaLanguageLabel(settings.translationLang)}
+                </Text>
+              </View>
             </View>
             <View style={styles.quranChoiceGrid}>
-              {languages.map((lang) => (
+              {standardLanguages.map((lang) => (
                 <TouchableOpacity
                   key={lang}
                   testID={`lang-${lang}`}
@@ -323,7 +334,7 @@ const comingSoonLanguages = new Set(['telugu', 'kannada']);
                       color={settings.translationLang === lang ? colors.primary : colors.textSecondary}
                     />
                     <Text style={[styles.quranChoiceText, { color: settings.translationLang === lang ? colors.primary : colors.textPrimary }]}>
-                      {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                      {getAsmaUlHusnaLanguageLabel(lang)}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -344,7 +355,7 @@ const comingSoonLanguages = new Set(['telugu', 'kannada']);
                     if (canUseMultiLang && comingSoonLanguages.has(lang)) {
                       Alert.alert(
                         'Coming Soon',
-                        'Translation is not available yet for Telugu and Kannada. We are working on it.',
+                        'Telugu and Kannada are coming soon. Please choose another language for now.',
                         [{ text: 'OK' }]
                       );
                       return;
@@ -362,18 +373,28 @@ const comingSoonLanguages = new Set(['telugu', 'kannada']);
                       color={settings.translationLang === lang ? colors.primary : colors.textSecondary}
                     />
                     <Text style={[styles.quranChoiceText, { color: settings.translationLang === lang ? colors.primary : colors.textPrimary }]}>
-                      {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                      {getAsmaUlHusnaLanguageLabel(lang)}
                     </Text>
                     {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color={settings.translationLang === lang ? colors.primary : colors.textSecondary} />}
+                    {canUseMultiLang && comingSoonLanguages.has(lang) && (
+                      <Text style={[styles.comingSoonText, { color: colors.textMuted }]}>Soon</Text>
+                    )}
                   </View>
                 </TouchableOpacity>
               ))}
             </View>
 
+            <View style={[styles.translationNote, { backgroundColor: colors.chipBackground }]}>
+              <Ionicons name="information-circle-outline" size={16} color={colors.textSecondary} />
+              <Text style={[typography.xs, { color: colors.textSecondary, flex: 1, lineHeight: 18 }]}>
+                Some 99 Names languages are still being prepared, so you may see English in those places.
+              </Text>
+            </View>
+
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <View style={styles.settingRow}>
-              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Script</Text>
+              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Quran Script</Text>
             </View>
             <View style={styles.quranChoiceGrid}>
               {(['IndoPak', 'Madani'] as const).map((s) => (
@@ -468,23 +489,25 @@ const comingSoonLanguages = new Set(['telugu', 'kannada']);
             </TouchableOpacity>
           </View>
 
-          {/* Hybrid Cloud Sync Card */}
+          {/* Backup Card */}
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginTop: spacing.md }]}>
              <View style={styles.settingRow}>
                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                  <Ionicons name="cloud-done" size={24} color={colors.primary} />
                  <View>
-                   <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Cloud Backup & Sync</Text>
-                   <Text style={[styles.settingValue, { color: colors.textSecondary }]}>ID: {deviceId ? `${deviceId.substring(0, 8)}...` : 'Loading...'}</Text>
+                   <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Private Backup</Text>
+                   <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+                     {deviceId ? 'Ready to protect your settings' : 'Preparing backup...'}
+                   </Text>
                  </View>
                </View>
              </View>
              <View style={[styles.divider, { backgroundColor: colors.divider }]} />
             <TouchableOpacity 
               style={{ alignItems: 'center', paddingVertical: spacing.xs }}
-              onPress={() => Alert.alert('Coming Soon', 'Email linking for cross-device sync will be available in a future update!')}
+              onPress={() => Alert.alert('Coming Soon', 'You will be able to connect your email and restore your settings on another device soon.')}
             >
-                <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>Link Email to Sync Devices</Text>
+                <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>Connect Email</Text>
              </TouchableOpacity>
           </View>
         </View>
@@ -573,12 +596,39 @@ const comingSoonLanguages = new Set(['telugu', 'kannada']);
           </View>
         </View>
 
-        {/* Developer / Backend */}
+        {/* App Info */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>DEVELOPER</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>APP INFO</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <View style={styles.settingRow}>
-              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Backend Sync</Text>
+              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>App Name</Text>
+              <Text style={[styles.settingValue, { color: colors.textSecondary }]}>Sajdah</Text>
+            </View>
+
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+
+            <View style={styles.settingRow}>
+              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Built By</Text>
+              <Text style={[styles.settingValue, { color: colors.textSecondary }]}>Aamir Hussain</Text>
+            </View>
+
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+
+            <TouchableOpacity
+              onPress={() => Linking.openURL('https://www.aamirdev.co.uk/about')}
+              style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <Ionicons name="globe-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Website</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+
+            <View style={styles.settingRow}>
+              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Backup</Text>
               <TouchableOpacity
                 testID="ping-backend-btn"
                 style={[styles.valueBtn, { backgroundColor: isPinging ? colors.border : colors.primary }]}
@@ -642,6 +692,9 @@ const styles = StyleSheet.create({
   quranChoiceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.xs },
   quranChoiceBtn: { minHeight: 40, justifyContent: 'center', borderWidth: 1, flexShrink: 1 },
   quranChoiceText: { fontSize: 12, fontWeight: '600' },
+  activeLanguageBadge: { borderRadius: radius.full, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
+  comingSoonText: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
+  translationNote: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, borderRadius: radius.lg, padding: spacing.md, marginTop: spacing.md },
   themeChoiceGrid: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
   themeChoiceBtn: { flex: 1, minHeight: 42, justifyContent: 'center', borderWidth: 1 },
   themeChoiceText: { fontSize: 12, fontWeight: '600' },

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, Text, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../src/ui/hooks/useTheme';
@@ -7,56 +7,45 @@ import { Card, IconButton, ScreenContainer, Button } from '../src/ui/components'
 import { AsmaUlHusnaItem, getAsmaUlHusna } from '../src/services/duaApi';
 import { getAsmaUlHusnaByLanguage, getAsmaUlHusnaLanguageLabel, hasIslamicApiKey } from '../src/services/asmaUlHusnaApi';
 import { useEntitlements } from '../src/store/useEntitlements';
-import { TranslationLang } from '../src/store/useSettings';
+import { useSettings } from '../src/store/useSettings';
 
 export default function AsmaUlHusnaScreen() {
   const { colors, typography, spacing, shadows, isDark } = useTheme();
   const router = useRouter();
+  const translationLang = useSettings((state) => state.translationLang);
   const plan = useEntitlements((state) => state.plan);
   const togglePlan = useEntitlements((state) => state.togglePlan);
   const [items, setItems] = useState<AsmaUlHusnaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedLanguage, setSelectedLanguage] = useState<TranslationLang>('english');
   const canUseTranslations = plan === 'pro';
-
-  const availableLanguages: TranslationLang[] = [
-    'english',
-    'urdu',
-    'hindi',
-    'bangla',
-    'tamil',
-    'malayalam',
-    'telugu',
-    'kannada',
-  ];
-
-  useEffect(() => {
-    if (!canUseTranslations && selectedLanguage !== 'english') {
-      setSelectedLanguage('english');
-    }
-  }, [canUseTranslations, selectedLanguage]);
+  const effectiveLanguage = canUseTranslations ? translationLang : 'english';
 
   useEffect(() => {
     let active = true;
 
     const load = async () => {
       try {
+        setLoading(true);
         setError(null);
-        const result = selectedLanguage === 'english'
+        if (!canUseTranslations && translationLang !== 'english') {
+          setError('English is shown for now. More 99 Names languages are included with Pro.');
+        }
+
+        const result = effectiveLanguage === 'english'
           ? await getAsmaUlHusna()
-          : await getAsmaUlHusnaByLanguage(selectedLanguage);
+          : await getAsmaUlHusnaByLanguage(effectiveLanguage);
         if (!active) return;
         setItems(result);
       } catch (err) {
         if (!active) return;
-        if (selectedLanguage !== 'english') {
+        if (effectiveLanguage !== 'english') {
           if (!canUseTranslations) {
-            setError('Non-English translations are a Pro feature.');
+            setError('English is shown for now. More 99 Names languages are included with Pro.');
           } else if (!hasIslamicApiKey()) {
-            setError('Add EXPO_PUBLIC_ISLAMIC_API_KEY in frontend/.env, then restart Expo to load non-English translations.');
+            setError('English is shown for now because this 99 Names language is not ready yet.');
           } else {
-            setError('We could not load that translation right now. Showing English instead.');
+            setError('English is shown for now because this 99 Names language is not ready yet.');
           }
           try {
             const fallback = await getAsmaUlHusna();
@@ -82,13 +71,13 @@ export default function AsmaUlHusnaScreen() {
     return () => {
       active = false;
     };
-  }, [selectedLanguage, canUseTranslations]);
+  }, [effectiveLanguage, translationLang, canUseTranslations]);
 
   const heroGradient = isDark
     ? [colors.background, colors.surfaceAlt]
     : [colors.primarySoft, colors.background];
 
-  const activeLanguageLabel = getAsmaUlHusnaLanguageLabel(selectedLanguage);
+  const activeLanguageLabel = getAsmaUlHusnaLanguageLabel(effectiveLanguage);
 
   const renderItem = ({ item, index }: { item: AsmaUlHusnaItem; index: number }) => (
     <Card style={[styles.itemCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.sm]}>
@@ -154,9 +143,9 @@ export default function AsmaUlHusnaScreen() {
               <View style={[styles.proBanner, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Ionicons name="language-outline" size={18} color={colors.primary} />
                 <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={[typography.label, { color: colors.textPrimary }]}>English is included by default</Text>
+                  <Text style={[typography.label, { color: colors.textPrimary }]}>Using {activeLanguageLabel} where available</Text>
                   <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 2, lineHeight: 18 }]}>
-                    Pro unlocks Urdu, Hindi, Bengali, Tamil, Malayalam, Telugu, and Kannada translations.
+                    Choose your language once in Settings. If a translation is missing, Sajdah will show English.
                   </Text>
                 </View>
                 <Button
@@ -166,58 +155,6 @@ export default function AsmaUlHusnaScreen() {
                   style={styles.proButton}
                   icon={<Ionicons name="star-outline" size={16} color="#fff" />}
                 />
-              </View>
-            </Card>
-
-            <Card style={[styles.languageCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-              <View style={styles.languageHeader}>
-                <View>
-                  <Text style={[typography.title, { color: colors.textPrimary }]}>Translation Language</Text>
-                  <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 4 }]}>
-                    English stays available for everyone.
-                  </Text>
-                </View>
-                <View style={[styles.activeLanguageBadge, { backgroundColor: colors.primarySoft }]}>
-                  <Text style={[typography.xs, { color: colors.primary }]}>{activeLanguageLabel}</Text>
-                </View>
-              </View>
-
-              <View style={styles.languageGrid}>
-                {availableLanguages.map((language) => {
-                  const isSelected = selectedLanguage === language;
-                  const isLocked = language !== 'english' && !canUseTranslations;
-                  return (
-                    <TouchableOpacity
-                      key={language}
-                      testID={`asma-lang-${language}`}
-                      disabled={isLocked}
-                      onPress={() => {
-                        if (isLocked) {
-                          setError('Upgrade to Pro to switch the 99 Names translations into other languages.');
-                          return;
-                        }
-                        setSelectedLanguage(language);
-                      }}
-                      style={[
-                        styles.languageChip,
-                        {
-                          backgroundColor: isSelected ? colors.primarySoft : colors.chipBackground,
-                          borderColor: isSelected ? colors.primary : colors.border,
-                          opacity: isLocked ? 0.55 : 1,
-                        },
-                      ]}
-                    >
-                      <Text style={[typography.xs, { color: isSelected ? colors.primary : colors.textPrimary, fontWeight: '600' }]}>
-                        {getAsmaUlHusnaLanguageLabel(language)}
-                      </Text>
-                      {isLocked ? (
-                        <Ionicons name="lock-closed" size={12} color={isSelected ? colors.primary : colors.textSecondary} />
-                      ) : isSelected ? (
-                        <Ionicons name="checkmark-circle" size={12} color={colors.primary} />
-                      ) : null}
-                    </TouchableOpacity>
-                  );
-                })}
               </View>
             </Card>
 
@@ -297,37 +234,6 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     paddingHorizontal: 12,
     paddingVertical: 6,
-  },
-  languageCard: {
-    borderRadius: 24,
-    marginBottom: 16,
-    borderWidth: 1,
-    padding: 16,
-  },
-  languageHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  activeLanguageBadge: {
-    borderRadius: 9999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  languageGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  languageChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderRadius: 9999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
   },
   errorCard: {
     marginBottom: 16,

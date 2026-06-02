@@ -1,6 +1,9 @@
-# Welcome to your Expo app 👋
+# Sajdah
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Sajdah is a Muslim companion app built by Aamir Hussain.
+
+Website: https://www.aamirdev.co.uk/about
+Support: hello.aamirdev@gmail.com
 
 ## Get started
 

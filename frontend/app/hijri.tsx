@@ -65,7 +65,7 @@ export default function HijriScreen() {
         setMonths(monthsResult);
       } catch {
         if (!active) return;
-        setError('Unable to load Hijri calendar right now.');
+        setError('We could not open the Hijri calendar right now.');
       } finally {
         if (active) {
           setLoadingToday(false);

@@ -33,7 +33,7 @@ export default function QuranReaderScreen() {
 
     Alert.alert(
       'Coming Soon',
-      'Translation is not available yet for Telugu and Kannada. We are working on it.',
+      'Telugu and Kannada are coming soon. Please choose another language for now.',
       [{ text: 'OK' }]
     );
   }, [canUseMultiLang, isComingSoonLang]);
@@ -79,14 +79,14 @@ export default function QuranReaderScreen() {
           <View style={[styles.proWarning, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.lg }]}>
             <Ionicons name="time-outline" size={16} color="#D97706" />
             <Text style={styles.proWarningText}>
-              Telugu and Kannada translations are coming soon. Showing English for now.
+              Telugu and Kannada are coming soon. English is shown for now.
             </Text>
           </View>
         ) : isProLang && !canUseMultiLang && (
           <View style={[styles.proWarning, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.lg }]}>
             <Ionicons name="lock-closed" size={16} color="#D97706" />
             <Text style={styles.proWarningText}>
-              {translationLang.charAt(0).toUpperCase() + translationLang.slice(1)} translation requires Pro. Showing English.
+              {translationLang.charAt(0).toUpperCase() + translationLang.slice(1)} is included with Pro. English is shown for now.
             </Text>
           </View>
         )}
@@ -114,7 +114,7 @@ export default function QuranReaderScreen() {
           <View style={styles.emptyState}>
             <Ionicons name="book-outline" size={48} color={colors.textSecondary} />
             <Text style={[typography.body, { color: colors.textSecondary, textAlign: 'center', marginTop: spacing.lg }]}>
-              Failed to load Surah. Please check your internet connection.
+              We could not open this Surah right now. Please check your connection and try again.
             </Text>
           </View>
         )}

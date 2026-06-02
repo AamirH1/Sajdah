@@ -211,7 +211,7 @@ export default function DuaSearchScreen() {
               {item.transliteration || '-'}
             </Text>
             <Text style={[typography.body, { color: colors.textSecondary, marginTop: 8, lineHeight: 24 }]}>
-              {item.translation || 'Translation not available.'}
+              {item.translation || 'Meaning will appear here when available.'}
             </Text>
             {item.reference ? (
               <Text style={[typography.xs, { color: colors.textMuted, marginTop: 10 }]}>

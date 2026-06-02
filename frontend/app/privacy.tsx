@@ -31,17 +31,17 @@ export default function PrivacyScreen() {
           {"\n\n"}
           <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>2. Location Data</Text>
           {"\n"}
-          To provide accurate prayer times and Qibla direction, the App requires access to your device&apos;s location. This location data is processed locally on your device and is not transmitted to or stored on our servers.
+          To provide accurate prayer times and Qibla direction, the App asks for your location. Sajdah uses it on your device and does not send it to us.
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>3. Cloud Backup & Sync</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>3. Backup</Text>
           {"\n"}
-          If you utilize the Cloud Backup & Sync feature to back up your preferences and Tasbih counts, we generate a random, anonymous Device ID. The data synced using this ID is kept strictly confidential, isn&apos;t linked to your identity, and is not shared with third parties.
+          If you choose to back up your preferences and Tasbih counts, Sajdah saves them privately so they can be restored later. This information is not linked to your personal identity and is not shared with third parties.
           {"\n\n"}
           <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>4. Changes to This Policy</Text>
           {"\n"}
           We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
           {"\n\n"}
-          If you have any questions or concerns about our privacy practices, please contact us at <Text style={{ color: colors.primary }}>hello.aamirdev@gmail.com</Text>.
+          If you have any questions or concerns about our privacy practices, please contact Aamir Hussain at <Text style={{ color: colors.primary }}>hello.aamirdev@gmail.com</Text>. You can also visit <Text style={{ color: colors.primary }}>https://www.aamirdev.co.uk/about</Text>.
         </Text>
       </ScrollView>
     </SafeAreaView>
