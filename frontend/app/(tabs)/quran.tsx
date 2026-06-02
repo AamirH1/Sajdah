@@ -29,7 +29,7 @@ const FALLBACK_RECITERS: QuranReciter[] = [
 ];
 
 export default function QuranScreen() {
-  const { colors, typography } = useTheme();
+  const { colors, typography, isDark } = useTheme();
   const router = useRouter();
   const { quranReciterId, quranReciterName, setQuranReciter } = useSettings();
 
@@ -189,7 +189,7 @@ export default function QuranScreen() {
       activeOpacity={0.7}
     >
       <View
-        style={[styles.surahNumber, { backgroundColor: colors.surfaceAlt }]}
+        style={[styles.surahNumber, { backgroundColor: colors.dateBadgeBg }]}
       >
         <Text style={[styles.surahNumberText, { color: colors.primary }]}>{item.id}</Text>
       </View>
@@ -207,8 +207,9 @@ export default function QuranScreen() {
           style={[
             styles.typeBadge,
             {
-              backgroundColor:
-                item.revelationType === 'Meccan' ? '#FEF3C7' : '#DBEAFE',
+              backgroundColor: isDark
+                ? colors.primarySoft
+                : item.revelationType === 'Meccan' ? '#FEF3C7' : '#DBEAFE',
             },
           ]}
         >
@@ -217,7 +218,7 @@ export default function QuranScreen() {
               styles.typeText,
               {
                 color:
-                  item.revelationType === 'Meccan' ? '#92400E' : '#1E40AF',
+                  isDark ? colors.textLabel : item.revelationType === 'Meccan' ? '#92400E' : '#1E40AF',
               },
             ]}
           >
@@ -252,7 +253,7 @@ export default function QuranScreen() {
         title="Quran" 
         subtitle="Read & Reflect"
         rightAction={
-        <TouchableOpacity onPress={() => setShowReciterModal(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.surfaceAlt, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999 }}>
+        <TouchableOpacity onPress={() => setShowReciterModal(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: isDark ? colors.primarySoft : colors.surfaceAlt, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999 }}>
           <Ionicons name="musical-notes-outline" size={14} color={colors.primary} />
           <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>
             {selectedReciter?.name || 'Reciter'}
@@ -330,7 +331,7 @@ export default function QuranScreen() {
             </Text>
           </View>
 
-          <Text style={[styles.reciterSectionLabel, { color: colors.textSecondary }]}>SELECT A RECITER</Text>
+          <Text style={[styles.reciterSectionLabel, { color: colors.textLabel }]}>SELECT A RECITER</Text>
 
           {recitersLoading ? (
             <View style={styles.reciterLoadingState}>
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderRadius: radius.xl,
+    borderRadius: 20,
     borderWidth: 1,
     gap: spacing.sm,
   },
@@ -404,24 +405,24 @@ const styles = StyleSheet.create({
   surahItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.lg,
-    borderRadius: radius.xl,
+    padding: 24,
+    borderRadius: 20,
     marginBottom: spacing.sm,
     borderWidth: 1,
   },
   surahNumber: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
+    width: 52,
+    height: 52,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  surahNumberText: { fontWeight: '700', fontSize: 14 },
+  surahNumberText: { fontWeight: '700', fontSize: 22 },
   surahInfo: { flex: 1, marginLeft: spacing.md },
   surahName: { ...typography.bodyBold },
   surahTranslation: { ...typography.xs, marginTop: 2 },
   surahArabic: { alignItems: 'flex-end', paddingRight: spacing.sm },
-  surahArabicText: { fontSize: 20, fontWeight: '400' },
+  surahArabicText: { fontSize: 28, lineHeight: 56, fontWeight: '400' },
   typeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -453,7 +454,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     marginBottom: spacing.lg,
     padding: spacing.lg,
-    borderRadius: radius.xl,
+    borderRadius: 20,
     borderWidth: 1,
     gap: spacing.sm,
   },

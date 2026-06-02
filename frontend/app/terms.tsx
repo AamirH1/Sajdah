@@ -20,24 +20,24 @@ export default function TermsScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <Ionicons name="document-text-outline" size={48} color={colors.primary} style={{ alignSelf: 'center', marginBottom: spacing.lg }} />
-        <Text style={[styles.bodyText, { color: colors.onSurfaceSecondary }]}>
+        <Text style={[styles.bodyText, { color: colors.screenTextSecondary }]}>
           <Text style={{ fontWeight: 'bold' }}>Last Updated: {new Date().toLocaleDateString()}</Text>
           {"\n\n"}
           Welcome to Sajdah. By accessing or using our application, you agree to be bound by these Terms and Conditions.
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.onSurface }}>1. Nature of the Service</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>1. Nature of the Service</Text>
           {"\n"}
           Sajdah provides prayer times, Quranic texts, translations, and other Islamic content for spiritual guidance and reference. 
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.onSurface }}>2. Accuracy of Information</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>2. Accuracy of Information</Text>
           {"\n"}
           While we strive for absolute accuracy in our calculations and content, mathematical anomalies or differing calculation methodologies may result in slight variations. Please consult with your local scholars or masjid for final rulings if you are in doubt regarding specific Islamic practices or prayer times.
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.onSurface }}>3. Intellectual Property</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>3. Intellectual Property</Text>
           {"\n"}
-          The application's original design, features, and functionality are owned by the developers of Sajdah. The Arabic text of the Quran and its public domain translations remain the property of their respective copyright holders where applicable.
+          The application&apos;s original design, features, and functionality are owned by the developers of Sajdah. The Arabic text of the Quran and its public domain translations remain the property of their respective copyright holders where applicable.
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.onSurface }}>4. Limitation of Liability</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>4. Limitation of Liability</Text>
           {"\n"}
           In no event shall Sajdah or its developers be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the application.
           {"\n\n"}

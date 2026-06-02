@@ -194,9 +194,9 @@ export default function QiblaScreen() {
     <ScreenContainer scrollable={false}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={colors.screenTextPrimary} />
         </TouchableOpacity>
-        <Text style={[typography.title, { color: colors.textPrimary }]}>Qibla Compass</Text>
+        <Text style={[typography.title, { color: colors.screenTextPrimary }]}>Qibla Compass</Text>
         <View style={{ width: 32 }} />
       </View>
 

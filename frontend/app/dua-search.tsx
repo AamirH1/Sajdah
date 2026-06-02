@@ -56,8 +56,8 @@ export default function DuaSearchScreen() {
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>
-          <Text style={[typography.xs, { color: colors.textSecondary, letterSpacing: 1 }]}>FEATURE</Text>
-          <Text style={[typography.title, { color: colors.textPrimary, marginTop: 2 }]}>Search Dua</Text>
+          <Text style={[typography.xs, { color: colors.textLabel, letterSpacing: 1.5 }]}>FEATURE</Text>
+          <Text style={[typography.title, { color: colors.screenTextPrimary, marginTop: 2 }]}>Search Dua</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -181,7 +181,7 @@ export default function DuaSearchScreen() {
           searched && !loading && !error ? (
             <Card style={[styles.emptyCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
               <Text style={[typography.label, { color: colors.textSecondary }]}>
-                No duas were returned by the API.
+                No duas were found for that search.
               </Text>
             </Card>
           ) : null

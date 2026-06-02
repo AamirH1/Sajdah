@@ -51,14 +51,14 @@ export default function IslamicEventsScreen() {
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>
-          <Text style={[typography.xs, { color: colors.textSecondary, letterSpacing: 1 }]}>FEATURE</Text>
-          <Text style={[typography.title, { color: colors.textPrimary, marginTop: 2 }]}>Islamic Events</Text>
+          <Text style={[typography.xs, { color: colors.textLabel, letterSpacing: 1.5 }]}>FEATURE</Text>
+          <Text style={[typography.title, { color: colors.screenTextPrimary, marginTop: 2 }]}>Islamic Events</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <Text style={[typography.label, { color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.lg }]}>
+        <Text style={[typography.label, { color: colors.screenTextSecondary, lineHeight: 22, marginBottom: spacing.lg }]}>
           Keep track of today&apos;s Hijri date and upcoming Islamic observances.
         </Text>
 

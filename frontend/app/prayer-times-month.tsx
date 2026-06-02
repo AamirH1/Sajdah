@@ -49,7 +49,7 @@ export default function PrayerTimesMonthScreen() {
           month: new Date().getMonth() + 1,
           year: new Date().getFullYear(),
           method: calculationMethod,
-          madhab,
+          madhab: madhhab,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         });
         if (!active) return;
@@ -90,14 +90,14 @@ export default function PrayerTimesMonthScreen() {
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>
-          <Text style={[typography.xs, { color: colors.textSecondary, letterSpacing: 1 }]}>FEATURE</Text>
-          <Text style={[typography.title, { color: colors.textPrimary, marginTop: 2 }]}>Prayer Month</Text>
+          <Text style={[typography.xs, { color: colors.textLabel, letterSpacing: 1.5 }]}>FEATURE</Text>
+          <Text style={[typography.title, { color: colors.screenTextPrimary, marginTop: 2 }]}>Prayer Month</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <Text style={[typography.label, { color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.lg }]}>
+        <Text style={[typography.label, { color: colors.screenTextSecondary, lineHeight: 22, marginBottom: spacing.lg }]}>
           Get prayer times for every day of the month. Great for caching in mobile apps.
         </Text>
 
@@ -256,7 +256,7 @@ export default function PrayerTimesMonthScreen() {
                     month: new Date().getMonth() + 1,
                     year: new Date().getFullYear(),
                     method: calculationMethod,
-                    madhab,
+                    madhab: madhhab,
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                   },
                   true

@@ -99,7 +99,6 @@ const MenuOptionCard = memo(function MenuOptionCard({
       <Animated.View
         style={[
           styles.menuOptionCard,
-          styles.menuCardShadow,
           {
             backgroundColor: colors.surface,
             borderColor: colors.border,
@@ -171,19 +170,19 @@ const HadithItemCard = memo(function HadithItemCard({
         {item.arabic || 'Hadith text will appear here when available.'}
       </Text>
 
-      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+      <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
-      <Text style={[typography.body, { color: colors.textSecondary, lineHeight: 26 }]}>
+      <Text style={[typography.body, { color: colors.textPrimary, lineHeight: 24 }]}>
         {item.translation || item.text || 'Translation will appear here when available.'}
       </Text>
 
       {(item.narrator || item.chapter) && (
         <View style={{ marginTop: spacing.lg }}>
           {item.narrator ? (
-            <Text style={[typography.xs, { color: colors.textSecondary, marginBottom: 4 }]}>Narrator: {item.narrator}</Text>
+            <Text style={[typography.xs, { color: colors.textMuted, marginBottom: 4, fontStyle: 'italic', textAlign: 'right' }]}>— Narrator: {item.narrator}</Text>
           ) : null}
           {item.chapter ? (
-            <Text style={[typography.xs, { color: colors.textSecondary }]}>Chapter: {item.chapter}</Text>
+            <Text style={[typography.xs, { color: colors.textMuted, fontStyle: 'italic', textAlign: 'right' }]}>— Chapter: {item.chapter}</Text>
           ) : null}
         </View>
       )}
@@ -227,7 +226,7 @@ function CollectionShell({
             style={styles.headerAction}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <Ionicons name="close" size={24} color={colors.textPrimary} />
+            <Ionicons name="close" size={24} color={colors.screenTextPrimary} />
           </TouchableOpacity>
         </View>
       ) : (
@@ -241,7 +240,7 @@ function CollectionShell({
               style={styles.headerAction}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <Ionicons name="close" size={24} color={colors.textPrimary} />
+              <Ionicons name="close" size={24} color={colors.screenTextPrimary} />
             </TouchableOpacity>
           }
         />
@@ -255,8 +254,8 @@ function CollectionShell({
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.menuIntro}>
-              <Text style={[styles.bannerTitle, { color: colors.textPrimary, marginTop: 0 }]}>{meta.name}</Text>
-              <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
+              <Text style={[styles.bannerTitle, { color: colors.screenTextPrimary, marginTop: 0 }]}>{meta.name}</Text>
+              <Text style={[typography.body, { color: colors.screenTextSecondary, marginTop: 4 }]}>
                 {subtitleByMode.menu}
               </Text>
             </View>
@@ -269,9 +268,11 @@ function CollectionShell({
                 },
               ]}
             >
+              <Text style={[typography.label, { color: 'rgba(255,255,255,0.82)' }]}>Start reading</Text>
+              <Text style={styles.bannerTitle}>Choose how you want to begin</Text>
               <Text style={[typography.xs, { color: 'rgba(255,255,255,0.82)', marginTop: 8 }]}>{meta.arabic}</Text>
               <Text style={[typography.body, { color: 'rgba(255,255,255,0.82)', marginTop: 14, lineHeight: 22 }]}>
-                Tap the option below that feels right for you.
+                Read slowly, explore in order, or search for the hadith you have in mind.
               </Text>
             </Card>
 
@@ -313,42 +314,46 @@ function CollectionShell({
         ) : mode === READER_MODE ? (
           <>
             <View style={styles.readerIntro}>
-              <Text style={[styles.bannerTitle, { color: colors.textPrimary, marginTop: 0 }]}>{meta.name}</Text>
+              <Text style={[styles.bannerTitle, { color: colors.screenTextPrimary, marginTop: 0 }]}>{meta.name}</Text>
               <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
                 {subtitleByMode.reader}
               </Text>
             </View>
             <Card style={[styles.readerTitleCard, { backgroundColor: meta.color, borderColor: meta.color }]}>
-              <View style={styles.readerTitleTopRow}>
-                <View style={[styles.modePill, { backgroundColor: 'rgba(255,255,255,0.16)' }]}>
-                  <Text style={[typography.xs, { color: '#fff', fontWeight: '700' }]}>One by one</Text>
-                </View>
-              </View>
+              <Text style={[typography.label, { color: 'rgba(255,255,255,0.82)' }]}>Gentle reading</Text>
+              <Text style={styles.bannerTitle}>Read one hadith at a time</Text>
               <Text style={[typography.xs, { color: 'rgba(255,255,255,0.82)', marginTop: 8 }]}>{meta.arabic}</Text>
+              <Text style={styles.bannerDescription}>
+                A quiet flow for reflecting on one narration before moving to the next.
+              </Text>
             </Card>
           </>
         ) : mode === SEARCH_MODE ? (
           <>
             <View style={styles.searchIntro}>
-              <Text style={[styles.bannerTitle, { color: colors.textPrimary, marginTop: 0 }]}>{meta.name}</Text>
+              <Text style={[styles.bannerTitle, { color: colors.screenTextPrimary, marginTop: 0 }]}>{meta.name}</Text>
               <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
                 {subtitleByMode.search}
               </Text>
             </View>
             <Card style={[styles.readerTitleCard, { backgroundColor: meta.color, borderColor: meta.color }]}>
-              <View style={styles.readerTitleTopRow}>
-                <View style={[styles.modePill, { backgroundColor: 'rgba(255,255,255,0.16)' }]}>
-                  <Text style={[typography.xs, { color: '#fff', fontWeight: '700' }]}>Find fast</Text>
-                </View>
-              </View>
+              <Text style={[typography.label, { color: 'rgba(255,255,255,0.82)' }]}>Quick search</Text>
+              <Text style={styles.bannerTitle}>Find a hadith by words you remember</Text>
+              <Text style={[typography.xs, { color: 'rgba(255,255,255,0.82)', marginTop: 8 }]}>{meta.arabic}</Text>
+              <Text style={styles.bannerDescription}>
+                Look up hadith by keyword, narrator, or chapter when you already have something in mind.
+              </Text>
             </Card>
           </>
         ) : (
           <>
             <View style={[styles.banner, { backgroundColor: meta.color }]}>
-              <Text style={[typography.label, { color: 'rgba(255,255,255,0.8)' }]}>Browse all hadith</Text>
-              <Text style={styles.bannerTitle}>{meta.name}</Text>
+              <Text style={[typography.label, { color: 'rgba(255,255,255,0.8)' }]}>Browse freely</Text>
+              <Text style={styles.bannerTitle}>Explore every hadith in order</Text>
               <Text style={styles.bannerSubtitle}>{meta.arabic}</Text>
+              <Text style={styles.bannerDescription}>
+                Move through {meta.name} in order, with more hadith loading as you scroll.
+              </Text>
             </View>
           </>
         )}
@@ -367,6 +372,7 @@ function ReaderView({
   onClose: () => void;
 }) {
   const { colors, typography, spacing } = useTheme();
+  const meta = COLLECTION_META[collection] || COLLECTION_META.bukhari;
   const [currentHadith, setCurrentHadith] = useState<HadithRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchingNext, setFetchingNext] = useState(false);
@@ -446,7 +452,7 @@ function ReaderView({
             </Text>
             <TouchableOpacity
               testID="hadith-retry-btn"
-              style={[styles.retryBtn, { backgroundColor: colors.primary, marginTop: spacing.lg }]}
+              style={[styles.retryBtn, { backgroundColor: meta.color, marginTop: spacing.lg }]}
               onPress={loadOneHadith}
             >
               <Text style={{ color: colors.onPrimary, fontWeight: '700' }}>Retry</Text>
@@ -459,7 +465,7 @@ function ReaderView({
             <View style={styles.actionRow}>
               <TouchableOpacity
                 testID="next-hadith-btn"
-                style={[styles.primaryActionBtn, { backgroundColor: colors.primary }]}
+                style={[styles.primaryActionBtn, { backgroundColor: meta.color }]}
                 onPress={handleNext}
                 activeOpacity={0.8}
                 disabled={fetchingNext}
@@ -493,6 +499,7 @@ function ListView({
   onOpenSearch: () => void;
 }) {
   const { colors, typography, spacing } = useTheme();
+  const meta = COLLECTION_META[collection] || COLLECTION_META.bukhari;
   const { hadiths, loading, loadingMore, hasMore, error, refresh, loadMore } = useHadithCollection(collection, PAGE_SIZE);
 
   const handleEndReached = useCallback(() => {
@@ -530,7 +537,7 @@ function ListView({
           </Text>
           <TouchableOpacity
             testID="hadith-retry-btn"
-            style={[styles.retryBtn, { backgroundColor: colors.primary, marginTop: spacing.lg }]}
+            style={[styles.retryBtn, { backgroundColor: meta.color, marginTop: spacing.lg }]}
             onPress={refresh}
           >
             <Text style={{ color: colors.onPrimary, fontWeight: '700' }}>Retry</Text>
@@ -601,6 +608,7 @@ function SearchView({
   onOpenList: () => void;
 }) {
   const { colors, typography, spacing } = useTheme();
+  const meta = COLLECTION_META[collection] || COLLECTION_META.bukhari;
   const [currentHadith, setCurrentHadith] = useState<HadithRecord | null>(null);
   const [searchResults, setSearchResults] = useState<HadithRecord[]>([]);
   const [searchIndex, setSearchIndex] = useState(0);
@@ -722,7 +730,7 @@ function SearchView({
                 style={[
                   typography.xs,
                   {
-                    color: searchResultCount > 0 ? colors.primary : colors.error,
+                    color: searchResultCount > 0 ? meta.color : colors.error,
                     fontWeight: '700',
                   },
                 ]}
@@ -735,7 +743,7 @@ function SearchView({
           ) : null}
           <TouchableOpacity
             testID="search-hadith-btn"
-            style={[styles.searchBtn, { backgroundColor: colors.primary, marginTop: spacing.sm }]}
+            style={[styles.searchBtn, { backgroundColor: meta.color, marginTop: spacing.sm }]}
             onPress={handleSearch}
             disabled={searching}
           >
@@ -766,7 +774,7 @@ function SearchView({
           <>
             {searchResultCount !== null ? (
               <View style={[styles.searchPositionChip, { backgroundColor: colors.chipBackground }]}>
-                <Text style={[typography.xs, { color: colors.primary, fontWeight: '700' }]}>
+                <Text style={[typography.xs, { color: meta.color, fontWeight: '700' }]}>
                   Showing {searchIndex + 1} of {searchResultCount} results
                 </Text>
               </View>
@@ -777,7 +785,7 @@ function SearchView({
               <View style={styles.actionRow}>
                 <TouchableOpacity
                   testID="next-search-result-btn"
-                  style={[styles.primaryActionBtn, { backgroundColor: colors.primary }]}
+                  style={[styles.primaryActionBtn, { backgroundColor: meta.color }]}
                   onPress={handleNextResult}
                   activeOpacity={0.8}
                 >
@@ -880,8 +888,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   menuHeroCard: {
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     borderWidth: 1,
   },
   menuOptions: {
@@ -889,19 +897,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   menuOptionCard: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 20,
+    padding: 24,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  menuCardShadow: {
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
   },
   menuOptionBody: {
     flexDirection: 'row',
@@ -937,7 +938,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   menuPressable: {
-    borderRadius: 16,
+    borderRadius: 20,
   },
   menuPressed: {
     opacity: 0.85,
@@ -960,8 +961,8 @@ const styles = StyleSheet.create({
   },
   readerTitleCard: {
     marginTop: 16,
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     borderWidth: 1,
   },
   readerTitleTopRow: {
@@ -988,6 +989,12 @@ const styles = StyleSheet.create({
   bannerSubtitle: {
     color: 'rgba(255,255,255,0.82)',
     marginTop: 4,
+  },
+  bannerDescription: {
+    color: 'rgba(255,255,255,0.86)',
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 12,
   },
   infoCard: {
     marginTop: 16,
@@ -1026,8 +1033,8 @@ const styles = StyleSheet.create({
   },
   searchCard: {
     marginTop: 16,
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: 20,
+    padding: 24,
     borderWidth: 1,
   },
   searchRow: {
@@ -1085,8 +1092,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   arabicText: {
-    fontSize: 24,
-    lineHeight: 44,
+    fontSize: 30,
+    lineHeight: 56,
     textAlign: 'right',
     fontWeight: '400',
     marginBottom: 16,

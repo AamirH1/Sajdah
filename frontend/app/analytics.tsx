@@ -21,7 +21,7 @@ export default function AnalyticsScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <Ionicons name="stats-chart-outline" size={48} color={colors.primary} style={{ alignSelf: 'center', marginBottom: spacing.lg }} />
-        <Text style={[styles.bodyText, { color: colors.onSurfaceSecondary, marginBottom: spacing.xl }]}>
+        <Text style={[styles.bodyText, { color: colors.screenTextSecondary, marginBottom: spacing.xl }]}>
           To comply with European region regulations (GDPR), we provide full transparency regarding analytics data.
           {"\n\n"}
           We collect minimal, anonymized telemetry (such as crash reports and basic feature usage) to improve application stability and user experience. 
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   headerTitle: { ...typography.bodyBold },
   content: { padding: spacing.xl },
   bodyText: { ...typography.body, lineHeight: 24 },
-  toggleContainer: { flexDirection: 'row', alignItems: 'center', padding: spacing.lg, borderRadius: radius.xl, borderWidth: 1, marginBottom: spacing.xl },
+  toggleContainer: { flexDirection: 'row', alignItems: 'center', padding: 24, borderRadius: 20, borderWidth: 1, marginBottom: spacing.xl },
   toggleTitle: { ...typography.bodyBold, marginBottom: 4 },
   toggleDesc: { ...typography.xs, lineHeight: 18 },
   deleteBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: spacing.md, borderRadius: radius.full, borderWidth: 1, gap: spacing.sm },

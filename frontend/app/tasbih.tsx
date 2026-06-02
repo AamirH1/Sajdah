@@ -146,7 +146,7 @@ export default function TasbihScreen() {
         <Text
           style={[
             typography.headline,
-            { color: colors.textPrimary, marginBottom: 4 },
+            { color: colors.screenTextPrimary, marginBottom: 4 },
           ]}
         >
           {activeCounter?.name || 'Select a counter'}
@@ -154,7 +154,7 @@ export default function TasbihScreen() {
         <Text
           style={[
             typography.label,
-            { color: colors.textSecondary, marginBottom: spacing.xxl },
+            { color: colors.screenTextSecondary, marginBottom: spacing.xxl },
           ]}
         >
           Target: {activeCounter?.target || 0}
@@ -172,8 +172,8 @@ export default function TasbihScreen() {
             onPress={handleIncrement}
             activeOpacity={0.9}
           >
-            <Text style={styles.bigCounterNumber}>{activeCounter?.count || 0}</Text>
-            <Text style={styles.bigCounterLabel}>
+            <Text style={[styles.bigCounterNumber, { color: colors.onPrimary }]}>{activeCounter?.count || 0}</Text>
+            <Text style={[styles.bigCounterLabel, { color: colors.onPrimary }]}>
               {isComplete ? 'Complete!' : 'Tap to count'}
             </Text>
           </TouchableOpacity>
@@ -189,7 +189,7 @@ export default function TasbihScreen() {
             }}
           />
         </View>
-        <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+        <Text style={[styles.progressText, { color: colors.screenTextSecondary }]}>
           {activeCounter?.count || 0} / {activeCounter?.target || 0}
         </Text>
 
@@ -202,15 +202,15 @@ export default function TasbihScreen() {
           }}
           onPress={handleReset}
         >
-          <Ionicons name="refresh" size={20} color={colors.textSecondary} />
-          <Text style={[styles.resetText, { color: colors.textSecondary }]}>Reset</Text>
+          <Ionicons name="refresh" size={20} color={colors.screenTextSecondary} />
+          <Text style={[styles.resetText, { color: colors.screenTextSecondary }]}>Reset</Text>
         </TouchableOpacity>
       </View>
 
       {/* Add Counter Modal */}
       <Modal visible={showAddModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
             <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>New Counter</Text>
             <TextInput
               testID="tasbih-new-name-input"
@@ -218,7 +218,7 @@ export default function TasbihScreen() {
                 ...styles.modalInput,
                 color: colors.textPrimary,
                 borderColor: colors.border,
-                backgroundColor: colors.background,
+                backgroundColor: colors.surface,
               }}
               placeholder="Name (e.g. SubhanAllah)"
               placeholderTextColor={colors.textSecondary}
@@ -231,7 +231,7 @@ export default function TasbihScreen() {
                 ...styles.modalInput,
                 color: colors.textPrimary,
                 borderColor: colors.border,
-                backgroundColor: colors.background,
+                backgroundColor: colors.surface,
               }}
               placeholder="Target count"
               placeholderTextColor={colors.textSecondary}
@@ -254,7 +254,7 @@ export default function TasbihScreen() {
                 style={[styles.modalBtn, { backgroundColor: colors.primary }]}
                 onPress={handleAdd}
               >
-                <Text style={[styles.modalBtnText, { color: '#fff' }]}>Add</Text>
+                <Text style={[styles.modalBtnText, { color: colors.onPrimary }]}>Add</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -277,8 +277,8 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     marginBottom: 48,
   },
-  bigCounterNumber: { color: '#fff', fontSize: 56, fontWeight: '700' },
-  bigCounterLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 },
+  bigCounterNumber: { fontSize: 56, fontWeight: '700' },
+  bigCounterLabel: { fontSize: 13, marginTop: 4 },
   progressBar: {
     width: '80%',
     height: 6,
@@ -311,8 +311,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '100%',
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 24,
+    borderWidth: 1,
   },
   modalTitle: { fontSize: 18, fontWeight: '600', marginBottom: 16, textAlign: 'center' },
   modalInput: {

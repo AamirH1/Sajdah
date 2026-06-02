@@ -140,7 +140,7 @@ export default function HijriScreen() {
     ? [colors.background, colors.surfaceAlt]
     : [colors.primarySoft, colors.background];
 
-  const sourceLabel = todayHijri ? (todayHijri.source === 'api' ? 'Live from UmmahAPI' : 'Cached result') : 'Loading';
+  const sourceLabel = todayHijri ? (todayHijri.source === 'api' ? 'Updated today' : 'Saved result') : 'Loading';
 
   if (!canUseHijri) {
     return (
@@ -178,14 +178,14 @@ export default function HijriScreen() {
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>
-          <Text style={[typography.xs, { color: colors.textSecondary, letterSpacing: 1 }]}>CALENDAR</Text>
-          <Text style={[typography.title, { color: colors.textPrimary, marginTop: 2 }]}>Hijri</Text>
+          <Text style={[typography.xs, { color: colors.textLabel, letterSpacing: 1.5 }]}>CALENDAR</Text>
+          <Text style={[typography.title, { color: colors.screenTextPrimary, marginTop: 2 }]}>Hijri</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <Text style={[typography.label, { color: colors.textSecondary, marginBottom: spacing.lg }]}>
+        <Text style={[typography.label, { color: colors.screenTextSecondary, marginBottom: spacing.lg }]}>
           Convert dates, browse Islamic months, and keep the current Hijri date at a glance.
         </Text>
 

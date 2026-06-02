@@ -105,11 +105,11 @@ export default function LocationPickerScreen() {
         activeOpacity={0.7}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color={colors.onPrimary} size="small" />
         ) : (
-          <Ionicons name="navigate" size={20} color="#fff" />
+          <Ionicons name="navigate" size={20} color={colors.onPrimary} />
         )}
-        <Text style={styles.gpsBtnText}>
+        <Text style={[styles.gpsBtnText, { color: colors.onPrimary }]}>
           {loading ? 'Getting location...' : 'Use GPS Location'}
         </Text>
       </TouchableOpacity>
@@ -123,7 +123,7 @@ export default function LocationPickerScreen() {
       </View>
 
       {/* City List */}
-      <Text style={[styles.sectionLabel, { color: colors.onSurfaceSecondary }]}>SELECT A CITY</Text>
+      <Text style={[styles.sectionLabel, { color: colors.textLabel }]}>SELECT A CITY</Text>
       <FlatList
         testID="city-list"
         data={CITIES}
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   backBtn: { padding: spacing.xs },
   headerTitle: { ...typography.bodyBold },
   gpsBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', margin: spacing.lg, padding: spacing.lg, borderRadius: radius.xl, gap: spacing.sm },
-  gpsBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  gpsBtnText: { fontWeight: '700', fontSize: 16 },
   currentSection: { flexDirection: 'row', alignItems: 'center', marginHorizontal: spacing.lg, padding: spacing.lg, borderRadius: radius.xl, borderWidth: 1, gap: spacing.sm, marginBottom: spacing.lg },
   currentText: { ...typography.bodyBold },
   sectionLabel: { ...typography.xs, fontWeight: '700', letterSpacing: 1, paddingHorizontal: spacing.lg, marginBottom: spacing.sm },

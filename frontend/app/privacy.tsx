@@ -20,24 +20,24 @@ export default function PrivacyScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <Ionicons name="shield-checkmark-outline" size={48} color={colors.primary} style={{ alignSelf: 'center', marginBottom: spacing.lg }} />
-        <Text style={[styles.bodyText, { color: colors.onSurfaceSecondary }]}>
+        <Text style={[styles.bodyText, { color: colors.screenTextSecondary }]}>
           <Text style={{ fontWeight: 'bold' }}>Last Updated: {new Date().toLocaleDateString()}</Text>
           {"\n\n"}
-          Your privacy is critically important to us. Sajdah ("the App") is designed to respect your device data and operates primarily offline to ensure your personal information remains secure.
+          Your privacy is critically important to us. Sajdah (&quot;the App&quot;) is designed to respect your device data and operates primarily offline to ensure your personal information remains secure.
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.onSurface }}>1. Information Collection</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>1. Information Collection</Text>
           {"\n"}
           We do not require you to create an account or provide personally identifiable information (such as your name, email, or phone number) to use the core features of the App. 
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.onSurface }}>2. Location Data</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>2. Location Data</Text>
           {"\n"}
-          To provide accurate prayer times and Qibla direction, the App requires access to your device's location. This location data is processed locally on your device and is not transmitted to or stored on our servers.
+          To provide accurate prayer times and Qibla direction, the App requires access to your device&apos;s location. This location data is processed locally on your device and is not transmitted to or stored on our servers.
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.onSurface }}>3. Cloud Backup & Sync</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>3. Cloud Backup & Sync</Text>
           {"\n"}
-          If you utilize the Cloud Backup & Sync feature to back up your preferences and Tasbih counts, we generate a random, anonymous Device ID. The data synced using this ID is kept strictly confidential, is not linked to your identity, and is not shared with third parties.
+          If you utilize the Cloud Backup & Sync feature to back up your preferences and Tasbih counts, we generate a random, anonymous Device ID. The data synced using this ID is kept strictly confidential, isn&apos;t linked to your identity, and is not shared with third parties.
           {"\n\n"}
-          <Text style={{ fontWeight: 'bold', color: colors.onSurface }}>4. Changes to This Policy</Text>
+          <Text style={{ fontWeight: 'bold', color: colors.screenTextPrimary }}>4. Changes to This Policy</Text>
           {"\n"}
           We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
           {"\n\n"}

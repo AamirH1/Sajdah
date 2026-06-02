@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet, ViewStyle, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet, ViewStyle, ActivityIndicator, StyleProp } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from './hooks/useTheme';
 
 // 1. Screen Container
-export const ScreenContainer = ({ children, scrollable = true, heroGradient, style }: { children: React.ReactNode, scrollable?: boolean, heroGradient?: readonly [string, string], style?: ViewStyle }) => {
+export const ScreenContainer = ({ children, scrollable = true, heroGradient, style }: { children: React.ReactNode, scrollable?: boolean, heroGradient?: readonly [string, string], style?: StyleProp<ViewStyle> }) => {
   const { colors } = useTheme();
   const content = scrollable ? (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, style]}>{children}</ScrollView>
@@ -31,12 +31,15 @@ export const ScreenContainer = ({ children, scrollable = true, heroGradient, sty
 
 // 2. Screen Header
 export const ScreenHeader = ({ title, subtitle, rightAction }: { title: string, subtitle?: string, rightAction?: React.ReactNode }) => {
-  const { colors, typography, spacing } = useTheme();
+  const { colors, typography, spacing, isDark } = useTheme();
+  const titleColor = isDark && colors.screenTextPrimary ? colors.screenTextPrimary : colors.textPrimary;
+  const subtitleColor = isDark && colors.screenTextSecondary ? colors.screenTextSecondary : colors.textSecondary;
+
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md, zIndex: 10 }}>
       <View>
-        <Text style={[typography.headline, { color: colors.textPrimary }]}>{title}</Text>
-        {subtitle && <Text style={[typography.label, { color: colors.textSecondary, marginTop: 2 }]}>{subtitle}</Text>}
+        <Text style={[typography.headline, { color: titleColor }]}>{title}</Text>
+        {subtitle && <Text style={[typography.label, { color: subtitleColor, marginTop: 2 }]}>{subtitle}</Text>}
       </View>
       {rightAction && <View>{rightAction}</View>}
     </View>
@@ -44,12 +47,18 @@ export const ScreenHeader = ({ title, subtitle, rightAction }: { title: string, 
 };
 
 // 3. Card
-export const Card = ({ children, style, elevated = false }: { children: React.ReactNode, style?: ViewStyle, elevated?: boolean }) => {
-  const { colors, radius, spacing, shadows } = useTheme();
+export const Card = ({ children, style, elevated = false, testID }: { children: React.ReactNode, style?: StyleProp<ViewStyle>, elevated?: boolean, testID?: string }) => {
+  const { colors, radius, spacing, shadows, isDark } = useTheme();
   return (
-    <View style={[
-      { backgroundColor: colors.surface, borderRadius: radius.xl, padding: spacing.lg, borderColor: colors.border, borderWidth: elevated ? 0 : 1 },
-      elevated && shadows.md,
+    <View testID={testID} style={[
+      {
+        backgroundColor: isDark ? colors.cardBackground || colors.surface : colors.surface,
+        borderRadius: isDark ? 20 : radius.xl,
+        padding: isDark ? 24 : spacing.lg,
+        borderColor: isDark ? colors.cardBorder || colors.border : colors.border,
+        borderWidth: isDark ? 1 : elevated ? 0 : 1,
+      },
+      elevated && !isDark && shadows.md,
       style
     ]}>
       {children}
@@ -98,10 +107,11 @@ export const Button = ({ onPress, label, variant = 'primary', fullWidth = true, 
 
 // 5. Icon Button
 export const IconButton = ({ icon, onPress, color, size = 24, style }: { icon: keyof typeof Ionicons.glyphMap, onPress: () => void, color?: string, size?: number, style?: ViewStyle }) => {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const iconColor = color || (isDark && colors.screenTextPrimary ? colors.screenTextPrimary : colors.textPrimary);
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={[{ justifyContent: 'center', alignItems: 'center' }, style]}>
-      <Ionicons name={icon} size={size} color={color || colors.textPrimary} />
+      <Ionicons name={icon} size={size} color={iconColor} />
     </TouchableOpacity>
   );
 };

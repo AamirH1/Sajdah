@@ -9,10 +9,13 @@ import { ScreenContainer, ScreenHeader } from '../../src/ui/components';
 import { useSettings } from '../../src/store/useSettings';
 import { useEntitlements } from '../../src/store/useEntitlements';
 import { getDeviceId, syncBackup } from '../../src/services/api';
-import { requestNotificationPermission, schedulePrayerNotificationsFromSettings } from '../../src/services/notifications';
+import {
+  requestNotificationPermission,
+  schedulePrayerNotificationsFromSettings,
+} from '../../src/services/notifications';
 
 export default function SettingsScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const settings = useSettings();
   const router = useRouter();
   const plan = useEntitlements((state) => state.plan);
@@ -31,61 +34,51 @@ export default function SettingsScreen() {
   const methods = ['Karachi', 'MuslimWorldLeague', 'Egyptian', 'UmmAlQura', 'Dubai', 'NorthAmerica'] as const;
   const madhhabOptions = ['Hanafi', 'Shafi'] as const;
   const themeOptions = ['light', 'dark', 'system'] as const;
-  const languages = ['english', 'urdu'] as const;
-  const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'] as const;
-  const comingSoonLanguages = new Set(['telugu', 'kannada']);
+const languages = ['english', 'urdu'] as const;
+const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'] as const;
+const comingSoonLanguages = new Set(['telugu', 'kannada']);
 
   useEffect(() => {
     getDeviceId().then(setDeviceId);
   }, []);
 
-  useEffect(() => {
-    let active = true;
+  const handleNotificationToggle = async (
+    prayer: keyof typeof settings.notifications,
+    enabled: boolean
+  ) => {
+    if (enabled) {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        setNotificationStatus({ message: 'Notification permission was not granted.', success: false });
+        return;
+      }
+    }
 
-    const syncNotifications = async () => {
+    settings.setNotification(prayer, enabled);
+
+    if (enabled) {
       setIsSyncingNotifications(true);
       try {
-        const granted = await requestNotificationPermission();
-        if (!granted) {
-          if (active) {
-            setNotificationStatus({ message: 'Enable notifications to receive prayer reminders.', success: false });
-          }
-          return;
-        }
-
-        await schedulePrayerNotificationsFromSettings({
-          latitude: settings.location.latitude,
-          longitude: settings.location.longitude,
-          calculationMethod: settings.calculationMethod,
-          madhhab: settings.madhhab,
-          offsets: settings.offsets,
-          notifications: settings.notifications,
-        });
+        await schedulePrayerNotificationsFromSettings(
+          {
+            latitude: settings.location.latitude,
+            longitude: settings.location.longitude,
+            calculationMethod: settings.calculationMethod,
+            madhhab: settings.madhhab,
+            offsets: settings.offsets,
+            notifications: { ...settings.notifications, [prayer]: enabled },
+          },
+          { requestPermission: false }
+        );
+        setNotificationStatus({ message: 'Prayer reminders scheduled.', success: true });
       } catch (error) {
         console.warn('Unable to sync prayer notifications:', error);
-        if (active) {
-          setNotificationStatus({ message: 'Notification sync failed.', success: false });
-        }
+        setNotificationStatus({ message: 'Unable to schedule reminders. Use a development build for reliable testing.', success: false });
       } finally {
-        if (active) {
-          setIsSyncingNotifications(false);
-        }
+        setIsSyncingNotifications(false);
       }
-    };
-
-    syncNotifications();
-
-    return () => {
-      active = false;
-    };
-  }, [
-    settings.location.latitude,
-    settings.location.longitude,
-    settings.calculationMethod,
-    settings.madhhab,
-    settings.offsets,
-    settings.notifications,
-  ]);
+    }
+  };
 
   const handlePingBackend = async () => {
     setIsPinging(true);
@@ -132,7 +125,7 @@ export default function SettingsScreen() {
 
         {/* Prayer Settings */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>PRAYER</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>PRAYER</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Location</Text>
@@ -156,7 +149,7 @@ export default function SettingsScreen() {
               </Link>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Calculation Method</Text>
@@ -186,7 +179,7 @@ export default function SettingsScreen() {
               })}
             </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Hijri Calendar</Text>
@@ -215,7 +208,7 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Madhhab (Asr)</Text>
@@ -252,7 +245,7 @@ export default function SettingsScreen() {
 
         {/* Notifications */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>NOTIFICATIONS</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>NOTIFICATIONS</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             {(['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const).map((prayer) => (
               <View key={prayer}>
@@ -263,12 +256,12 @@ export default function SettingsScreen() {
                   <Switch
                     testID={`notification-${prayer}`}
                     value={settings.notifications[prayer]}
-                    onValueChange={(v) => settings.setNotification(prayer, v)}
+                    onValueChange={(v) => handleNotificationToggle(prayer, v)}
                     trackColor={{ false: colors.border, true: colors.primary }}
                     thumbColor={colors.surface}
                   />
                 </View>
-                <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                <View style={[styles.divider, { backgroundColor: colors.divider }]} />
               </View>
             ))}
             <View style={styles.switchRow}>
@@ -286,7 +279,7 @@ export default function SettingsScreen() {
                 value={settings.notifications.smartFajr}
                 onValueChange={(v) => {
                   if (canUseSmartFajr) {
-                    settings.setNotification('smartFajr', v);
+                    handleNotificationToggle('smartFajr', v);
                   }
                 }}
                 trackColor={{ false: colors.border, true: colors.primary }}
@@ -304,7 +297,7 @@ export default function SettingsScreen() {
 
         {/* Quran */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>QURAN</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>QURAN</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Translation</Text>
@@ -377,7 +370,7 @@ export default function SettingsScreen() {
               ))}
             </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Script</Text>
@@ -414,7 +407,7 @@ export default function SettingsScreen() {
 
         {/* Appearance */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>APPEARANCE</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>APPEARANCE</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Theme</Text>
@@ -451,25 +444,25 @@ export default function SettingsScreen() {
 
         {/* Account / Pro */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>ACCOUNT</Text>
-          <View style={[styles.proCard, { backgroundColor: plan === 'pro' ? colors.primary : colors.surfaceAlt, borderColor: plan === 'pro' ? colors.primary : colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>ACCOUNT</Text>
+          <View style={[styles.proCard, { backgroundColor: plan === 'pro' && !isDark ? colors.primary : colors.surfaceAlt, borderColor: plan === 'pro' ? colors.primary : colors.border }]}>
             <View style={styles.proCardContent}>
-              <Ionicons name={plan === 'pro' ? 'star' : 'star-outline'} size={24} color={plan === 'pro' ? colors.onPrimary : colors.primary} />
+              <Ionicons name={plan === 'pro' ? 'star' : 'star-outline'} size={24} color={plan === 'pro' && !isDark ? colors.onPrimary : colors.primary} />
               <View style={{ marginLeft: spacing.md, flex: 1 }}>
-                <Text style={[styles.planTitle, { color: plan === 'pro' ? colors.onPrimary : colors.textPrimary }]}>
+                <Text style={[styles.planTitle, { color: plan === 'pro' && !isDark ? colors.onPrimary : colors.textPrimary }]}>
                   {plan === 'pro' ? 'Pro Plan Active' : 'Free Plan'}
                 </Text>
-                <Text style={[styles.planDesc, { color: plan === 'pro' ? 'rgba(255,255,255,0.78)' : colors.textMuted }]}>
+                <Text style={[styles.planDesc, { color: plan === 'pro' && !isDark ? 'rgba(255,255,255,0.78)' : colors.textMuted }]}>
                   {plan === 'pro' ? 'All features unlocked' : 'Upgrade for full access'}
                 </Text>
               </View>
             </View>
             <TouchableOpacity
               testID="toggle-plan-btn"
-              style={[styles.upgradeBtn, { backgroundColor: plan === 'pro' ? 'rgba(255,255,255,0.2)' : colors.primary }]}
+              style={[styles.upgradeBtn, { backgroundColor: plan === 'pro' && !isDark ? 'rgba(255,255,255,0.2)' : colors.primary }]}
               onPress={togglePlan}
             >
-              <Text style={[styles.upgradeBtnText, { color: plan === 'pro' ? colors.onPrimary : '#fff' }]}>
+              <Text style={[styles.upgradeBtnText, { color: colors.onPrimary }]}>
                 {plan === 'pro' ? 'Switch to Free' : 'Upgrade to Pro'}
               </Text>
             </TouchableOpacity>
@@ -486,7 +479,7 @@ export default function SettingsScreen() {
                  </View>
                </View>
              </View>
-             <View style={[styles.divider, { backgroundColor: colors.border }]} />
+             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
             <TouchableOpacity 
               style={{ alignItems: 'center', paddingVertical: spacing.xs }}
               onPress={() => Alert.alert('Coming Soon', 'Email linking for cross-device sync will be available in a future update!')}
@@ -498,7 +491,7 @@ export default function SettingsScreen() {
 
         {/* Privacy & Legal */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>PRIVACY & LEGAL</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>PRIVACY & LEGAL</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <Link href="/privacy" asChild>
               <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
@@ -510,7 +503,7 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             </Link>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <Link href="/terms" asChild>
               <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
@@ -522,7 +515,7 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             </Link>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <Link href="/analytics" asChild>
               <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
@@ -538,7 +531,7 @@ export default function SettingsScreen() {
 
         {/* Support & Feedback */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>SUPPORT & FEEDBACK</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>SUPPORT & FEEDBACK</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <TouchableOpacity onPress={() => {}} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
@@ -548,7 +541,7 @@ export default function SettingsScreen() {
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com?subject=Sajdah%20Feedback')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
@@ -558,7 +551,7 @@ export default function SettingsScreen() {
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com?subject=Sajdah%20Bug%20Report')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
@@ -568,7 +561,7 @@ export default function SettingsScreen() {
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
@@ -582,7 +575,7 @@ export default function SettingsScreen() {
 
         {/* Developer / Backend */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>DEVELOPER</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>DEVELOPER</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Backend Sync</Text>
@@ -620,8 +613,8 @@ const styles = StyleSheet.create({
 
   title: { fontSize: 28, fontWeight: '700', marginBottom: 24 },
   section: { marginBottom: 40 },
-  sectionTitle: { fontSize: 12, fontWeight: '700', letterSpacing: 1, marginBottom: 10, paddingLeft: 4 },
-  card: { borderRadius: 20, padding: 16, borderWidth: 1 },
+  sectionTitle: { fontSize: 11, fontWeight: '600', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10, paddingLeft: 4 },
+  card: { borderRadius: 20, padding: 24, borderWidth: 1 },
 
   settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
   settingLabel: { ...typography.body, fontWeight: '500' },
@@ -654,7 +647,7 @@ const styles = StyleSheet.create({
   themeChoiceText: { fontSize: 12, fontWeight: '600' },
   proBadgeInline: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
   proText: { fontSize: 10, fontWeight: '700' },
-  proCard: { borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1 },
+  proCard: { borderRadius: 20, padding: 24, borderWidth: 1 },
   proCardContent: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
   planTitle: { ...typography.body, fontWeight: '700' },
   planDesc: { ...typography.label, marginTop: 2 },

@@ -19,6 +19,10 @@ export const useTheme = () => {
   }, []);
 
   const dynamicPrimary = useMemo(() => {
+    if (isDark) {
+      return colors.dark.primary;
+    }
+
     try {
       const lat = location?.latitude ?? 21.422487;
       const lng = location?.longitude ?? 39.826206;
@@ -27,16 +31,16 @@ export const useTheme = () => {
       
       switch (next?.name) {
         case 'fajr':
-        case 'sunrise': return isDark ? colors.dark.primary : '#d97706';
-        case 'dhuhr': return isDark ? colors.dark.primary : '#0284c7';
-        case 'asr': return isDark ? colors.dark.primary : '#0369a1';
-        case 'maghrib': return isDark ? colors.dark.primary : '#ea580c';
-        case 'isha': return isDark ? colors.dark.primary : '#4f46e5';
-        default: return isDark ? colors.dark.primary : colors.light.primary;
+        case 'sunrise': return '#d97706';
+        case 'dhuhr': return '#0284c7';
+        case 'asr': return '#0369a1';
+        case 'maghrib': return '#ea580c';
+        case 'isha': return '#4f46e5';
+        default: return colors.light.primary;
       }
     } catch {
       // Fallback to blue (Dhuhr) if calculation fails, matching the Home screen fallback
-      return isDark ? colors.dark.primary : '#0284c7';
+      return '#0284c7';
     }
   }, [now, location?.latitude, location?.longitude, calculationMethod, madhhab, offsets, isDark]);
 
@@ -52,7 +56,7 @@ export const useTheme = () => {
     typography,
     isDark,
     shadows: isDark 
-      ? { ...shadows, sm: { ...shadows.sm, shadowColor: '#000', shadowOpacity: 0.3 }, md: { ...shadows.md, shadowColor: '#000', shadowOpacity: 0.4 } } 
+      ? { none: shadows.none, sm: shadows.none, md: shadows.none } 
       : { ...shadows, sm: { ...shadows.sm, shadowColor: dynamicPrimary }, md: { ...shadows.md, shadowColor: dynamicPrimary } },
   };
 };

@@ -4,6 +4,7 @@ import { useSettings } from '../src/store/useSettings';
 import { useColorScheme } from 'react-native';
 import { useEffect } from 'react';
 import { checkOnboardingComplete } from './onboarding';
+import { usePrayerNotificationSync } from '../src/hooks/usePrayerNotificationSync';
 
 export default function RootLayout() {
   const { theme } = useSettings();
@@ -13,6 +14,7 @@ export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const navigationState = useRootNavigationState();
+  usePrayerNotificationSync();
 
   useEffect(() => {
     if (!navigationState?.key) return; // Ensure navigation tree is ready
@@ -27,7 +29,7 @@ export default function RootLayout() {
     };
 
     verifyOnboarding();
-  }, [navigationState?.key, segments]);
+  }, [navigationState?.key, router, segments]);
 
   return (
     <>

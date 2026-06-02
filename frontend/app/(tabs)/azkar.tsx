@@ -7,8 +7,10 @@ import { spacing, radius, typography } from '../../src/theme';
 import { AZKAR_CATEGORIES } from '../../src/data/azkar';
 
 export default function AzkarScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
+  const screenTitleColor = isDark ? colors.screenTextPrimary : colors.textPrimary;
+  const screenSubtitleColor = isDark ? colors.screenTextSecondary : colors.textSecondary;
 
   const renderCategory = ({ item, index }: { item: typeof AZKAR_CATEGORIES[0]; index: number }) => (
     <TouchableOpacity
@@ -17,12 +19,12 @@ export default function AzkarScreen() {
       onPress={() => router.push(`/azkar/${item.id}`)}
       activeOpacity={0.7}
     >
-      <View style={[styles.categoryIcon, { backgroundColor: item.color + '20' }]}>
-        <Ionicons name={item.icon as any} size={28} color={item.color} />
+      <View style={[styles.categoryIcon, { backgroundColor: isDark ? colors.dateBadgeBg : item.color + '20' }]}>
+        <Ionicons name={item.icon as any} size={28} color={isDark ? colors.primary : item.color} />
       </View>
       <Text style={[styles.categoryName, { color: colors.onSurface }]}>{item.name}</Text>
       <Text style={[styles.categoryArabic, { color: colors.onSurfaceSecondary }]}>{item.nameArabic}</Text>
-      <View style={[styles.countBadge, { backgroundColor: colors.surfaceElevated }]}>
+      <View style={[styles.countBadge, { backgroundColor: colors.primarySoft }]}>
         <Text style={[styles.countText, { color: colors.primary }]}>{item.count} duas</Text>
       </View>
     </TouchableOpacity>
@@ -33,8 +35,8 @@ export default function AzkarScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Azkar & Duas</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Daily Remembrance</Text>
+          <Text style={[styles.title, { color: screenTitleColor }]}>Azkar & Duas</Text>
+          <Text style={[styles.subtitle, { color: screenSubtitleColor }]}>Daily Remembrance</Text>
         </View>
         <TouchableOpacity
           testID="open-tasbih-btn"
@@ -42,8 +44,8 @@ export default function AzkarScreen() {
           onPress={() => router.push('/tasbih')}
           activeOpacity={0.7}
         >
-          <Ionicons name="radio-button-on" size={18} color="#fff" />
-          <Text style={styles.tasbihBtnText}>Tasbih</Text>
+        <Ionicons name="radio-button-on" size={18} color={colors.onPrimary} />
+        <Text style={[styles.tasbihBtnText, { color: colors.onPrimary }]}>Tasbih</Text>
         </TouchableOpacity>
       </View>
 
@@ -71,7 +73,7 @@ const styles = StyleSheet.create({
   tasbihBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   listContent: { padding: spacing.lg, paddingTop: spacing.sm },
   gridRow: { justifyContent: 'space-between', marginBottom: spacing.md },
-  categoryCard: { width: '48%', borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1, alignItems: 'center' },
+  categoryCard: { width: '48%', borderRadius: 20, padding: 24, borderWidth: 1, alignItems: 'center' },
   categoryIcon: { width: 56, height: 56, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm },
   categoryName: { ...typography.small, fontWeight: '700', textAlign: 'center', marginBottom: 2 },
   categoryArabic: { ...typography.xs, textAlign: 'center', marginBottom: spacing.sm },

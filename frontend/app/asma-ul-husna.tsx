@@ -116,8 +116,8 @@ export default function AsmaUlHusnaScreen() {
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <IconButton icon="arrow-back" onPress={() => router.back()} />
         <View style={styles.headerCenter}>
-          <Text style={[typography.xs, { color: colors.textSecondary, letterSpacing: 1 }]}>FEATURE</Text>
-          <Text style={[typography.title, { color: colors.textPrimary, marginTop: 2 }]}>99 Names of Allah</Text>
+          <Text style={[typography.xs, { color: colors.textLabel, letterSpacing: 1.5 }]}>FEATURE</Text>
+          <Text style={[typography.title, { color: colors.screenTextPrimary, marginTop: 2 }]}>99 Names of Allah</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -131,7 +131,7 @@ export default function AsmaUlHusnaScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={(
           <View>
-            <Text style={[typography.label, { color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.lg }]}>
+            <Text style={[typography.label, { color: colors.screenTextSecondary, lineHeight: 22, marginBottom: spacing.lg }]}>
               Get all 99 beautiful names of Allah with Arabic, transliteration, and meanings.
             </Text>
 
@@ -258,7 +258,7 @@ export default function AsmaUlHusnaScreen() {
           !loading && !error ? (
             <Card style={[styles.emptyCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
               <Text style={[typography.label, { color: colors.textSecondary }]}>
-                No names were returned by the API.
+                No names were found right now.
               </Text>
             </Card>
           ) : null

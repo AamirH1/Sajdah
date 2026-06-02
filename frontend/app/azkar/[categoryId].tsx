@@ -32,11 +32,11 @@ export default function AzkarDetailScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity testID="azkar-back-btn" onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={colors.screenTextPrimary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>{category?.name || 'Azkar'}</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>{category?.nameArabic}</Text>
+          <Text style={[styles.headerTitle, { color: colors.screenTextPrimary }]}>{category?.name || 'Azkar'}</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.screenTextSecondary }]}>{category?.nameArabic}</Text>
         </View>
         <View style={{ width: 32 }} />
       </View>
@@ -55,11 +55,11 @@ export default function AzkarDetailScreen() {
             >
               {/* Counter Badge */}
               <View style={styles.counterRow}>
-                <View style={[styles.indexBadge, { backgroundColor: category?.color + '20' }]}>
-                  <Text style={[styles.indexText, { color: category?.color }]}>{index + 1}</Text>
+                <View style={[styles.indexBadge, { backgroundColor: colors.surfaceElevated }]}>
+                  <Text style={[styles.indexText, { color: colors.primary }]}>{index + 1}</Text>
                 </View>
-                <View style={[styles.repeatBadge, { backgroundColor: isDone ? '#D1FAE5' : colors.accentLight }]}>
-                  <Text style={[styles.repeatText, { color: isDone ? '#059669' : colors.primary }]}>
+                <View style={[styles.repeatBadge, { backgroundColor: colors.accentLight }]}>
+                  <Text style={[styles.repeatText, { color: colors.primary }]}>
                     {completed}/{item.repeat}
                   </Text>
                 </View>
@@ -69,25 +69,25 @@ export default function AzkarDetailScreen() {
               <Text style={[styles.arabicText, { color: colors.textPrimary }]}>{item.arabic}</Text>
 
               {/* Transliteration */}
-              <Text style={[styles.transliteration, { color: colors.primary }]}>{item.transliteration}</Text>
+              <Text style={[styles.transliteration, { color: colors.textSecondary }]}>{item.transliteration}</Text>
 
               {/* Translation */}
-              <Text style={[styles.translation, { color: colors.textSecondary }]}>{item.translation}</Text>
+              <Text style={[styles.translation, { color: colors.textPrimary }]}>{item.translation}</Text>
 
               {/* Reference */}
-              <Text style={[styles.reference, { color: colors.textSecondary }]}>[{item.reference}]</Text>
+              <Text style={[styles.reference, { color: colors.textMuted }]}>— {item.reference}</Text>
 
               {/* Actions */}
               <View style={styles.actionRow}>
                 <TouchableOpacity
                   testID={`dhikr-tap-${item.id}`}
-                  style={[styles.tapBtn, { backgroundColor: isDone ? colors.success : colors.primary }]}
+                  style={[styles.tapBtn, { backgroundColor: colors.primary }]}
                   onPress={() => handleTap(item.id, item.repeat)}
                   disabled={isDone}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name={isDone ? 'checkmark-circle' : 'add'} size={20} color="#fff" />
-                  <Text style={styles.tapBtnText}>{isDone ? 'Done' : 'Tap'}</Text>
+                  <Ionicons name={isDone ? 'checkmark-circle' : 'add'} size={20} color={colors.onPrimary} />
+                  <Text style={[styles.tapBtnText, { color: colors.onPrimary }]}>{isDone ? 'Done' : 'Tap'}</Text>
                 </TouchableOpacity>
                 {completed > 0 && (
                   <TouchableOpacity
@@ -115,18 +115,18 @@ const styles = StyleSheet.create({
   headerTitle: { ...typography.bodyBold },
   headerSubtitle: { ...typography.xs },
   listContent: { padding: spacing.lg },
-  dhikrCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, borderWidth: 1 },
+  dhikrCard: { borderRadius: 20, padding: 24, marginBottom: spacing.md, borderWidth: 1 },
   counterRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
-  indexBadge: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  indexText: { fontSize: 12, fontWeight: '700' },
+  indexBadge: { width: 52, height: 52, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  indexText: { fontSize: 22, fontWeight: '700' },
   repeatBadge: { paddingHorizontal: spacing.md, paddingVertical: 4, borderRadius: radius.full },
   repeatText: { fontSize: 12, fontWeight: '700' },
-  arabicText: { fontSize: 22, lineHeight: 40, textAlign: 'right', marginBottom: spacing.md },
-  transliteration: { fontSize: 14, fontStyle: 'italic', marginBottom: spacing.sm },
-  translation: { fontSize: 14, lineHeight: 22, marginBottom: spacing.sm },
-  reference: { fontSize: 11, marginBottom: spacing.md },
+  arabicText: { fontSize: 30, lineHeight: 56, textAlign: 'right', marginBottom: spacing.md },
+  transliteration: { fontSize: 15, fontStyle: 'italic', marginBottom: spacing.sm },
+  translation: { fontSize: 16, lineHeight: 24, marginBottom: spacing.sm },
+  reference: { fontSize: 13, fontStyle: 'italic', textAlign: 'right', marginBottom: spacing.md },
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   tapBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radius.full, gap: spacing.xs },
-  tapBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  tapBtnText: { fontWeight: '700', fontSize: 14 },
   resetBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 });
