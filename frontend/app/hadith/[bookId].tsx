@@ -1,5 +1,16 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+  TextInput,
+  Pressable,
+  Animated,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
@@ -33,6 +44,91 @@ const resolveParam = (value: string | string[] | undefined) => {
   if (Array.isArray(value)) return value[0];
   return value;
 };
+
+const hexToRgba = (hex: string, alpha: number) => {
+  const normalized = hex.replace('#', '');
+  if (normalized.length !== 6) return hex;
+  const value = parseInt(normalized, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const MenuOptionCard = memo(function MenuOptionCard({
+  testID,
+  onPress,
+  icon,
+  title,
+  subtitle,
+  colors,
+  typography,
+  accentColor,
+}: {
+  testID: string;
+  onPress?: () => void;
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  subtitle: string;
+  colors: ReturnType<typeof useTheme>['colors'];
+  typography: ReturnType<typeof useTheme>['typography'];
+  accentColor: string;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const animateTo = useCallback(
+    (toValue: number) => {
+      Animated.spring(scale, {
+        toValue,
+        speed: 28,
+        bounciness: 0,
+        useNativeDriver: true,
+      }).start();
+    },
+    [scale]
+  );
+
+  return (
+    <Pressable
+      testID={testID}
+      onPress={onPress}
+      onPressIn={() => animateTo(0.97)}
+      onPressOut={() => animateTo(1)}
+      style={({ pressed }) => [styles.menuPressable, pressed && styles.menuPressed]}
+    >
+      <Animated.View
+        style={[
+          styles.menuOptionCard,
+          styles.menuCardShadow,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            transform: [{ scale }],
+          },
+        ]}
+      >
+        <View style={styles.menuOptionBody}>
+          <View style={[styles.menuIconWrap, { backgroundColor: hexToRgba(accentColor, 0.12) }]}>
+            <Ionicons name={icon} size={22} color={accentColor} />
+          </View>
+          <View style={styles.menuOptionText}>
+            <Text style={[typography.body, styles.menuTitle, { color: colors.textPrimary }]} numberOfLines={1}>
+              {title}
+            </Text>
+            <Text
+              style={[typography.body, styles.menuSubtitle, { color: colors.textSecondary }]}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {subtitle}
+            </Text>
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={styles.menuChevron} />
+      </Animated.View>
+    </Pressable>
+  );
+});
 
 const HadithItemCard = memo(function HadithItemCard({
   item,
@@ -115,18 +211,16 @@ function CollectionShell({
   const { colors, typography } = useTheme();
   const meta = COLLECTION_META[collection] || COLLECTION_META.bukhari;
   const subtitleByMode: Record<typeof mode, string> = {
-    menu: 'Choose how you want to read',
-    reader: 'Read one hadith at a time',
-    list: 'Browse the full collection',
-    search: 'Search hadith',
+    menu: 'Choose what feels right',
+    reader: 'A calm way to begin',
+    list: 'See more without rushing',
+    search: 'Find a hadith quickly',
   };
 
   return (
     <ScreenContainer scrollable={false}>
-      <ScreenHeader
-        title={meta.name}
-        subtitle={subtitleByMode[mode]}
-        rightAction={
+      {mode === MENU_MODE || mode === READER_MODE || mode === SEARCH_MODE ? (
+        <View style={styles.menuTopBar}>
           <TouchableOpacity
             testID="hadith-book-home-btn"
             onPress={onClose}
@@ -135,8 +229,23 @@ function CollectionShell({
           >
             <Ionicons name="close" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
-        }
-      />
+        </View>
+      ) : (
+        <ScreenHeader
+          title={meta.name}
+          subtitle={subtitleByMode[mode]}
+          rightAction={
+            <TouchableOpacity
+              testID="hadith-book-home-btn"
+              onPress={onClose}
+              style={styles.headerAction}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Ionicons name="close" size={24} color={colors.textPrimary} />
+            </TouchableOpacity>
+          }
+        />
+      )}
 
       <View style={styles.shellContent}>
         {mode === MENU_MODE ? (
@@ -145,121 +254,101 @@ function CollectionShell({
             contentContainerStyle={styles.menuScrollContent}
             showsVerticalScrollIndicator={false}
           >
+            <View style={styles.menuIntro}>
+              <Text style={[styles.bannerTitle, { color: colors.textPrimary, marginTop: 0 }]}>{meta.name}</Text>
+              <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
+                {subtitleByMode.menu}
+              </Text>
+            </View>
             <Card
-              elevated
-              style={[styles.menuHeroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[
+                styles.menuHeroCard,
+                {
+                  backgroundColor: meta.color,
+                  borderColor: meta.color,
+                },
+              ]}
             >
-              <Text style={[typography.label, { color: colors.textSecondary }]}>Choose your reading style</Text>
-              <Text style={[typography.title, { color: colors.textPrimary, marginTop: 6 }]}>{meta.name}</Text>
-              <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 8 }]}>{meta.arabic}</Text>
-              <Text style={[typography.body, { color: colors.textSecondary, marginTop: 14, lineHeight: 22 }]}>
+              <Text style={[typography.xs, { color: 'rgba(255,255,255,0.82)', marginTop: 8 }]}>{meta.arabic}</Text>
+              <Text style={[typography.body, { color: 'rgba(255,255,255,0.82)', marginTop: 14, lineHeight: 22 }]}>
                 Tap the option below that feels right for you.
               </Text>
             </Card>
 
             <View style={styles.menuOptions}>
-              <TouchableOpacity
+              <MenuOptionCard
                 testID="open-reader-mode-btn"
                 onPress={onOpenReader}
-                activeOpacity={0.85}
-                style={[styles.menuOptionCard, styles.menuCardShadow, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              >
-                <View style={styles.menuOptionBody}>
-                  <View style={[styles.menuIconWrap, { backgroundColor: colors.primarySoft }]}>
-                    <Ionicons name="book-outline" size={22} color={colors.primary} />
-                  </View>
-                  <View style={styles.menuOptionText}>
-                    <Text style={[typography.label, { color: colors.textPrimary }]}>Read one hadith at a time</Text>
-                    <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 4 }]}>
-                      Best for a calm, simple reading experience.
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-              </TouchableOpacity>
+                icon="book-outline"
+                title="Read one hadith at a time"
+                subtitle="Best for a calm, simple reading experience."
+                colors={colors}
+                typography={typography}
+                accentColor={meta.color}
+              />
 
-              <TouchableOpacity
+              <MenuOptionCard
                 testID="open-list-mode-btn"
                 onPress={onOpenList}
-                activeOpacity={0.85}
-                style={[styles.menuOptionCard, styles.menuCardShadow, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              >
-                <View style={styles.menuOptionBody}>
-                  <View style={[styles.menuIconWrap, { backgroundColor: colors.primarySoft }]}>
-                    <Ionicons name="list-outline" size={22} color={colors.primary} />
-                  </View>
-                  <View style={styles.menuOptionText}>
-                    <Text style={[typography.label, { color: colors.textPrimary }]}>See all hadith</Text>
-                    <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 4 }]}>
-                      Browse the collection in pages with smooth scrolling.
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-              </TouchableOpacity>
+                icon="list-outline"
+                title="See all hadith"
+                subtitle="See the full list a few at a time."
+                colors={colors}
+                typography={typography}
+                accentColor={meta.color}
+              />
 
-              <TouchableOpacity
+              <MenuOptionCard
                 testID="open-search-mode-btn"
                 onPress={onOpenSearch}
-                activeOpacity={0.85}
-                style={[styles.menuOptionCard, styles.menuCardShadow, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              >
-                <View style={styles.menuOptionBody}>
-                  <View style={[styles.menuIconWrap, { backgroundColor: colors.primarySoft }]}>
-                    <Ionicons name="search" size={22} color={colors.primary} />
-                  </View>
-                  <View style={styles.menuOptionText}>
-                    <Text style={[typography.label, { color: colors.textPrimary }]}>Search hadith</Text>
-                    <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 4 }]}>
-                      Find a hadith by word, narrator, or chapter.
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-              </TouchableOpacity>
+                icon="search"
+                title="Search hadith"
+                subtitle="Find a hadith by word, narrator, or chapter."
+                colors={colors}
+                typography={typography}
+                accentColor={meta.color}
+              />
             </View>
           </ScrollView>
         ) : mode === READER_MODE ? (
-          <Card style={[styles.readerTitleCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-            <View style={styles.readerTitleTopRow}>
-              <View>
-                <Text style={[typography.label, { color: colors.textSecondary }]}>Reader mode</Text>
-                <Text style={[typography.title, { color: colors.textPrimary, marginTop: 4 }]}>{meta.name}</Text>
-              </View>
-              <View style={[styles.modePill, { backgroundColor: colors.primarySoft }]}>
-                <Text style={[typography.xs, { color: colors.primary, fontWeight: '700' }]}>One by one</Text>
-              </View>
+          <>
+            <View style={styles.readerIntro}>
+              <Text style={[styles.bannerTitle, { color: colors.textPrimary, marginTop: 0 }]}>{meta.name}</Text>
+              <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
+                {subtitleByMode.reader}
+              </Text>
             </View>
-            <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 8 }]}>{meta.arabic}</Text>
-          </Card>
+            <Card style={[styles.readerTitleCard, { backgroundColor: meta.color, borderColor: meta.color }]}>
+              <View style={styles.readerTitleTopRow}>
+                <View style={[styles.modePill, { backgroundColor: 'rgba(255,255,255,0.16)' }]}>
+                  <Text style={[typography.xs, { color: '#fff', fontWeight: '700' }]}>One by one</Text>
+                </View>
+              </View>
+              <Text style={[typography.xs, { color: 'rgba(255,255,255,0.82)', marginTop: 8 }]}>{meta.arabic}</Text>
+            </Card>
+          </>
         ) : mode === SEARCH_MODE ? (
-          <Card style={[styles.readerTitleCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-            <View style={styles.readerTitleTopRow}>
-              <View>
-                <Text style={[typography.label, { color: colors.textSecondary }]}>Search mode</Text>
-                <Text style={[typography.title, { color: colors.textPrimary, marginTop: 4 }]}>{meta.name}</Text>
-              </View>
-              <View style={[styles.modePill, { backgroundColor: colors.primarySoft }]}>
-                <Text style={[typography.xs, { color: colors.primary, fontWeight: '700' }]}>Find fast</Text>
-              </View>
+          <>
+            <View style={styles.searchIntro}>
+              <Text style={[styles.bannerTitle, { color: colors.textPrimary, marginTop: 0 }]}>{meta.name}</Text>
+              <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
+                {subtitleByMode.search}
+              </Text>
             </View>
-            <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 8 }]}>{meta.arabic}</Text>
-          </Card>
+            <Card style={[styles.readerTitleCard, { backgroundColor: meta.color, borderColor: meta.color }]}>
+              <View style={styles.readerTitleTopRow}>
+                <View style={[styles.modePill, { backgroundColor: 'rgba(255,255,255,0.16)' }]}>
+                  <Text style={[typography.xs, { color: '#fff', fontWeight: '700' }]}>Find fast</Text>
+                </View>
+              </View>
+            </Card>
+          </>
         ) : (
           <>
             <View style={[styles.banner, { backgroundColor: meta.color }]}>
-              <Text style={[typography.label, { color: 'rgba(255,255,255,0.8)' }]}>Browse mode</Text>
+              <Text style={[typography.label, { color: 'rgba(255,255,255,0.8)' }]}>Browse all hadith</Text>
               <Text style={styles.bannerTitle}>{meta.name}</Text>
               <Text style={styles.bannerSubtitle}>{meta.arabic}</Text>
-            </View>
-
-            <View style={[styles.infoCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-              <View style={styles.infoRow}>
-                <View style={styles.infoBlock}>
-                  <Text style={[typography.xs, { color: colors.textSecondary }]}>VIEW</Text>
-                  <Text style={[typography.label, { color: colors.textPrimary, marginTop: 2 }]}>See all hadith</Text>
-                </View>
-              </View>
             </View>
           </>
         )}
@@ -273,28 +362,20 @@ function CollectionShell({
 function ReaderView({
   collection,
   onClose,
-  onOpenList,
-  onOpenSearch,
 }: {
   collection: HadithCollectionKey;
   onClose: () => void;
-  onOpenList: () => void;
-  onOpenSearch: () => void;
 }) {
   const { colors, typography, spacing } = useTheme();
   const [currentHadith, setCurrentHadith] = useState<HadithRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchingNext, setFetchingNext] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [searchResultCount, setSearchResultCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const requestIdRef = useRef(0);
 
   const loadOneHadith = useCallback(async () => {
     const requestId = ++requestIdRef.current;
     setError(null);
-    setSearchResultCount(null);
     setLoading(true);
 
     try {
@@ -327,7 +408,6 @@ function ReaderView({
     const requestId = ++requestIdRef.current;
     setFetchingNext(true);
     setError(null);
-    setSearchResultCount(null);
 
     try {
       const hadith = await getRandomHadith(collection);
@@ -345,119 +425,14 @@ function ReaderView({
     }
   }, [collection]);
 
-  const handleSearch = useCallback(async () => {
-    const query = searchQuery.trim();
-    if (query.length < 2) {
-      setError('Enter at least 2 characters to search.');
-      return;
-    }
-
-    const requestId = ++requestIdRef.current;
-    setSearching(true);
-    setError(null);
-
-    try {
-      const results: HadithSearchResult = await searchHadiths(query, collection, 25);
-      if (requestId !== requestIdRef.current) return;
-      if (!results.items.length) {
-        setError('No hadith matched that search.');
-        setSearchResultCount(0);
-        return;
-      }
-      setCurrentHadith(results.items[0]);
-      setSearchResultCount(results.totalFound);
-    } catch (err) {
-      if (requestId !== requestIdRef.current) return;
-      console.warn('Hadith search failed:', err);
-      setSearchResultCount(null);
-      setError('We could not search hadith right now.');
-    } finally {
-      if (requestId === requestIdRef.current) {
-        setSearching(false);
-      }
-    }
-  }, [collection, searchQuery]);
-
   return (
-    <CollectionShell collection={collection} mode="reader" onClose={onClose} onOpenList={onOpenList} onOpenSearch={onOpenSearch}>
+    <CollectionShell collection={collection} mode="reader" onClose={onClose}>
       <ScrollView
         style={styles.readerScroll}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.readerScrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.searchCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-          <Text style={[typography.label, { color: colors.textPrimary, marginBottom: spacing.sm }]}>Search hadith</Text>
-          <View style={[styles.searchRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Ionicons name="search" size={18} color={colors.textSecondary} />
-            <TextInput
-              testID="hadith-search-input"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Enter words, narrator, or chapter"
-              placeholderTextColor={colors.textMuted}
-              style={[styles.searchInput, { color: colors.textPrimary }]}
-              returnKeyType="search"
-              autoCapitalize="none"
-              autoCorrect={false}
-              onSubmitEditing={handleSearch}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                testID="clear-hadith-search"
-                onPress={() => {
-                  setSearchQuery('');
-                  setSearchResultCount(null);
-                  setError(null);
-                }}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
-              </TouchableOpacity>
-            )}
-          </View>
-          {searchResultCount !== null ? (
-            <View
-              style={[
-                styles.searchCountChip,
-                {
-                  backgroundColor: searchResultCount > 0 ? colors.chipBackground : colors.errorSoft,
-                  marginTop: spacing.sm,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  typography.xs,
-                  {
-                    color: searchResultCount > 0 ? colors.primary : colors.error,
-                    fontWeight: '700',
-                  },
-                ]}
-              >
-                {searchResultCount === 0
-                  ? 'No results found'
-                  : `${searchResultCount} result${searchResultCount === 1 ? '' : 's'} found`}
-              </Text>
-            </View>
-          ) : null}
-          <TouchableOpacity
-            testID="search-hadith-btn"
-            style={[styles.searchBtn, { backgroundColor: colors.primary, marginTop: spacing.sm }]}
-            onPress={handleSearch}
-            disabled={searching}
-          >
-            {searching ? (
-              <ActivityIndicator size="small" color={colors.onPrimary} />
-            ) : (
-              <>
-                <Ionicons name="search" size={16} color={colors.onPrimary} />
-                <Text style={{ color: colors.onPrimary, fontWeight: '700' }}>Search</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-
         {loading ? (
           <View style={styles.centerState}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -498,27 +473,6 @@ function ReaderView({
                   </>
                 )}
               </TouchableOpacity>
-
-              <TouchableOpacity
-                testID="open-list-view-inline-btn"
-                style={[styles.secondaryActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                onPress={onOpenList}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="list" size={16} color={colors.textPrimary} />
-                <Text style={[styles.actionBtnText, { color: colors.textPrimary }]}>See all hadith</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                testID="open-search-view-inline-btn"
-                style={[styles.secondaryActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                onPress={onOpenSearch}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="search" size={16} color={colors.textPrimary} />
-                <Text style={[styles.actionBtnText, { color: colors.textPrimary }]}>Search hadith</Text>
-              </TouchableOpacity>
-
             </View>
           </>
         ) : null}
@@ -648,6 +602,8 @@ function SearchView({
 }) {
   const { colors, typography, spacing } = useTheme();
   const [currentHadith, setCurrentHadith] = useState<HadithRecord | null>(null);
+  const [searchResults, setSearchResults] = useState<HadithRecord[]>([]);
+  const [searchIndex, setSearchIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchResultCount, setSearchResultCount] = useState<number | null>(null);
@@ -672,16 +628,22 @@ function SearchView({
       if (requestId !== requestIdRef.current) return;
       if (!results.items.length) {
         setCurrentHadith(null);
+        setSearchResults([]);
+        setSearchIndex(0);
         setSearchResultCount(0);
         setError('No hadith matched that search.');
         return;
       }
+      setSearchResults(results.items);
+      setSearchIndex(0);
       setCurrentHadith(results.items[0]);
       setSearchResultCount(results.totalFound);
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
       console.warn('Hadith search failed:', err);
       setCurrentHadith(null);
+      setSearchResults([]);
+      setSearchIndex(0);
       setSearchResultCount(null);
       setError('We could not search hadith right now.');
     } finally {
@@ -691,6 +653,14 @@ function SearchView({
       }
     }
   }, [collection, searchQuery]);
+
+  const handleNextResult = useCallback(() => {
+    if (!searchResults.length) return;
+
+    const nextIndex = (searchIndex + 1) % searchResults.length;
+    setSearchIndex(nextIndex);
+    setCurrentHadith(searchResults[nextIndex] || null);
+  }, [searchIndex, searchResults]);
 
   return (
     <CollectionShell
@@ -707,7 +677,6 @@ function SearchView({
         keyboardShouldPersistTaps="handled"
       >
         <View style={[styles.searchCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-          <Text style={[typography.label, { color: colors.textPrimary, marginBottom: spacing.sm }]}>Search hadith</Text>
           <View style={[styles.searchRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Ionicons name="search" size={18} color={colors.textSecondary} />
             <TextInput
@@ -730,6 +699,8 @@ function SearchView({
                   setSearchResultCount(null);
                   setError(null);
                   setCurrentHadith(null);
+                  setSearchResults([]);
+                  setSearchIndex(0);
                 }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
@@ -792,7 +763,30 @@ function SearchView({
             </Text>
           </Card>
         ) : currentHadith ? (
-          <HadithItemCard item={currentHadith} colors={colors} typography={typography} spacing={spacing} />
+          <>
+            {searchResultCount !== null ? (
+              <View style={[styles.searchPositionChip, { backgroundColor: colors.chipBackground }]}>
+                <Text style={[typography.xs, { color: colors.primary, fontWeight: '700' }]}>
+                  Showing {searchIndex + 1} of {searchResultCount} results
+                </Text>
+              </View>
+            ) : null}
+            <HadithItemCard item={currentHadith} colors={colors} typography={typography} spacing={spacing} />
+
+            {searchResults.length > 1 ? (
+              <View style={styles.actionRow}>
+                <TouchableOpacity
+                  testID="next-search-result-btn"
+                  style={[styles.primaryActionBtn, { backgroundColor: colors.primary }]}
+                  onPress={handleNextResult}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="shuffle" size={16} color={colors.onPrimary} />
+                  <Text style={[styles.actionBtnText, { color: colors.onPrimary }]}>Next result</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </>
         ) : null}
       </ScrollView>
     </CollectionShell>
@@ -846,7 +840,7 @@ export default function HadithCollectionScreen() {
   }
 
   if (mode === READER_MODE) {
-    return <ReaderView collection={collection} onClose={handleClose} onOpenList={openList} onOpenSearch={openSearch} />;
+    return <ReaderView collection={collection} onClose={handleClose} />;
   }
 
   return (
@@ -866,26 +860,33 @@ export default function HadithCollectionScreen() {
 const styles = StyleSheet.create({
   shellContent: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 20,
+  },
+  menuTopBar: {
+    height: 52,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
   menuScroll: {
     flex: 1,
   },
   menuScrollContent: {
-    paddingTop: 16,
+    paddingTop: 20,
     paddingBottom: 40,
   },
-  menuContent: {
-    gap: 14,
+  menuIntro: {
+    marginBottom: 12,
   },
   menuHeroCard: {
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 20,
     borderWidth: 1,
   },
   menuOptions: {
-    gap: 12,
+    marginTop: 20,
+    gap: 10,
   },
   menuOptionCard: {
     borderRadius: 16,
@@ -897,16 +898,16 @@ const styles = StyleSheet.create({
   },
   menuCardShadow: {
     shadowColor: '#000',
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.07,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    elevation: 3,
   },
   menuOptionBody: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 12,
+    flex: 1,
+    flexShrink: 1,
   },
   menuIconWrap: {
     width: 48,
@@ -918,6 +919,28 @@ const styles = StyleSheet.create({
   menuOptionText: {
     flex: 1,
     marginLeft: 12,
+    flexShrink: 1,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  menuSubtitle: {
+    fontSize: 13,
+    fontWeight: '400',
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  menuChevron: {
+    marginLeft: 8,
+    alignSelf: 'center',
+    flexShrink: 0,
+  },
+  menuPressable: {
+    borderRadius: 16,
+  },
+  menuPressed: {
+    opacity: 0.85,
   },
   readerScrollContent: {
     flexGrow: 1,
@@ -927,16 +950,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerAction: { padding: 4 },
+  readerIntro: {
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  searchIntro: {
+    marginTop: 16,
+    marginBottom: 12,
+  },
   readerTitleCard: {
     marginTop: 16,
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
   readerTitleTopRow: {
     flexDirection: 'row',
@@ -1030,6 +1056,13 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     paddingHorizontal: 12,
     paddingVertical: 6,
+  },
+  searchPositionChip: {
+    alignSelf: 'flex-start',
+    borderRadius: 9999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 16,
   },
   retryBtn: {
     borderRadius: 9999,

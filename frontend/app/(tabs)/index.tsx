@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSettings } from '../../src/store/useSettings';
 import { getPrayerTimes, formatPrayerTime, PrayerName, PrayerTimeResult } from '../../src/services/prayer';
+import { getTodayHijri, HijriDateResult } from '../../src/services/hijriApi';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { ScreenContainer, Card } from '../../src/ui/components';
 
@@ -13,11 +14,37 @@ export default function HomeScreen() {
   const { location, calculationMethod, madhhab, offsets } = useSettings();
 
   const [now, setNow] = useState(new Date());
+  const [todayHijri, setTodayHijri] = useState<HijriDateResult | null>(null);
+  const [hijriLoading, setHijriLoading] = useState(true);
 
   // Keep 'now' continuously in sync with the device clock every second
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadTodayHijri = async () => {
+      try {
+        const result = await getTodayHijri();
+        if (!active) return;
+        setTodayHijri(result);
+      } catch (e) {
+        console.warn('Failed to load today Hijri date:', e);
+      } finally {
+        if (active) {
+          setHijriLoading(false);
+        }
+      }
+    };
+
+    loadTodayHijri();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Extract string to reliably trigger memoized schedule recalculations only when the calendar day changes
@@ -53,7 +80,6 @@ export default function HomeScreen() {
         // force Fajr and Isha to converge to the exact same minute (e.g., 12:58 AM).
         // We intercept this and apply the trusted 'Seventh of the Night' calculation.
         if (fH === iH && Math.abs(fM - iM) <= 1) {
-          console.log('High latitude convergence detected (Fajr/Isha match). Applying Seventh of the Night correction.');
           const dayDuration = maghrib.time.getTime() - sunrise.time.getTime();
           const nightDurationMs = (24 * 3600000) - dayDuration;
           const portionMs = nightDurationMs / 7;
@@ -133,8 +159,12 @@ export default function HomeScreen() {
     { icon: 'book-outline' as const, label: 'Quran', testID: 'quick-action-quran', href: '/quran' as const },
     { icon: 'compass-outline' as const, label: 'Qibla', testID: 'quick-action-qibla', href: '/qibla' as const },
     { icon: 'calendar-outline' as const, label: 'Hijri', testID: 'quick-action-hijri', href: '/hijri' as const },
+    { icon: 'calendar-number-outline' as const, label: 'Events', testID: 'quick-action-islamic-events', href: '/islamic-events' as const },
+    { icon: 'time-outline' as const, label: 'Prayer Month', testID: 'quick-action-prayer-times-month', href: '/prayer-times-month' as const },
     { icon: 'sunny-outline' as const, label: 'Azkar', testID: 'quick-action-morning-azkar', href: '/azkar/morning' as const },
     { icon: 'radio-button-on-outline' as const, label: 'Tasbih', testID: 'quick-action-tasbih', href: '/tasbih' as const },
+    { icon: 'sparkles-outline' as const, label: '99 Names', testID: 'quick-action-asma-ul-husna', href: '/asma-ul-husna' as const },
+    { icon: 'search-outline' as const, label: 'Search Dua', testID: 'quick-action-dua-search', href: '/dua-search' as const },
   ];
 
   const getPrayerIcon = (prayerName: PrayerName): keyof typeof Ionicons.glyphMap => {
@@ -158,6 +188,10 @@ export default function HomeScreen() {
 
   const heroTextColor = isDark ? colors.textPrimary : colors.onPrimary;
   const heroSubTextColor = isDark ? colors.textSecondary : 'rgba(255,255,255,0.85)';
+  const currentHijriDate = todayHijri
+    ? `${todayHijri.hijriDay} ${todayHijri.hijriMonthName || `Month ${todayHijri.hijriMonth}`}`
+    : 'Loading Hijri date...';
+  const currentHijriYear = todayHijri ? `${todayHijri.hijriYear} AH` : '';
 
   return (
     <ScreenContainer heroGradient={getPrayerGradient(nextPrayer?.name)}>
@@ -171,9 +205,21 @@ export default function HomeScreen() {
             </Text>
             <Text style={[typography.headline, { color: heroTextColor }]}>Prayer Times</Text>
           </View>
-          <View style={[styles.heroLocationBadge, { backgroundColor: isDark ? colors.chipBackground : 'rgba(255,255,255,0.22)' }]}>
-            <Ionicons name="location" size={14} color={heroTextColor} />
-            <Text style={[typography.xs, { color: heroTextColor, marginLeft: 4 }]}>{location.city}</Text>
+          <View style={styles.heroLocationCluster}>
+            <View style={[styles.heroLocationBadge, { backgroundColor: isDark ? colors.chipBackground : 'rgba(255,255,255,0.22)' }]}>
+              <Ionicons name="location" size={14} color={heroTextColor} />
+              <Text style={[typography.xs, { color: heroTextColor, marginLeft: 4 }]}>{location.city}</Text>
+            </View>
+            <View style={styles.heroDateHint}>
+              <Text style={[typography.xs, { color: heroSubTextColor, textAlign: 'right' }]}>
+                {hijriLoading ? 'Loading Hijri date...' : currentHijriDate}
+              </Text>
+              {!hijriLoading && currentHijriYear ? (
+                <Text style={[typography.xs, { color: heroSubTextColor, textAlign: 'right', marginTop: 2 }]}>
+                  {currentHijriYear}
+                </Text>
+              ) : null}
+            </View>
           </View>
         </View>
 
@@ -185,7 +231,7 @@ export default function HomeScreen() {
             {nextPrayer ? formatPrayerTime(nextPrayer.time) : '—'}
           </Text>
         </View>
-          
+
         {/* Countdown Card (White/Light Section) */}
         <Card elevated style={[styles.countdownCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[typography.label, styles.countdownTitle, { color: colors.textSecondary }]}>Time Remaining</Text>
@@ -259,7 +305,7 @@ export default function HomeScreen() {
               testID={action.testID}
               style={styles.quickActionCard}
               activeOpacity={0.7}
-              onPress={() => router.navigate(action.href as any)}
+              onPress={() => router.push(action.href as any)}
             >
               <View style={[styles.quickActionIconContainer, { backgroundColor: colors.chipBackground }]}>
                 <Ionicons name={action.icon} size={28} color={colors.primary} />
@@ -288,6 +334,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 9999,
+  },
+  heroLocationCluster: {
+    alignItems: 'flex-end',
+  },
+  heroDateHint: {
+    marginTop: 6,
+    alignItems: 'flex-end',
+    maxWidth: 180,
   },
   heroNextPrayer: {
     alignItems: 'center',
@@ -357,16 +411,18 @@ const styles = StyleSheet.create({
   },
   quickActionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
   quickActionCard: {
-    width: '18%',
+    width: '25%',
     alignItems: 'center',
+    marginBottom: 16,
   },
   quickActionIconContainer: {
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',

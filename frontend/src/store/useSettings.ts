@@ -53,6 +53,8 @@ interface SettingsState {
   setLocation: (location: Location) => void;
   setQuranScript: (script: QuranScript) => void;
   setTranslationLang: (lang: TranslationLang) => void;
+  hasHydrated: boolean;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 export const useSettings = create<SettingsState>()(
@@ -76,6 +78,7 @@ export const useSettings = create<SettingsState>()(
       location: { latitude: 28.6139, longitude: 77.209, city: 'New Delhi' },
       quranScript: 'IndoPak',
       translationLang: 'english',
+      hasHydrated: false,
       setTheme: (theme) => set({ theme }),
       setCalculationMethod: (calculationMethod) => set({ calculationMethod }),
       setMadhhab: (madhhab) => set({ madhhab }),
@@ -87,10 +90,14 @@ export const useSettings = create<SettingsState>()(
       setLocation: (location) => set({ location }),
       setQuranScript: (script) => set({ quranScript: script }),
       setTranslationLang: (lang) => set({ translationLang: lang }),
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
     {
       name: 'settings-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

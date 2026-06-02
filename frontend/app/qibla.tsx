@@ -127,12 +127,6 @@ export default function QiblaScreen() {
     ]).start();
   }, [heading, qiblaDirection]);
 
-  useEffect(() => {
-    // Compute the exact delta for debugging and verify arrow points properly
-    const delta = (qiblaDirection - heading + 360) % 360;
-    console.log(`Qibla: ${Math.round(qiblaDirection)}°, Heading: ${Math.round(heading)}°, Delta: ${Math.round(delta)}°`);
-  }, [heading, qiblaDirection]);
-
   const compassTransform = { 
     transform: [{ 
       rotate: compassSpin.interpolate({ inputRange: [0, 360], outputRange: ['0deg', '360deg'] }) 

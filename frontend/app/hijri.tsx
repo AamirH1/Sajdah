@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useTheme } from '../src/ui/hooks/useTheme';
 import { ScreenContainer, Card, Button, IconButton } from '../src/ui/components';
 import { useEntitlements } from '../src/store/useEntitlements';
@@ -12,14 +13,6 @@ const formatGregorian = (date: Date) => {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
-};
-
-const todayInputValue = () => formatGregorian(new Date());
-
-const presetDate = (offsetDays: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
-  return formatGregorian(d);
 };
 
 const MONTH_NAMES = [
@@ -50,7 +43,8 @@ export default function HijriScreen() {
   const [loadingMonths, setLoadingMonths] = useState(true);
   const [converting, setConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [gregorianDate, setGregorianDate] = useState(todayInputValue());
+  const [gregorianDate, setGregorianDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [convertedHijri, setConvertedHijri] = useState<HijriDateResult | null>(null);
 
   useEffect(() => {
@@ -87,10 +81,7 @@ export default function HijriScreen() {
     };
   }, [canUseHijri]);
 
-  const parsedDate = useMemo(() => {
-    const parsed = new Date(gregorianDate);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }, [gregorianDate]);
+  const selectedDateLabel = useMemo(() => formatGregorian(gregorianDate), [gregorianDate]);
 
   const monthName = useMemo(() => {
     if (!todayHijri) return 'Hijri Month';
@@ -111,21 +102,38 @@ export default function HijriScreen() {
   };
 
   const handleConvert = async () => {
-    if (!parsedDate) {
-      setError('Enter a valid Gregorian date in YYYY-MM-DD format.');
+    if (Number.isNaN(gregorianDate.getTime())) {
+      setError('Pick a valid Gregorian date.');
       return;
     }
 
     setError(null);
     setConverting(true);
     try {
-      const result = await convertGregorianToHijri(parsedDate);
+      const result = await convertGregorianToHijri(gregorianDate);
       setConvertedHijri(result);
     } catch {
       setError('Could not convert that date right now.');
     } finally {
       setConverting(false);
     }
+  };
+
+  const openDatePicker = () => {
+    if (Platform.OS === 'android') {
+      DateTimePickerAndroid.open({
+        value: gregorianDate,
+        mode: 'date',
+        onChange: (_, date) => {
+          if (date) {
+            setGregorianDate(date);
+          }
+        },
+      });
+      return;
+    }
+
+    setShowDatePicker((current) => !current);
   };
 
   const heroGradient = isDark
@@ -232,60 +240,43 @@ export default function HijriScreen() {
         </Card>
 
         <Card style={[styles.sectionCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={[typography.title, { color: colors.textPrimary }]}>Quick Picks</Text>
-              <Text style={[typography.label, { color: colors.textSecondary, marginTop: 2 }]}>
-                Jump to common dates quickly.
+          <Text style={[typography.title, { color: colors.textPrimary }]}>Convert Date</Text>
+          <Text style={[typography.label, { color: colors.textSecondary, marginTop: 4 }]}>
+            Pick a Gregorian date from the calendar below.
+          </Text>
+          <View style={styles.dateActionRow}>
+            <Button
+              label="Choose Date"
+              variant="secondary"
+              onPress={openDatePicker}
+              icon={<Ionicons name="calendar-outline" size={18} color={colors.primary} />}
+              fullWidth={false}
+              style={styles.chooseDateBtn}
+            />
+            <View style={[styles.selectedDatePill, { backgroundColor: colors.chipBackground }]}>
+              <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+              <Text numberOfLines={1} style={[typography.label, { color: colors.textPrimary, marginLeft: 8, flexShrink: 1 }]}>
+                {selectedDateLabel}
               </Text>
             </View>
           </View>
-          <View style={styles.presetRow}>
-            <TouchableOpacity
-              onPress={() => setGregorianDate(todayInputValue())}
-              style={[styles.presetChip, { backgroundColor: colors.chipBackground }]}
-              activeOpacity={0.8}
-            >
-              <Text style={[typography.label, { color: colors.textPrimary }]}>Today</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setGregorianDate(presetDate(-1))}
-              style={[styles.presetChip, { backgroundColor: colors.chipBackground }]}
-              activeOpacity={0.8}
-            >
-              <Text style={[typography.label, { color: colors.textPrimary }]}>Yesterday</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setGregorianDate(presetDate(1))}
-              style={[styles.presetChip, { backgroundColor: colors.chipBackground }]}
-              activeOpacity={0.8}
-            >
-              <Text style={[typography.label, { color: colors.textPrimary }]}>Tomorrow</Text>
-            </TouchableOpacity>
-          </View>
-        </Card>
-
-        <Card style={[styles.sectionCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-          <Text style={[typography.title, { color: colors.textPrimary }]}>Convert Date</Text>
-          <Text style={[typography.label, { color: colors.textSecondary, marginTop: 4 }]}>
-            Enter a Gregorian date in `YYYY-MM-DD` format.
-          </Text>
-          <TextInput
-            value={gregorianDate}
-            onChangeText={setGregorianDate}
-            placeholder="2026-06-02"
-            placeholderTextColor={colors.textMuted}
-            style={[
-              styles.input,
-              {
-                color: colors.textPrimary,
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
-            autoCapitalize="none"
-            keyboardType="numbers-and-punctuation"
-          />
+          {Platform.OS !== 'android' && showDatePicker && (
+            <View style={[styles.datePickerShell, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <DateTimePicker
+                value={gregorianDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                themeVariant={isDark ? 'dark' : 'light'}
+                textColor={colors.textPrimary}
+                onChange={(_, date) => {
+                  if (date) {
+                    setGregorianDate(date);
+                  }
+                }}
+                style={styles.datePicker}
+              />
+            </View>
+          )}
           <Button
             label={converting ? 'Converting...' : 'Convert to Hijri'}
             onPress={handleConvert}
@@ -469,6 +460,35 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     paddingHorizontal: 14,
     paddingVertical: 10,
+  },
+  dateActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 12,
+    flexWrap: 'wrap',
+  },
+  chooseDateBtn: {
+    marginTop: 0,
+  },
+  datePickerShell: {
+    borderWidth: 1,
+    borderRadius: 20,
+    marginTop: 12,
+    overflow: 'hidden',
+  },
+  datePicker: {
+    width: '100%',
+    alignSelf: 'stretch',
+  },
+  selectedDatePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 9999,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flex: 1,
+    minWidth: 0,
   },
   input: {
     borderWidth: 1,

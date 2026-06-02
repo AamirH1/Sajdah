@@ -10,6 +10,7 @@ export interface FeatureFlags {
   'ui.themes.pro': boolean;
   'quran.advancedBookmarks': boolean;
   'azkar.customCollections': boolean;
+  'dua.asmaUlHusnaTranslations': boolean;
 }
 
 const FREE_FLAGS: FeatureFlags = {
@@ -18,6 +19,7 @@ const FREE_FLAGS: FeatureFlags = {
   'ui.themes.pro': false,
   'quran.advancedBookmarks': false,
   'azkar.customCollections': false,
+  'dua.asmaUlHusnaTranslations': false,
 };
 
 const PRO_FLAGS: FeatureFlags = {
@@ -26,6 +28,7 @@ const PRO_FLAGS: FeatureFlags = {
   'ui.themes.pro': true,
   'quran.advancedBookmarks': true,
   'azkar.customCollections': true,
+  'dua.asmaUlHusnaTranslations': true,
 };
 
 interface EntitlementsState {

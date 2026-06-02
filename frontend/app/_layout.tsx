@@ -41,6 +41,10 @@ export default function RootLayout() {
         <Stack.Screen name="hadith/[bookId]" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="location" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="hijri" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="asma-ul-husna" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="dua-search" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="islamic-events" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="prayer-times-month" options={{ headerShown: false, presentation: 'card' }} />
       </Stack>
     </>
   );
