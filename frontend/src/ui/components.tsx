@@ -16,7 +16,13 @@ export const ScreenContainer = ({ children, scrollable = true, heroGradient, sty
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {heroGradient && (
-        <LinearGradient colors={heroGradient} style={styles.absoluteGradient} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />
+        <LinearGradient
+          pointerEvents="none"
+          colors={heroGradient}
+          style={styles.absoluteGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        />
       )}
       {content}
     </SafeAreaView>
@@ -29,8 +35,8 @@ export const ScreenHeader = ({ title, subtitle, rightAction }: { title: string, 
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md, zIndex: 10 }}>
       <View>
-        <Text style={[typography.headline, { color: colors.onBackground }]}>{title}</Text>
-        {subtitle && <Text style={[typography.label, { color: colors.onSurfaceSecondary, marginTop: 2 }]}>{subtitle}</Text>}
+        <Text style={[typography.headline, { color: colors.textPrimary }]}>{title}</Text>
+        {subtitle && <Text style={[typography.label, { color: colors.textSecondary, marginTop: 2 }]}>{subtitle}</Text>}
       </View>
       {rightAction && <View>{rightAction}</View>}
     </View>
@@ -57,13 +63,13 @@ export const Button = ({ onPress, label, variant = 'primary', fullWidth = true, 
   
   const getBgColor = () => {
     if (disabled) return colors.border;
-    if (variant === 'secondary') return colors.surfaceElevated;
+    if (variant === 'secondary') return colors.surfaceAlt;
     if (variant === 'destructive') return colors.error;
     return colors.primary;
   };
 
   const getTextColor = () => {
-    if (disabled) return colors.onSurfaceSecondary;
+    if (disabled) return colors.textSecondary;
     if (variant === 'secondary') return colors.primary;
     return colors.onPrimary;
   };
@@ -95,7 +101,7 @@ export const IconButton = ({ icon, onPress, color, size = 24, style }: { icon: k
   const { colors } = useTheme();
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={[{ justifyContent: 'center', alignItems: 'center' }, style]}>
-      <Ionicons name={icon} size={size} color={color || colors.onSurface} />
+      <Ionicons name={icon} size={size} color={color || colors.textPrimary} />
     </TouchableOpacity>
   );
 };

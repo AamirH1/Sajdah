@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
@@ -24,8 +24,19 @@ export default function QuranReaderScreen() {
 
   const canUseMultiLang = plan === 'pro';
   const isProLang = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'].includes(translationLang);
-  const showTranslation = !isProLang || canUseMultiLang;
+  const isComingSoonLang = ['telugu', 'kannada'].includes(translationLang);
+  const showTranslation = !isProLang || (canUseMultiLang && !isComingSoonLang);
   const effectiveLang = showTranslation ? translationLang : 'english';
+
+  useEffect(() => {
+    if (!canUseMultiLang || !isComingSoonLang) return;
+
+    Alert.alert(
+      'Coming Soon',
+      'Translation is not available yet for Telugu and Kannada. We are working on it.',
+      [{ text: 'OK' }]
+    );
+  }, [canUseMultiLang, isComingSoonLang]);
 
   useEffect(() => {
     const loadSurahData = async () => {
@@ -43,11 +54,11 @@ export default function QuranReaderScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity testID="quran-back-btn" onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.onBackground} />
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={[typography.title, { color: colors.onBackground }]}>{surah?.name || 'Surah'}</Text>
-          <Text style={[typography.xs, { color: colors.onSurfaceSecondary }]}>{surah?.translation}</Text>
+          <Text style={[typography.title, { color: colors.textPrimary }]}>{surah?.name || 'Surah'}</Text>
+          <Text style={[typography.xs, { color: colors.textSecondary }]}>{surah?.translation}</Text>
         </View>
         <TouchableOpacity testID="quran-bookmark-btn" style={styles.bookmarkBtn}>
           <Ionicons name="bookmark-outline" size={22} color={colors.primary} />
@@ -64,7 +75,14 @@ export default function QuranReaderScreen() {
         </View>
 
         {/* Pro language warning */}
-        {isProLang && !canUseMultiLang && (
+        {isComingSoonLang && canUseMultiLang ? (
+          <View style={[styles.proWarning, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.lg }]}>
+            <Ionicons name="time-outline" size={16} color="#D97706" />
+            <Text style={styles.proWarningText}>
+              Telugu and Kannada translations are coming soon. Showing English for now.
+            </Text>
+          </View>
+        ) : isProLang && !canUseMultiLang && (
           <View style={[styles.proWarning, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.lg }]}>
             <Ionicons name="lock-closed" size={16} color="#D97706" />
             <Text style={styles.proWarningText}>
@@ -77,25 +95,25 @@ export default function QuranReaderScreen() {
         {loading ? (
           <View style={styles.emptyState}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[typography.body, { color: colors.onSurfaceSecondary, marginTop: spacing.md }]}>Loading Surah...</Text>
+            <Text style={[typography.body, { color: colors.textSecondary, marginTop: spacing.md }]}>Loading Surah...</Text>
           </View>
         ) : ayahs.length > 0 ? (
           ayahs.map((ayah) => (
             <Card key={ayah.number} testID={`ayah-${ayah.number}`} style={{ marginBottom: spacing.md }}>
-              <View style={[styles.ayahNumberBadge, { backgroundColor: colors.surfaceElevated, borderRadius: 14 }]}>
+              <View style={[styles.ayahNumberBadge, { backgroundColor: colors.chipBackground, borderRadius: 14 }]}>
                 <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>{ayah.number}</Text>
               </View>
-              <Text style={[styles.arabicText, { color: colors.onSurface }]}>{ayah.arabic}</Text>
+              <Text style={[styles.arabicText, { color: colors.textPrimary }]}>{ayah.arabic}</Text>
               <View style={[styles.translationDivider, { backgroundColor: colors.border }]} />
-              <Text style={[typography.body, { color: colors.onSurfaceSecondary }]}>
+              <Text style={[typography.body, { color: colors.textSecondary }]}>
                 {ayah.translations[effectiveLang as keyof typeof ayah.translations] || ayah.translations.english}
               </Text>
             </Card>
           ))
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons name="book-outline" size={48} color={colors.onSurfaceSecondary} />
-            <Text style={[typography.body, { color: colors.onSurfaceSecondary, textAlign: 'center', marginTop: spacing.lg }]}>
+            <Ionicons name="book-outline" size={48} color={colors.textSecondary} />
+            <Text style={[typography.body, { color: colors.textSecondary, textAlign: 'center', marginTop: spacing.lg }]}>
               Failed to load Surah. Please check your internet connection.
             </Text>
           </View>

@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from typing import List
 import uuid
 from datetime import datetime
+from typing import Optional, Any, Dict
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -38,6 +39,21 @@ class StatusCheckCreate(BaseModel):
     device_id: str = None
 
 
+class SyncPayload(BaseModel):
+    device_id: str
+    client_name: str
+    settings: Dict[str, Any]
+    tasbih: Dict[str, Any]
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class SyncResponse(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    device_id: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    backup_size: int
+
+
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
@@ -56,6 +72,25 @@ async def create_status_check(input: StatusCheckCreate):
 async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
+
+
+@api_router.post("/sync", response_model=SyncResponse)
+async def sync_backup(input: SyncPayload):
+    backup_doc = input.dict()
+    backup_doc["updated_at"] = datetime.utcnow()
+    backup_doc["backup_size"] = len(str(backup_doc.get("settings", {}))) + len(str(backup_doc.get("tasbih", {})))
+
+    await db.device_backups.update_one(
+        {"device_id": input.device_id},
+        {"$set": backup_doc},
+        upsert=True,
+    )
+
+    return SyncResponse(
+        device_id=input.device_id,
+        timestamp=backup_doc["updated_at"],
+        backup_size=backup_doc["backup_size"],
+    )
 
 
 # Include the router in the main app

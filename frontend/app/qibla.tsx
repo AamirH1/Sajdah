@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Animated, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
 import * as Location from 'expo-location';
-import { Coordinates, Qibla } from 'adhan';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../src/ui/hooks/useTheme';
 import { useSettings } from '../src/store/useSettings';
 import { ScreenContainer, Card } from '../src/ui/components';
+import { getQiblaLookup } from '../src/services/qiblaApi';
 
 const { width } = Dimensions.get('window');
 
@@ -17,6 +17,7 @@ export default function QiblaScreen() {
   
   const [heading, setHeading] = useState(0);
   const [qiblaDirection, setQiblaDirection] = useState(0);
+  const [qiblaDistanceKm, setQiblaDistanceKm] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,16 +28,32 @@ export default function QiblaScreen() {
   const prevQiblaRot = useRef(0);
 
   useEffect(() => {
-    try {
-      if (location?.latitude != null && location?.longitude != null) {
-        const qibla = new Qibla(new Coordinates(location.latitude, location.longitude));
-        setQiblaDirection(isNaN(qibla.direction) ? 0 : qibla.direction);
-      } else {
+    let cancelled = false;
+
+    const loadQibla = async () => {
+      if (location?.latitude == null || location?.longitude == null) {
         setQiblaDirection(0);
+        setQiblaDistanceKm(null);
+        return;
       }
-    } catch (e) {
-      setQiblaDirection(0);
-    }
+
+      try {
+        const result = await getQiblaLookup(location.latitude, location.longitude);
+        if (cancelled) return;
+        setQiblaDirection(Number.isFinite(result.direction) ? result.direction : 0);
+        setQiblaDistanceKm(typeof result.distanceKm === 'number' ? result.distanceKm : null);
+      } catch {
+        if (cancelled) return;
+        setQiblaDirection(0);
+        setQiblaDistanceKm(null);
+      }
+    };
+
+    loadQibla();
+
+    return () => {
+      cancelled = true;
+    };
   }, [location]);
 
   useEffect(() => {
@@ -134,6 +151,17 @@ export default function QiblaScreen() {
     return directions[Math.round(normalized / 45) % 8];
   };
 
+  const getInfoIcon = (kind: 'direction' | 'distance' | 'city') => {
+    switch (kind) {
+      case 'direction':
+        return 'compass-outline';
+      case 'distance':
+        return 'map-outline';
+      case 'city':
+        return 'location-outline';
+    }
+  };
+
   const renderCompassMarks = () => {
     return Array.from({ length: 24 }).map((_, index) => {
       const angle = index * 15;
@@ -172,9 +200,9 @@ export default function QiblaScreen() {
     <ScreenContainer scrollable={false}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.onBackground} />
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[typography.title, { color: colors.onBackground }]}>Qibla Compass</Text>
+        <Text style={[typography.title, { color: colors.textPrimary }]}>Qibla Compass</Text>
         <View style={{ width: 32 }} />
       </View>
 
@@ -182,15 +210,15 @@ export default function QiblaScreen() {
         {loading ? (
           <View style={styles.centerContent}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[typography.body, { color: colors.onSurfaceSecondary, marginTop: spacing.md }]}>
+            <Text style={[typography.body, { color: colors.textSecondary, marginTop: spacing.md }]}>
               Getting your location...
             </Text>
           </View>
         ) : error ? (
           <View style={styles.centerContent}>
             <Ionicons name="warning-outline" size={48} color={colors.primary} />
-            <Text style={[typography.title, { color: colors.onSurface, marginTop: spacing.md }]}>Permission Denied</Text>
-            <Text style={[typography.body, { color: colors.onSurfaceSecondary, textAlign: 'center', marginTop: spacing.sm }]}>
+            <Text style={[typography.title, { color: colors.textPrimary, marginTop: spacing.md }]}>Permission Denied</Text>
+            <Text style={[typography.body, { color: colors.textSecondary, textAlign: 'center', marginTop: spacing.sm }]}>
               {error}
             </Text>
             <TouchableOpacity onPress={() => Linking.openSettings()} style={[styles.settingsBtn, { backgroundColor: colors.primary }]}>
@@ -199,11 +227,11 @@ export default function QiblaScreen() {
           </View>
         ) : (
           <>
-            <Text style={[typography.body, styles.instructions, { color: colors.onSurfaceSecondary }]}>
+            <Text style={[typography.body, styles.instructions, { color: colors.textSecondary }]}>
               Align the arrow with the Kaaba to face Qibla.
             </Text>
             
-            <View style={[styles.compassWrapper, { backgroundColor: colors.surface, ...shadows.md }]}>
+            <View style={[styles.compassWrapper, { backgroundColor: colors.surfaceAlt, ...shadows.md }]}>
               {/* Phone Forward indicator (fixed at top) */}
               <View style={[styles.forwardMarker, { borderBottomColor: colors.primary }]} />
               
@@ -214,8 +242,8 @@ export default function QiblaScreen() {
 
               {/* Center Display */}
               <View style={[styles.centerDisplay, { backgroundColor: colors.surface, ...shadows.sm }]}>
-                 <Text style={[typography.displayLg, { color: colors.onSurface, fontSize: 36, lineHeight: 40 }]}>{Math.round(heading)}°</Text>
-                 <Text style={[typography.label, { color: colors.onSurfaceSecondary }]}>{getDirectionLabel(heading)}</Text>
+                 <Text style={[typography.displayLg, { color: colors.textPrimary, fontSize: 36, lineHeight: 40 }]}>{Math.round(heading)}°</Text>
+                 <Text style={[typography.label, { color: colors.textSecondary }]}>{getDirectionLabel(heading)}</Text>
               </View>
 
               {/* Qibla Arrow */}
@@ -230,12 +258,27 @@ export default function QiblaScreen() {
 
             <Card style={styles.infoCard}>
               <View style={styles.infoRow}>
-                <Text style={[typography.label, { color: colors.onSurfaceSecondary }]}>Qibla Direction</Text>
+                <View style={styles.infoLabelGroup}>
+                  <Ionicons name={getInfoIcon('direction')} size={18} color={colors.textSecondary} />
+                  <Text style={[typography.label, { color: colors.textSecondary }]}>Qibla Direction</Text>
+                </View>
                 <Text style={[typography.title, { color: colors.primary }]}>{Math.round(qiblaDirection)}°</Text>
               </View>
               <View style={styles.infoRow}>
-                <Text style={[typography.label, { color: colors.onSurfaceSecondary }]}>Current City</Text>
-                <Text style={[typography.title, { color: colors.onSurface }]}>{location.city || 'Unknown'}</Text>
+                <View style={styles.infoLabelGroup}>
+                  <Ionicons name={getInfoIcon('distance')} size={18} color={colors.textSecondary} />
+                  <Text style={[typography.label, { color: colors.textSecondary }]}>Distance to Kaaba</Text>
+                </View>
+                <Text style={[typography.title, { color: colors.textPrimary }]}>
+                  {qiblaDistanceKm != null ? `${Math.round(qiblaDistanceKm)} km` : '—'}
+                </Text>
+              </View>
+              <View style={styles.infoRow}>
+                <View style={styles.infoLabelGroup}>
+                  <Ionicons name={getInfoIcon('city')} size={18} color={colors.textSecondary} />
+                  <Text style={[typography.label, { color: colors.textSecondary }]}>Current City</Text>
+                </View>
+                <Text style={[typography.title, { color: colors.textPrimary }]}>{location.city || 'Unknown'}</Text>
               </View>
             </Card>
           </>
@@ -348,5 +391,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  infoLabelGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   }
 });

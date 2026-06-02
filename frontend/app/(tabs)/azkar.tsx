@@ -33,8 +33,8 @@ export default function AzkarScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.title, { color: colors.onBackground }]}>Azkar & Duas</Text>
-          <Text style={[styles.subtitle, { color: colors.onSurfaceSecondary }]}>Daily Remembrance</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Azkar & Duas</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Daily Remembrance</Text>
         </View>
         <TouchableOpacity
           testID="open-tasbih-btn"

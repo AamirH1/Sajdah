@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSettings } from '../store/useSettings';
+import { useTasbih } from '../store/useTasbih';
 
 // Android emulator requires 10.0.2.2 to access host machine's localhost
 const getBaseUrl = () => {
@@ -36,6 +38,47 @@ export interface StatusCheck {
   timestamp: string;
 }
 
+export interface SyncPayload {
+  device_id: string;
+  client_name: string;
+  settings: {
+    theme: string;
+    calculationMethod: string;
+    madhhab: string;
+    offsets: {
+      fajr: number;
+      sunrise: number;
+      dhuhr: number;
+      asr: number;
+      maghrib: number;
+      isha: number;
+    };
+    notifications: {
+      fajr: boolean;
+      sunrise: boolean;
+      dhuhr: boolean;
+      asr: boolean;
+      maghrib: boolean;
+      isha: boolean;
+      smartFajr: boolean;
+    };
+    location: { latitude: number; longitude: number; city: string };
+    quranScript: string;
+    translationLang: string;
+  };
+  tasbih: {
+    counters: Array<{ id: string; name: string; count: number; target: number; lastUsed: string }>;
+    activeCounterId: string | null;
+  };
+}
+
+export interface SyncResponse {
+  id: string;
+  device_id: string;
+  timestamp: string;
+  backup_size: number;
+}
+
 export const pingBackend = async (): Promise<StatusCheck> => {
   try {
     const deviceId = await getDeviceId();
@@ -48,6 +91,50 @@ export const pingBackend = async (): Promise<StatusCheck> => {
     return await response.json();
   } catch (error) {
     console.error("Backend connection error:", error);
+    throw error;
+  }
+};
+
+export const syncBackup = async (): Promise<SyncResponse> => {
+  try {
+    const deviceId = await getDeviceId();
+    const settingsState = useSettings.getState();
+    const tasbihState = useTasbih.getState();
+    const payload: SyncPayload = {
+      device_id: deviceId,
+      client_name: `Sajdah-${Platform.OS}`,
+      settings: {
+        theme: settingsState.theme,
+        calculationMethod: settingsState.calculationMethod,
+        madhhab: settingsState.madhhab,
+        offsets: settingsState.offsets,
+        notifications: settingsState.notifications,
+        location: settingsState.location,
+        quranScript: settingsState.quranScript,
+        translationLang: settingsState.translationLang,
+      },
+      tasbih: {
+        counters: tasbihState.counters,
+        activeCounterId: tasbihState.activeCounterId,
+      },
+    };
+
+    const response = await fetch(`${API_BASE_URL}/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-ID': deviceId,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error('Backup request failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Sync backup error:', error);
     throw error;
   }
 };

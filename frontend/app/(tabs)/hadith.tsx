@@ -25,13 +25,13 @@ export default function HadithScreen() {
       onPress={() => router.push(`/hadith/${item.id}`)}
       activeOpacity={0.7}
     >
-      <Card style={{ alignItems: 'center', padding: spacing.lg, paddingVertical: spacing.xl }}>
-        <View style={{ width: 56, height: 56, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm, backgroundColor: item.color + '20' }}>
-          <Ionicons name="book" size={28} color={item.color} />
-        </View>
-        <Text style={[typography.title, { color: colors.onSurface, textAlign: 'center', marginBottom: 2, fontSize: 16 }]}>{item.name}</Text>
-        <Text style={[typography.xs, { color: colors.onSurfaceSecondary, textAlign: 'center', marginBottom: spacing.sm }]}>{item.arabic}</Text>
-        <View style={{ paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radius.sm, backgroundColor: colors.surfaceElevated }}>
+        <Card style={{ alignItems: 'center', padding: spacing.lg, paddingVertical: spacing.xl }}>
+          <View style={{ width: 56, height: 56, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm, backgroundColor: item.color + '20' }}>
+            <Ionicons name="book" size={28} color={item.color} />
+          </View>
+        <Text style={[typography.title, { color: colors.textPrimary, textAlign: 'center', marginBottom: 2, fontSize: 16 }]}>{item.name}</Text>
+        <Text style={[typography.xs, { color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.sm }]}>{item.arabic}</Text>
+        <View style={{ paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radius.sm, backgroundColor: colors.chipBackground }}>
           <Text style={{ fontSize: 11, fontWeight: '600', color: colors.primary }}>{item.count} Ahadith</Text>
         </View>
       </Card>

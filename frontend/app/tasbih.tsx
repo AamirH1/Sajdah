@@ -104,7 +104,7 @@ export default function TasbihScreen() {
                 backgroundColor:
                   item.id === activeCounter?.id
                     ? colors.primary
-                    : colors.surfaceElevated,
+                    : colors.surfaceAlt,
                 paddingHorizontal: spacing.lg,
                 paddingVertical: spacing.sm,
                 borderRadius: radius.full,
@@ -123,7 +123,7 @@ export default function TasbihScreen() {
                     color:
                       item.id === activeCounter?.id
                         ? colors.onPrimary
-                        : colors.onSurface,
+                        : colors.textPrimary,
                   },
                 ]}
               >
@@ -146,7 +146,7 @@ export default function TasbihScreen() {
         <Text
           style={[
             typography.headline,
-            { color: colors.onSurface, marginBottom: 4 },
+            { color: colors.textPrimary, marginBottom: 4 },
           ]}
         >
           {activeCounter?.name || 'Select a counter'}
@@ -154,7 +154,7 @@ export default function TasbihScreen() {
         <Text
           style={[
             typography.label,
-            { color: colors.onSurfaceSecondary, marginBottom: spacing.xxl },
+            { color: colors.textSecondary, marginBottom: spacing.xxl },
           ]}
         >
           Target: {activeCounter?.target || 0}
@@ -189,7 +189,7 @@ export default function TasbihScreen() {
             }}
           />
         </View>
-        <Text style={[styles.progressText, { color: colors.onSurfaceSecondary }]}>
+        <Text style={[styles.progressText, { color: colors.textSecondary }]}>
           {activeCounter?.count || 0} / {activeCounter?.target || 0}
         </Text>
 
@@ -202,8 +202,8 @@ export default function TasbihScreen() {
           }}
           onPress={handleReset}
         >
-          <Ionicons name="refresh" size={20} color={colors.onSurfaceSecondary} />
-          <Text style={[styles.resetText, { color: colors.onSurfaceSecondary }]}>Reset</Text>
+          <Ionicons name="refresh" size={20} color={colors.textSecondary} />
+          <Text style={[styles.resetText, { color: colors.textSecondary }]}>Reset</Text>
         </TouchableOpacity>
       </View>
 
@@ -211,17 +211,17 @@ export default function TasbihScreen() {
       <Modal visible={showAddModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.modalTitle, { color: colors.onSurface }]}>New Counter</Text>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>New Counter</Text>
             <TextInput
               testID="tasbih-new-name-input"
               style={{
                 ...styles.modalInput,
-                color: colors.onSurface,
+                color: colors.textPrimary,
                 borderColor: colors.border,
                 backgroundColor: colors.background,
               }}
               placeholder="Name (e.g. SubhanAllah)"
-              placeholderTextColor={colors.onSurfaceSecondary}
+              placeholderTextColor={colors.textSecondary}
               value={newName}
               onChangeText={setNewName}
             />
@@ -229,12 +229,12 @@ export default function TasbihScreen() {
               testID="tasbih-new-target-input"
               style={{
                 ...styles.modalInput,
-                color: colors.onSurface,
+                color: colors.textPrimary,
                 borderColor: colors.border,
                 backgroundColor: colors.background,
               }}
               placeholder="Target count"
-              placeholderTextColor={colors.onSurfaceSecondary}
+              placeholderTextColor={colors.textSecondary}
               value={newTarget}
               onChangeText={setNewTarget}
               keyboardType="number-pad"
@@ -245,7 +245,7 @@ export default function TasbihScreen() {
                 style={[styles.modalBtn, { backgroundColor: colors.border }]}
                 onPress={() => setShowAddModal(false)}
               >
-                <Text style={[styles.modalBtnText, { color: colors.onSurface }]}>
+                <Text style={[styles.modalBtnText, { color: colors.textPrimary }]}>
                   Cancel
                 </Text>
               </TouchableOpacity>
@@ -327,4 +327,3 @@ const styles = StyleSheet.create({
   modalBtn: { flex: 1, paddingVertical: 16, borderRadius: 9999, alignItems: 'center' },
   modalBtnText: { fontWeight: '700', fontSize: 14 },
 });
-

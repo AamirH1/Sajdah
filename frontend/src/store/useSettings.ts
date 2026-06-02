@@ -6,7 +6,7 @@ export type CalculationMethod = 'Karachi' | 'MuslimWorldLeague' | 'Egyptian' | '
 export type Madhhab = 'Shafi' | 'Hanafi';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type QuranScript = 'Madani' | 'IndoPak';
-export type TranslationLang = 'english' | 'urdu' | 'hindi' | 'bangla' | 'tamil';
+export type TranslationLang = 'english' | 'urdu' | 'hindi' | 'bangla' | 'tamil' | 'malayalam' | 'telugu' | 'kannada';
 
 interface PrayerOffset {
   fajr: number;
@@ -37,6 +37,8 @@ interface SettingsState {
   theme: ThemeMode;
   calculationMethod: CalculationMethod;
   madhhab: Madhhab;
+  quranReciterId: number | null;
+  quranReciterName: string;
   offsets: PrayerOffset;
   notifications: NotificationSettings;
   location: Location;
@@ -45,6 +47,7 @@ interface SettingsState {
   setTheme: (theme: ThemeMode) => void;
   setCalculationMethod: (method: CalculationMethod) => void;
   setMadhhab: (madhhab: Madhhab) => void;
+  setQuranReciter: (reciterId: number | null, reciterName: string) => void;
   setOffset: (prayer: keyof PrayerOffset, minutes: number) => void;
   setNotification: (prayer: keyof NotificationSettings, enabled: boolean) => void;
   setLocation: (location: Location) => void;
@@ -58,6 +61,8 @@ export const useSettings = create<SettingsState>()(
       theme: 'light',
       calculationMethod: 'Karachi',
       madhhab: 'Hanafi',
+      quranReciterId: null,
+      quranReciterName: 'Loading reciters...',
       offsets: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
       notifications: {
         fajr: true,
@@ -74,6 +79,7 @@ export const useSettings = create<SettingsState>()(
       setTheme: (theme) => set({ theme }),
       setCalculationMethod: (calculationMethod) => set({ calculationMethod }),
       setMadhhab: (madhhab) => set({ madhhab }),
+      setQuranReciter: (quranReciterId, quranReciterName) => set({ quranReciterId, quranReciterName }),
       setOffset: (prayer, minutes) =>
         set((state) => ({ offsets: { ...state.offsets, [prayer]: minutes } })),
       setNotification: (prayer, enabled) =>

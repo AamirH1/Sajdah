@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useSettings } from '../../src/store/useSettings';
-import { getPrayerTimes, formatPrayerTime, PrayerTimeResult } from '../../src/services/prayer';
+import { getPrayerTimes, formatPrayerTime, PrayerName, PrayerTimeResult } from '../../src/services/prayer';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { ScreenContainer, Card } from '../../src/ui/components';
 
 export default function HomeScreen() {
-  const { colors, typography, spacing, radius } = useTheme();
+  const { colors, typography, spacing, radius, isDark } = useTheme();
   const router = useRouter();
   const { location, calculationMethod, madhhab, offsets } = useSettings();
 
@@ -117,6 +117,7 @@ export default function HomeScreen() {
   }, [now, nextPrayer]);
 
   const getPrayerGradient = (prayerName?: string) => {
+    if (isDark) return ['#020617', '#0B1020'] as const;
     switch(prayerName) {
       case 'fajr': return ['#1e3a8a', '#f59e0b'] as const;
       case 'sunrise': return ['#f59e0b', '#fbbf24'] as const;
@@ -131,9 +132,32 @@ export default function HomeScreen() {
   const quickActions = [
     { icon: 'book-outline' as const, label: 'Quran', testID: 'quick-action-quran', href: '/quran' as const },
     { icon: 'compass-outline' as const, label: 'Qibla', testID: 'quick-action-qibla', href: '/qibla' as const },
+    { icon: 'calendar-outline' as const, label: 'Hijri', testID: 'quick-action-hijri', href: '/hijri' as const },
     { icon: 'sunny-outline' as const, label: 'Azkar', testID: 'quick-action-morning-azkar', href: '/azkar/morning' as const },
     { icon: 'radio-button-on-outline' as const, label: 'Tasbih', testID: 'quick-action-tasbih', href: '/tasbih' as const },
   ];
+
+  const getPrayerIcon = (prayerName: PrayerName): keyof typeof Ionicons.glyphMap => {
+    switch (prayerName) {
+      case 'fajr':
+        return 'moon-outline';
+      case 'sunrise':
+        return 'partly-sunny-outline';
+      case 'dhuhr':
+        return 'sunny';
+      case 'asr':
+        return 'sunny-outline';
+      case 'maghrib':
+        return 'cloudy-night-outline';
+      case 'isha':
+        return 'moon';
+      default:
+        return 'time-outline';
+    }
+  };
+
+  const heroTextColor = isDark ? colors.textPrimary : colors.onPrimary;
+  const heroSubTextColor = isDark ? colors.textSecondary : 'rgba(255,255,255,0.85)';
 
   return (
     <ScreenContainer heroGradient={getPrayerGradient(nextPrayer?.name)}>
@@ -142,58 +166,58 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.heroContainer}>
           <View>
-            <Text style={[typography.xs, styles.heroSubtitle]}>
+            <Text style={[typography.xs, { color: heroSubTextColor, marginBottom: 2 }]}>
               Assalamu Alaikum
             </Text>
-            <Text style={[typography.headline, styles.heroTitle]}>Prayer Times</Text>
+            <Text style={[typography.headline, { color: heroTextColor }]}>Prayer Times</Text>
           </View>
-          <View style={styles.heroLocationBadge}>
-            <Ionicons name="location" size={14} color="#ffffff" />
-            <Text style={[typography.xs, styles.heroLocationText]}>{location.city}</Text>
+          <View style={[styles.heroLocationBadge, { backgroundColor: isDark ? colors.chipBackground : 'rgba(255,255,255,0.22)' }]}>
+            <Ionicons name="location" size={14} color={heroTextColor} />
+            <Text style={[typography.xs, { color: heroTextColor, marginLeft: 4 }]}>{location.city}</Text>
           </View>
         </View>
 
         {/* Hero Next Prayer Block */}
         <View style={styles.heroNextPrayer}>
-          <Text style={[typography.label, styles.heroMeta]}>Next Prayer</Text>
-          <Text style={[typography.displayLg, styles.heroNextPrayerName]}>{nextPrayer?.label || '—'}</Text>
-          <Text style={[typography.body, styles.heroNextPrayerTime]}>
+          <Text style={[typography.label, { color: heroSubTextColor }]}>Next Prayer</Text>
+          <Text style={[typography.displayLg, { color: heroTextColor, marginVertical: 4 }]}>{nextPrayer?.label || '—'}</Text>
+          <Text style={[typography.body, { color: isDark ? colors.textPrimary : 'rgba(255,255,255,0.9)' }]}>
             {nextPrayer ? formatPrayerTime(nextPrayer.time) : '—'}
           </Text>
         </View>
           
         {/* Countdown Card (White/Light Section) */}
         <Card elevated style={[styles.countdownCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[typography.label, styles.countdownTitle, { color: colors.onSurfaceSecondary }]}>Time Remaining</Text>
+          <Text style={[typography.label, styles.countdownTitle, { color: colors.textSecondary }]}>Time Remaining</Text>
           <View style={styles.countdownContainer}>
             <View style={styles.countdownBlock}>
-              <Text style={[typography.headline, styles.countdownValue, { color: colors.onSurface }]}>
+              <Text style={[typography.headline, styles.countdownValue, { color: colors.textPrimary }]}>
                 {String(countdown.hours).padStart(2, '0')}
               </Text>
-              <Text style={[typography.xs, styles.countdownLabel, { color: colors.onSurfaceSecondary }]}>hr</Text>
+              <Text style={[typography.xs, styles.countdownLabel, { color: colors.textMuted }]}>hr</Text>
             </View>
-            <Text style={[styles.countdownSeparator, { color: colors.onSurfaceSecondary }]}>:</Text>
+            <Text style={[styles.countdownSeparator, { color: colors.textMuted }]}>:</Text>
             <View style={styles.countdownBlock}>
-              <Text style={[typography.headline, styles.countdownValue, { color: colors.onSurface }]}>
+              <Text style={[typography.headline, styles.countdownValue, { color: colors.textPrimary }]}>
                 {String(countdown.minutes).padStart(2, '0')}
               </Text>
-              <Text style={[typography.xs, styles.countdownLabel, { color: colors.onSurfaceSecondary }]}>min</Text>
+              <Text style={[typography.xs, styles.countdownLabel, { color: colors.textMuted }]}>min</Text>
             </View>
-            <Text style={[styles.countdownSeparator, { color: colors.onSurfaceSecondary }]}>:</Text>
+            <Text style={[styles.countdownSeparator, { color: colors.textMuted }]}>:</Text>
             <View style={styles.countdownBlock}>
-              <Text style={[typography.headline, styles.countdownValue, { color: colors.onSurface }]}>
+              <Text style={[typography.headline, styles.countdownValue, { color: colors.textPrimary }]}>
                 {String(countdown.seconds).padStart(2, '0')}
               </Text>
-              <Text style={[typography.xs, styles.countdownLabel, { color: colors.onSurfaceSecondary }]}>sec</Text>
+              <Text style={[typography.xs, styles.countdownLabel, { color: colors.textMuted }]}>sec</Text>
             </View>
           </View>
         </Card>
 
         {/* Today's Prayer List */}
         <View style={styles.sectionTitleContainer}>
-          <Text style={[typography.title, styles.sectionTitle, { color: colors.onBackground }]}>Today&apos;s Prayers</Text>
+          <Text style={[typography.title, styles.sectionTitle, { color: colors.textPrimary }]}>Today&apos;s Prayers</Text>
         </View>
-        <Card style={[styles.prayerListContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={[styles.prayerListContainer, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
           {displayPrayerTimes.map((prayer) => (
             <View
               key={prayer.name}
@@ -201,23 +225,23 @@ export default function HomeScreen() {
               style={[
                 styles.prayerRow,
                 { 
-                  backgroundColor: prayer.isNext ? colors.surfaceElevated : colors.surface, 
+                  backgroundColor: prayer.isNext ? colors.successSoft : colors.surfaceAlt, 
                   borderBottomColor: colors.border 
                 },
               ]}
             >
-              {prayer.isNext && <View style={[styles.activePrayerRow, { backgroundColor: colors.primary }]} />}
+              {prayer.isNext && <View style={[styles.activePrayerRow, { backgroundColor: colors.success }]} />}
               <View style={styles.prayerRowLeft}>
                 <Ionicons
-                  name={prayer.name === 'sunrise' ? 'sunny' : 'time-outline'}
+                  name={getPrayerIcon(prayer.name)}
                   size={20}
-                  color={prayer.isNext ? colors.primary : colors.onSurfaceSecondary}
+                  color={prayer.isNext ? colors.success : colors.textSecondary}
                 />
-                <Text style={[typography.label, styles.prayerName, { color: prayer.isNext ? colors.primary : colors.onSurface }]}>
+                <Text style={[typography.label, styles.prayerName, { color: prayer.isNext ? colors.success : colors.textPrimary }]}>
                   {prayer.label}
                 </Text>
               </View>
-              <Text style={[typography.body, styles.prayerTime, { color: prayer.isNext ? colors.primary : colors.onSurfaceSecondary }]}>
+              <Text style={[typography.body, styles.prayerTime, { color: prayer.isNext ? colors.success : colors.textSecondary }]}>
                 {formatPrayerTime(prayer.time)}
               </Text>
             </View>
@@ -226,26 +250,22 @@ export default function HomeScreen() {
 
         {/* Quick Actions */}
         <View style={styles.sectionTitleContainer}>
-          <Text style={[typography.title, styles.sectionTitle, { color: colors.onBackground }]}>Quick Actions</Text>
+          <Text style={[typography.title, styles.sectionTitle, { color: colors.textPrimary }]}>Quick Actions</Text>
         </View>
         <View testID="quick-actions" style={styles.quickActionsContainer}>
           {quickActions.map((action) => (
-            <Link
+            <TouchableOpacity
               key={action.label}
-              href={action.href as any}
-              asChild
+              testID={action.testID}
+              style={styles.quickActionCard}
+              activeOpacity={0.7}
+              onPress={() => router.navigate(action.href as any)}
             >
-              <TouchableOpacity
-                testID={action.testID}
-                style={styles.quickActionCard}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.quickActionIconContainer, { backgroundColor: colors.primary + '1A' }]}>
-                  <Ionicons name={action.icon} size={28} color={colors.primary} />
-                </View>
-                <Text numberOfLines={1} adjustsFontSizeToFit style={[typography.xs, styles.quickActionLabel, { color: colors.onSurface, fontWeight: '600' }]}>{action.label}</Text>
-              </TouchableOpacity>
-            </Link>
+              <View style={[styles.quickActionIconContainer, { backgroundColor: colors.chipBackground }]}>
+                <Ionicons name={action.icon} size={28} color={colors.primary} />
+              </View>
+              <Text numberOfLines={1} adjustsFontSizeToFit style={[typography.xs, styles.quickActionLabel, { color: colors.textPrimary, fontWeight: '600' }]}>{action.label}</Text>
+            </TouchableOpacity>
           ))}
         </View>
       </View>
@@ -262,38 +282,16 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingRight: 8,
   },
-  heroSubtitle: {
-    color: 'rgba(255,255,255,0.85)',
-    marginBottom: 2,
-  },
-  heroTitle: {
-    color: '#ffffff',
-  },
   heroLocationBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.22)',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 9999,
   },
-  heroLocationText: {
-    color: '#ffffff',
-    marginLeft: 4,
-  },
   heroNextPrayer: {
     alignItems: 'center',
     marginBottom: 32,
-  },
-  heroMeta: {
-    color: 'rgba(255,255,255,0.8)',
-  },
-  heroNextPrayerName: {
-    color: '#ffffff',
-    marginVertical: 4,
-  },
-  heroNextPrayerTime: {
-    color: 'rgba(255,255,255,0.9)',
   },
   countdownCard: {
     alignItems: 'center',
