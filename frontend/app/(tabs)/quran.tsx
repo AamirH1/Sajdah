@@ -9,14 +9,14 @@ import {
   ActivityIndicator,
   Modal
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
 
 import { SURAHS } from '../../src/data/quran';
 import { useTheme } from '../../src/ui/hooks/useTheme';
-import { ScreenHeader } from '../../src/ui/components';
+import { ScreenContainer, ScreenHeader } from '../../src/ui/components';
+import { getDynamicScreenGradient } from '../../src/ui/colorUtils';
 import { spacing, radius, typography } from '../../src/theme';
 import { useSettings } from '../../src/store/useSettings';
 import { QuranReciter, getQuranReciters, getSurahAudioUrls } from '../../src/services/quranReciters';
@@ -32,6 +32,7 @@ export default function QuranScreen() {
   const { colors, typography, isDark } = useTheme();
   const router = useRouter();
   const { quranReciterId, quranReciterName, setQuranReciter } = useSettings();
+  const screenGradient = getDynamicScreenGradient(colors, isDark);
 
   const [search, setSearch] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -181,7 +182,7 @@ export default function QuranScreen() {
       style={[
         styles.surahItem,
         {
-          backgroundColor: colors.surface,
+          backgroundColor: colors.surfaceAlt,
           borderColor: colors.border,
         },
       ]}
@@ -248,12 +249,12 @@ export default function QuranScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScreenContainer scrollable={false} heroGradient={screenGradient}>
       <ScreenHeader 
         title="Quran" 
         subtitle="Read & Reflect"
         rightAction={
-        <TouchableOpacity onPress={() => setShowReciterModal(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: isDark ? colors.primarySoft : colors.surfaceAlt, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999 }}>
+        <TouchableOpacity onPress={() => setShowReciterModal(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.primarySoft, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999 }}>
           <Ionicons name="musical-notes-outline" size={14} color={colors.primary} />
           <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>
             {selectedReciter?.name || 'Reciter'}
@@ -311,7 +312,7 @@ export default function QuranScreen() {
         animationType="slide"
         onRequestClose={() => setShowReciterModal(false)}
       >
-        <SafeAreaView style={[styles.reciterPickerContainer, { backgroundColor: colors.background }]}>
+        <ScreenContainer scrollable={false} heroGradient={screenGradient}>
           <View style={[styles.reciterHeader, { borderBottomColor: colors.border }]}>
             <TouchableOpacity
               testID="reciter-picker-close-btn"
@@ -374,9 +375,9 @@ export default function QuranScreen() {
               }}
             />
           )}
-        </SafeAreaView>
+        </ScreenContainer>
       </Modal>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

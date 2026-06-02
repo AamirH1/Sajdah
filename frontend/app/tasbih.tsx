@@ -158,22 +158,30 @@ export default function TasbihScreen() {
           </Animated.View>
         </LinearGradient>
 
-        <Card style={[styles.progressCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.sm]}>
+        <Card style={[
+          styles.progressCard,
+          {
+            backgroundColor: colors.surfaceAlt,
+            borderColor: colors.border,
+          },
+          shadows.sm,
+        ]}>
           <View style={styles.progressHeader}>
             <View>
-              <Text style={[typography.title, { color: colors.textPrimary }]}>Today’s progress</Text>
-              <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 3 }]}>
+              <Text style={[styles.progressLabel, { color: colors.primary }]}>TODAY</Text>
+              <Text style={[typography.title, styles.progressTitle, { color: colors.textPrimary }]}>Today’s progress</Text>
+              <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 4 }]}>
                 {activeCounter?.count || 0} of {activeCounter?.target || 0} counts
               </Text>
             </View>
-            <View style={[styles.percentBadge, { backgroundColor: colors.primarySoft }]}>
-              <Text style={[typography.xs, { color: colors.primary, fontWeight: '800' }]}>
+            <View style={[styles.percentBadge, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+              <Text style={[styles.percentText, { color: colors.primary }]}>
                 {Math.round(progressPercent)}%
               </Text>
             </View>
           </View>
 
-          <View style={[styles.progressBar, { backgroundColor: colors.chipBackground }]}>
+          <View style={[styles.progressBar, { backgroundColor: isDark ? colors.chipBackground : 'rgba(255,255,255,0.72)' }]}>
             <View
               style={[
                 styles.progressFill,
@@ -187,7 +195,7 @@ export default function TasbihScreen() {
 
           <TouchableOpacity
             testID="tasbih-reset-btn"
-            style={[styles.resetBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
+            style={[styles.resetBtn, { borderColor: colors.border, backgroundColor: colors.surfaceAlt }]}
             onPress={handleReset}
           >
             <Ionicons name="refresh" size={18} color={colors.textSecondary} />
@@ -331,27 +339,46 @@ const styles = StyleSheet.create({
   bigCounterNumber: { color: '#FFFFFF', fontSize: 68, fontWeight: '900', letterSpacing: -1 },
   bigCounterLabel: { color: 'rgba(255,255,255,0.82)', fontSize: 13, fontWeight: '800', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1.2 },
   progressCard: {
-    borderRadius: 24,
+    borderRadius: 28,
     borderWidth: 1,
-    padding: 18,
+    padding: 20,
+    overflow: 'hidden',
   },
   progressHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 18,
+  },
+  progressLabel: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+    marginBottom: 5,
+  },
+  progressTitle: {
+    letterSpacing: -0.2,
   },
   percentBadge: {
-    borderRadius: 9999,
+    minWidth: 72,
+    height: 54,
+    borderRadius: 18,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 7,
+  },
+  percentText: {
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: -0.4,
   },
   progressBar: {
-    height: 9,
+    height: 12,
     borderRadius: 9999,
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   progressFill: { height: '100%', borderRadius: 9999 },
   resetBtn: {

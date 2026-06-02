@@ -7,11 +7,12 @@ import { useTheme } from '../src/ui/hooks/useTheme';
 import { useSettings } from '../src/store/useSettings';
 import { ScreenContainer, Card } from '../src/ui/components';
 import { getQiblaLookup } from '../src/services/qiblaApi';
+import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 
 const { width } = Dimensions.get('window');
 
 export default function QiblaScreen() {
-  const { colors, typography, spacing, shadows } = useTheme();
+  const { colors, typography, spacing, shadows, isDark } = useTheme();
   const router = useRouter();
   const { location } = useSettings();
   
@@ -125,7 +126,7 @@ export default function QiblaScreen() {
         useNativeDriver: true,
       })
     ]).start();
-  }, [heading, qiblaDirection]);
+  }, [compassSpin, heading, qiblaDirection, qiblaSpin]);
 
   const compassTransform = { 
     transform: [{ 
@@ -155,6 +156,7 @@ export default function QiblaScreen() {
         return 'location-outline';
     }
   };
+  const screenGradient = getDynamicScreenGradient(colors, isDark);
 
   const renderCompassMarks = () => {
     return Array.from({ length: 24 }).map((_, index) => {
@@ -191,13 +193,20 @@ export default function QiblaScreen() {
   };
 
   return (
-    <ScreenContainer scrollable={false}>
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.screenTextPrimary} />
+    <ScreenContainer scrollable={false} heroGradient={screenGradient}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={[styles.backBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+        >
+          <Ionicons name="arrow-back" size={22} color={colors.screenTextPrimary} />
         </TouchableOpacity>
-        <Text style={[typography.title, { color: colors.screenTextPrimary }]}>Qibla Compass</Text>
-        <View style={{ width: 32 }} />
+        <View style={styles.headerTitleWrap}>
+          <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.screenTextPrimary }]}>Qibla Compass</Text>
+        </View>
+        <View style={[styles.headerIcon, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+          <Ionicons name="compass-outline" size={22} color={colors.primary} />
+        </View>
       </View>
 
       <View style={styles.content}>
@@ -225,7 +234,7 @@ export default function QiblaScreen() {
               Align the arrow with the Kaaba to face Qibla.
             </Text>
             
-            <View style={[styles.compassWrapper, { backgroundColor: colors.surfaceAlt, ...shadows.md }]}>
+            <View style={[styles.compassWrapper, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, ...shadows.md }]}>
               {/* Phone Forward indicator (fixed at top) */}
               <View style={[styles.forwardMarker, { borderBottomColor: colors.primary }]} />
               
@@ -250,29 +259,49 @@ export default function QiblaScreen() {
               </Animated.View>
             </View>
 
-            <Card style={styles.infoCard}>
-              <View style={styles.infoRow}>
-                <View style={styles.infoLabelGroup}>
-                  <Ionicons name={getInfoIcon('direction')} size={18} color={colors.textSecondary} />
-                  <Text style={[typography.label, { color: colors.textSecondary }]}>Qibla Direction</Text>
+            <Card style={[styles.infoCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.sm]}>
+              <View style={styles.infoHeader}>
+                <View style={[styles.infoIconBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Ionicons name="navigate" size={22} color={colors.primary} />
                 </View>
-                <Text style={[typography.title, { color: colors.primary }]}>{Math.round(qiblaDirection)}°</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <View style={styles.infoLabelGroup}>
-                  <Ionicons name={getInfoIcon('distance')} size={18} color={colors.textSecondary} />
-                  <Text style={[typography.label, { color: colors.textSecondary }]}>Distance to Kaaba</Text>
+                <View style={styles.infoTitleBlock}>
+                  <Text numberOfLines={1} style={[styles.infoEyebrow, { color: colors.textLabel }]}>QIBLA DIRECTION</Text>
+                  <Text style={[typography.xs, styles.infoSubtitle, { color: colors.textSecondary }]}>
+                    Face this bearing{'\n'}from your current location.
+                  </Text>
                 </View>
-                <Text style={[typography.title, { color: colors.textPrimary }]}>
-                  {qiblaDistanceKm != null ? `${Math.round(qiblaDistanceKm)} km` : '—'}
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82} style={[styles.directionValue, { color: colors.primary }]}>
+                  {Math.round(qiblaDirection)}°
                 </Text>
               </View>
-              <View style={styles.infoRow}>
-                <View style={styles.infoLabelGroup}>
-                  <Ionicons name={getInfoIcon('city')} size={18} color={colors.textSecondary} />
-                  <Text style={[typography.label, { color: colors.textSecondary }]}>Current City</Text>
+
+              <View style={styles.infoTileRow}>
+                <View style={[styles.infoTile, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <View style={styles.infoLabelGroup}>
+                    <Ionicons name={getInfoIcon('distance')} size={16} color={colors.primary} />
+                    <Text style={[styles.infoTileLabel, { color: colors.textSecondary }]}>Distance</Text>
+                  </View>
+                  <Text style={[styles.infoTileValue, { color: colors.textPrimary }]}>
+                    {qiblaDistanceKm != null ? `${Math.round(qiblaDistanceKm)} km` : '—'}
+                  </Text>
                 </View>
-                <Text style={[typography.title, { color: colors.textPrimary }]}>{location.city || 'Unknown'}</Text>
+
+                <View style={[styles.infoTile, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <View style={styles.infoLabelGroup}>
+                    <Ionicons name={getInfoIcon('city')} size={16} color={colors.primary} />
+                    <Text style={[styles.infoTileLabel, { color: colors.textSecondary }]}>Location</Text>
+                  </View>
+                  <Text numberOfLines={1} style={[styles.infoTileValue, { color: colors.textPrimary }]}>
+                    {location.city || 'Unknown'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[styles.infoHint, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Ionicons name="phone-portrait-outline" size={16} color={colors.primary} />
+                <Text style={[typography.xs, { color: colors.textSecondary, flex: 1, lineHeight: 18 }]}>
+                  Hold your phone flat and rotate until the Kaaba marker points forward.
+                </Text>
               </View>
             </Card>
           </>
@@ -283,11 +312,45 @@ export default function QiblaScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingVertical: 16, borderBottomWidth: 1 },
-  backBtn: { padding: 4 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitleWrap: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    minWidth: 0,
+  },
+  headerTitle: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  headerIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   content: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   centerContent: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  instructions: { textAlign: 'center', marginBottom: 48 },
+  instructions: { textAlign: 'center', marginTop: -30, marginBottom: 78 },
   settingsBtn: {
     marginTop: 24,
     paddingHorizontal: 24,
@@ -301,6 +364,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: width * 0.425,
+    borderWidth: 1,
   },
   compassRing: {
     position: 'absolute',
@@ -377,18 +441,92 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     width: '100%',
-    marginTop: 64,
-    padding: 24,
-    gap: 16,
+    marginTop: 36,
+    padding: 16,
+    gap: 12,
   },
-  infoRow: {
+  infoHeader: {
+    position: 'relative',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 42,
+  },
+  infoIconBadge: {
+    position: 'absolute',
+    left: 0,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoTitleBlock: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 0,
+    paddingHorizontal: 58,
+  },
+  infoEyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textAlign: 'center',
+  },
+  infoSubtitle: {
+    marginTop: 2,
+    textAlign: 'center',
+    fontSize: 11,
+    lineHeight: 14,
+  },
+  directionValue: {
+    position: 'absolute',
+    right: 0,
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '900',
+    letterSpacing: -1,
+  },
+  infoTileRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  infoTile: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    minHeight: 62,
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   infoLabelGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  }
+    justifyContent: 'center',
+    gap: 7,
+  },
+  infoTileLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  infoTileValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  infoHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
 });

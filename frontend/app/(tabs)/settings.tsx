@@ -5,7 +5,7 @@ import { Link, useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { spacing, typography, radius } from '../../src/ui/theme';
 import { ScreenContainer, ScreenHeader } from '../../src/ui/components';
-import { getDynamicScreenGradient } from '../../src/ui/colorUtils';
+import { getDynamicScreenGradient, hexToRgba } from '../../src/ui/colorUtils';
 
 import { useSettings } from '../../src/store/useSettings';
 import { useEntitlements } from '../../src/store/useEntitlements';
@@ -40,6 +40,14 @@ export default function SettingsScreen() {
   const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'] as const;
   const comingSoonLanguages = new Set(['telugu', 'kannada']);
   const screenGradient = getDynamicScreenGradient(colors, isDark);
+  const selectedChipColor = isDark ? colors.dateBadgeBg : colors.chipBackground;
+  const selectedChipTextColor = isDark ? colors.primary : colors.textPrimary;
+  const selectedChipIconColor = isDark ? colors.primary : colors.textSecondary;
+  const selectedChipStyle = { backgroundColor: selectedChipColor, borderColor: colors.border };
+  const dynamicIconTileStyle = {
+    backgroundColor: isDark ? colors.dateBadgeBg : hexToRgba(colors.primary, 0.16),
+    borderColor: isDark ? colors.cardBorder : colors.border,
+  };
 
   useEffect(() => {
     getDeviceId().then(setDeviceId);
@@ -124,7 +132,7 @@ export default function SettingsScreen() {
         <ScreenHeader title="Settings" />
 
         <View style={[styles.settingsHero, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-          <View style={[styles.heroIcon, { backgroundColor: colors.primarySoft }]}>
+          <View style={[styles.heroIcon, dynamicIconTileStyle]}>
             <Ionicons name="options-outline" size={24} color={colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
@@ -176,10 +184,10 @@ export default function SettingsScreen() {
                   <TouchableOpacity
                     key={m}
                     testID={`method-${m}`}
-                  style={[styles.choiceBtn, selected ? { backgroundColor: colors.primarySoft, borderColor: colors.primary } : { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  style={[styles.choiceBtn, selected ? selectedChipStyle : { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={() => settings.setCalculationMethod(m)}
                 >
-                    <Text style={[styles.choiceText, { color: selected ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: selected ? selectedChipTextColor : colors.textPrimary }]}>
                       {m.replace('MuslimWorldLeague', 'MWL').replace('NorthAmerica', 'ISNA')}
                     </Text>
                   </TouchableOpacity>
@@ -230,7 +238,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.madhhabBtn,
                     settings.madhhab === m
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
+                      ? selectedChipStyle
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
                   onPress={() => settings.setMadhhab(m)}
@@ -239,9 +247,9 @@ export default function SettingsScreen() {
                     <Ionicons
                       name={settings.madhhab === m ? 'checkmark-circle' : 'ellipse-outline'}
                       size={14}
-                      color={settings.madhhab === m ? colors.primary : colors.textSecondary}
+                      color={settings.madhhab === m ? selectedChipIconColor : colors.textSecondary}
                     />
-                    <Text style={[styles.choiceText, { color: settings.madhhab === m ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.madhhab === m ? selectedChipTextColor : colors.textPrimary }]}>
                       {m}
                     </Text>
                   </View>
@@ -314,8 +322,8 @@ export default function SettingsScreen() {
                   Applies to Quran and 99 Names when that language is available. If not, Sajdah shows English.
                 </Text>
               </View>
-              <View style={[styles.activeLanguageBadge, { backgroundColor: colors.primarySoft }]}>
-                <Text style={[typography.xs, { color: colors.primary, fontWeight: '700' }]}>
+              <View style={[styles.activeLanguageBadge, { backgroundColor: selectedChipColor }]}>
+                <Text style={[typography.xs, { color: selectedChipTextColor, fontWeight: '700' }]}>
                   {getAsmaUlHusnaLanguageLabel(settings.translationLang)}
                 </Text>
               </View>
@@ -329,7 +337,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.quranChoiceBtn,
                     settings.translationLang === lang
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
+                      ? selectedChipStyle
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
                   onPress={() => settings.setTranslationLang(lang)}
@@ -338,9 +346,9 @@ export default function SettingsScreen() {
                     <Ionicons
                       name={settings.translationLang === lang ? 'checkmark-circle' : 'ellipse-outline'}
                       size={14}
-                      color={settings.translationLang === lang ? colors.primary : colors.textSecondary}
+                      color={settings.translationLang === lang ? selectedChipIconColor : colors.textSecondary}
                     />
-                    <Text style={[styles.choiceText, { color: settings.translationLang === lang ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.translationLang === lang ? selectedChipTextColor : colors.textPrimary }]}>
                       {getAsmaUlHusnaLanguageLabel(lang)}
                     </Text>
                   </View>
@@ -354,7 +362,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.quranChoiceBtn,
                     settings.translationLang === lang
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
+                      ? selectedChipStyle
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                     { opacity: canUseMultiLang ? 1 : 0.5 }
                   ]}
@@ -377,12 +385,12 @@ export default function SettingsScreen() {
                     <Ionicons
                       name={settings.translationLang === lang ? 'checkmark-circle' : 'ellipse-outline'}
                       size={14}
-                      color={settings.translationLang === lang ? colors.primary : colors.textSecondary}
+                      color={settings.translationLang === lang ? selectedChipIconColor : colors.textSecondary}
                     />
-                    <Text style={[styles.choiceText, { color: settings.translationLang === lang ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.translationLang === lang ? selectedChipTextColor : colors.textPrimary }]}>
                       {getAsmaUlHusnaLanguageLabel(lang)}
                     </Text>
-                    {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color={settings.translationLang === lang ? colors.primary : colors.textSecondary} />}
+                    {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color={settings.translationLang === lang ? selectedChipIconColor : colors.textSecondary} />}
                     {canUseMultiLang && comingSoonLanguages.has(lang) && (
                       <Text style={[styles.comingSoonText, { color: colors.textMuted }]}>Soon</Text>
                     )}
@@ -412,7 +420,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.quranChoiceBtn,
                     settings.quranScript === s
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
+                      ? selectedChipStyle
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
                   onPress={() => settings.setQuranScript(s)}
@@ -421,9 +429,9 @@ export default function SettingsScreen() {
                     <Ionicons
                       name={settings.quranScript === s ? 'checkmark-circle' : 'ellipse-outline'}
                       size={14}
-                      color={settings.quranScript === s ? colors.primary : colors.textSecondary}
+                      color={settings.quranScript === s ? selectedChipIconColor : colors.textSecondary}
                     />
-                    <Text style={[styles.choiceText, { color: settings.quranScript === s ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.quranScript === s ? selectedChipTextColor : colors.textPrimary }]}>
                       {s}
                     </Text>
                   </View>
@@ -449,7 +457,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.themeChoiceBtn,
                     settings.theme === t
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
+                      ? selectedChipStyle
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
                   onPress={() => settings.setTheme(t)}
@@ -458,9 +466,9 @@ export default function SettingsScreen() {
                     <Ionicons
                       name={t === 'light' ? 'sunny' : t === 'dark' ? 'moon' : 'phone-portrait'}
                       size={14}
-                      color={settings.theme === t ? colors.primary : colors.textSecondary}
+                      color={settings.theme === t ? selectedChipIconColor : colors.textSecondary}
                     />
-                    <Text style={[styles.choiceText, { color: settings.theme === t ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.theme === t ? selectedChipTextColor : colors.textPrimary }]}>
                       {t.charAt(0).toUpperCase() + t.slice(1)}
                     </Text>
                   </View>
@@ -499,7 +507,7 @@ export default function SettingsScreen() {
           {/* Backup Card */}
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginTop: spacing.md }]}>
             <View style={styles.backupHeader}>
-              <View style={[styles.iconTile, { backgroundColor: colors.primarySoft }]}>
+              <View style={[styles.iconTile, dynamicIconTileStyle]}>
                 <Ionicons name="cloud-done-outline" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
@@ -676,6 +684,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 18,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -726,7 +735,7 @@ const styles = StyleSheet.create({
   upgradeBtn: { borderRadius: 18, paddingVertical: spacing.md, alignItems: 'center' },
   upgradeBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   linkRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
-  iconTile: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  iconTile: { width: 44, height: 44, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   backupHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   backupActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
   backupPrimaryBtn: { flex: 1, minHeight: 46, borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },

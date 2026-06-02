@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { ScreenContainer, ScreenHeader, Card } from '../../src/ui/components';
+import { getDynamicScreenGradient } from '../../src/ui/colorUtils';
 
 const HADITH_BOOKS = [
   { id: 'bukhari', name: 'Sahih al-Bukhari', arabic: 'صحيح البخاري', count: 7563, color: '#F59E0B' },
@@ -15,8 +16,9 @@ const HADITH_BOOKS = [
 ];
 
 export default function HadithScreen() {
-  const { colors, typography, spacing, radius } = useTheme();
+  const { colors, typography, spacing, radius, isDark } = useTheme();
   const router = useRouter();
+  const screenGradient = getDynamicScreenGradient(colors, isDark);
 
   const renderBook = ({ item }: { item: typeof HADITH_BOOKS[0] }) => (
     <TouchableOpacity
@@ -39,7 +41,7 @@ export default function HadithScreen() {
   );
 
   return (
-    <ScreenContainer scrollable={false}>
+    <ScreenContainer scrollable={false} heroGradient={screenGradient}>
       <ScreenHeader 
         title="Hadith Library" 
         subtitle="Authentic Sayings of the Prophet ﷺ"

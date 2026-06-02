@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
+import { ScreenContainer } from '../../src/ui/components';
+import { getDynamicScreenGradient, hexToRgba } from '../../src/ui/colorUtils';
 import { spacing, radius, typography } from '../../src/theme';
 import { AZKAR_CATEGORIES } from '../../src/data/azkar';
 
@@ -12,27 +13,29 @@ export default function AzkarScreen() {
   const router = useRouter();
   const screenTitleColor = isDark ? colors.screenTextPrimary : colors.textPrimary;
   const screenSubtitleColor = isDark ? colors.screenTextSecondary : colors.textSecondary;
+  const screenGradient = getDynamicScreenGradient(colors, isDark);
+  const dynamicAccentTint = isDark ? colors.dateBadgeBg : hexToRgba(colors.primary, 0.16);
 
   const renderCategory = ({ item, index }: { item: typeof AZKAR_CATEGORIES[0]; index: number }) => (
     <TouchableOpacity
       testID={`azkar-category-${item.id}`}
-      style={[styles.categoryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      style={[styles.categoryCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
       onPress={() => router.push(`/azkar/${item.id}`)}
       activeOpacity={0.7}
     >
-      <View style={[styles.categoryIcon, { backgroundColor: isDark ? colors.dateBadgeBg : item.color + '20' }]}>
-        <Ionicons name={item.icon as any} size={28} color={isDark ? colors.primary : item.color} />
+      <View style={[styles.categoryIcon, { backgroundColor: dynamicAccentTint }]}>
+        <Ionicons name={item.icon as any} size={28} color={colors.primary} />
       </View>
       <Text style={[styles.categoryName, { color: colors.onSurface }]}>{item.name}</Text>
       <Text style={[styles.categoryArabic, { color: colors.onSurfaceSecondary }]}>{item.nameArabic}</Text>
-      <View style={[styles.countBadge, { backgroundColor: colors.primarySoft }]}>
+      <View style={[styles.countBadge, { backgroundColor: dynamicAccentTint }]}>
         <Text style={[styles.countText, { color: colors.primary }]}>{item.count} duas</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScreenContainer scrollable={false} heroGradient={screenGradient}>
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -61,7 +64,7 @@ export default function AzkarScreen() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

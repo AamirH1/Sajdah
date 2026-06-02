@@ -5,13 +5,15 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { spacing, radius, typography } from '../../src/ui/theme';
 import { ScreenContainer } from '../../src/ui/components';
+import { getDynamicScreenGradient } from '../../src/ui/colorUtils';
 import { AZKAR_CATEGORIES, AZKAR_ITEMS } from '../../src/data/azkar';
 
 export default function AzkarDetailScreen() {
   const { categoryId } = useLocalSearchParams<{ categoryId: string }>();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const [completedCounts, setCompletedCounts] = useState<Record<string, number>>({});
+  const screenGradient = getDynamicScreenGradient(colors, isDark);
 
   const category = AZKAR_CATEGORIES.find((c) => c.id === categoryId);
   const items = AZKAR_ITEMS.filter((item) => item.categoryId === categoryId);
@@ -79,7 +81,7 @@ export default function AzkarDetailScreen() {
   };
 
   return (
-    <ScreenContainer scrollable={false}>
+    <ScreenContainer scrollable={false} heroGradient={screenGradient}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity testID="azkar-back-btn" onPress={() => router.back()} style={styles.backBtn}>

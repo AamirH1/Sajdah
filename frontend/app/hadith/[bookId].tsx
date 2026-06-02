@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { Card, ScreenContainer, ScreenHeader } from '../../src/ui/components';
+import { getDynamicScreenGradient, hexToRgba } from '../../src/ui/colorUtils';
 import {
   HadithCollectionKey,
   HadithSearchResult,
@@ -43,16 +44,6 @@ const SEARCH_MODE = 'search';
 const resolveParam = (value: string | string[] | undefined) => {
   if (Array.isArray(value)) return value[0];
   return value;
-};
-
-const hexToRgba = (hex: string, alpha: number) => {
-  const normalized = hex.replace('#', '');
-  if (normalized.length !== 6) return hex;
-  const value = parseInt(normalized, 16);
-  const r = (value >> 16) & 255;
-  const g = (value >> 8) & 255;
-  const b = value & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
 const MenuOptionCard = memo(function MenuOptionCard({
@@ -207,8 +198,9 @@ function CollectionShell({
   onOpenList?: () => void;
   onOpenSearch?: () => void;
 }) {
-  const { colors, typography } = useTheme();
+  const { colors, typography, isDark } = useTheme();
   const meta = COLLECTION_META[collection] || COLLECTION_META.bukhari;
+  const screenGradient = getDynamicScreenGradient(colors, isDark);
   const subtitleByMode: Record<typeof mode, string> = {
     menu: 'Choose what feels right',
     reader: 'A calm way to begin',
@@ -217,7 +209,7 @@ function CollectionShell({
   };
 
   return (
-    <ScreenContainer scrollable={false}>
+    <ScreenContainer scrollable={false} heroGradient={screenGradient}>
       {mode === MENU_MODE || mode === READER_MODE || mode === SEARCH_MODE ? (
         <View style={styles.menuTopBar}>
           <TouchableOpacity
