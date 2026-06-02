@@ -9,10 +9,11 @@ import {
   TextInput,
   Modal,
   Animated,
+  ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { useTasbih } from '../src/store/useTasbih';
 import { useTheme } from '../src/ui/hooks/useTheme';
@@ -20,11 +21,21 @@ import {
   ScreenContainer,
   ScreenHeader,
   IconButton,
+  Card,
 } from '../src/ui/components';
 
+const hexToRgba = (hex: string, alpha: number) => {
+  const normalized = hex.replace('#', '');
+  if (normalized.length !== 6) return hex;
+  const value = parseInt(normalized, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 export default function TasbihScreen() {
-  const { colors, typography, spacing, radius } = useTheme();
-  const router = useRouter();
+  const { colors, typography, spacing, shadows, isDark } = useTheme();
   const { counters, activeCounterId, increment, reset, setActive, addCounter } = useTasbih();
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -71,12 +82,19 @@ export default function TasbihScreen() {
   };
 
   const progress = activeCounter ? activeCounter.count / activeCounter.target : 0;
+  const progressPercent = Math.min(progress * 100, 100);
   const isComplete = activeCounter
     ? activeCounter.count >= activeCounter.target
     : false;
+  const heroGradient = isDark
+    ? ['#111C14', '#2A3420'] as const
+    : [colors.primary, hexToRgba(colors.primary, 0.76)] as const;
+  const screenGradient = isDark
+    ? [colors.background, colors.surfaceAlt] as const
+    : [colors.primarySoft, colors.background] as const;
 
   return (
-    <ScreenContainer scrollable={false}>
+    <ScreenContainer scrollable={false} heroGradient={screenGradient}>
       <ScreenHeader
         title="Tasbih"
         rightAction={
@@ -89,123 +107,107 @@ export default function TasbihScreen() {
         }
       />
 
-      {/* Counter Selection */}
-      <View style={{ paddingVertical: spacing.md }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        <Text style={[typography.label, { color: colors.screenTextSecondary, lineHeight: 22, marginBottom: spacing.lg }]}>
+          Choose a dhikr, tap gently, and keep your count without distraction.
+        </Text>
+
         <FlatList
           horizontal
           data={counters}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}
+          contentContainerStyle={styles.counterList}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              testID={`tasbih-select-${item.id}`}
-              style={{
-                backgroundColor:
-                  item.id === activeCounter?.id
-                    ? colors.primary
-                    : colors.surfaceAlt,
-                paddingHorizontal: spacing.lg,
-                paddingVertical: spacing.sm,
-                borderRadius: radius.full,
-                borderWidth: 1,
-                borderColor:
-                  item.id === activeCounter?.id
-                    ? colors.primary
-                    : colors.border,
-              }}
-              onPress={() => setActive(item.id)}
-            >
-              <Text
+          renderItem={({ item }) => {
+            const selected = item.id === activeCounter?.id;
+            return (
+              <TouchableOpacity
+                testID={`tasbih-select-${item.id}`}
                 style={[
-                  typography.label,
+                  styles.counterChip,
                   {
-                    color:
-                      item.id === activeCounter?.id
-                        ? colors.onPrimary
-                        : colors.textPrimary,
+                    backgroundColor: selected ? colors.primarySoft : colors.surfaceAlt,
+                    borderColor: selected ? colors.primary : colors.border,
                   },
                 ]}
+                onPress={() => setActive(item.id)}
               >
-                {item.name}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
-
-      {/* Main Counter Display */}
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingHorizontal: spacing.xxl,
-        }}
-      >
-        <Text
-          style={[
-            typography.headline,
-            { color: colors.screenTextPrimary, marginBottom: 4 },
-          ]}
-        >
-          {activeCounter?.name || 'Select a counter'}
-        </Text>
-        <Text
-          style={[
-            typography.label,
-            { color: colors.screenTextSecondary, marginBottom: spacing.xxl },
-          ]}
-        >
-          Target: {activeCounter?.target || 0}
-        </Text>
-
-        {/* Big Tap Area */}
-        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-          <TouchableOpacity
-            testID="tasbih-counter-button"
-            style={{
-              ...styles.bigCounterBtn,
-              backgroundColor: isComplete ? colors.success : colors.primary,
-              shadowColor: isComplete ? colors.success : colors.primary,
-            }}
-            onPress={handleIncrement}
-            activeOpacity={0.9}
-          >
-            <Text style={[styles.bigCounterNumber, { color: colors.onPrimary }]}>{activeCounter?.count || 0}</Text>
-            <Text style={[styles.bigCounterLabel, { color: colors.onPrimary }]}>
-              {isComplete ? 'Complete!' : 'Tap to count'}
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Progress */}
-        <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
-          <View
-            style={{
-              ...styles.progressFill,
-              width: `${Math.min(progress * 100, 100)}%`,
-              backgroundColor: isComplete ? colors.success : colors.primary,
-            }}
-          />
-        </View>
-        <Text style={[styles.progressText, { color: colors.screenTextSecondary }]}>
-          {activeCounter?.count || 0} / {activeCounter?.target || 0}
-        </Text>
-
-        {/* Reset Button */}
-        <TouchableOpacity
-          testID="tasbih-reset-btn"
-          style={{
-            ...styles.resetBtn,
-            borderColor: colors.border,
+                <Ionicons
+                  name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={15}
+                  color={selected ? colors.primary : colors.textSecondary}
+                />
+                <Text style={[typography.label, { color: selected ? colors.primary : colors.textPrimary, fontWeight: '700' }]}>
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            );
           }}
-          onPress={handleReset}
-        >
-          <Ionicons name="refresh" size={20} color={colors.screenTextSecondary} />
-          <Text style={[styles.resetText, { color: colors.screenTextSecondary }]}>Reset</Text>
-        </TouchableOpacity>
-      </View>
+        />
+
+        <LinearGradient colors={heroGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroPill}>
+              <Text style={styles.heroPillText}>{isComplete ? 'Completed' : 'Counting'}</Text>
+            </View>
+            <Text style={styles.heroTarget}>Target {activeCounter?.target || 0}</Text>
+          </View>
+
+          <Text style={styles.heroTitle}>{activeCounter?.name || 'Select a counter'}</Text>
+          <Text style={styles.heroSubtitle}>
+            {isComplete ? 'Beautiful. You reached your target.' : 'Tap the circle each time you complete one count.'}
+          </Text>
+
+          <Animated.View style={[styles.counterWrap, { transform: [{ scale: scaleAnim }] }]}>
+            <TouchableOpacity
+              testID="tasbih-counter-button"
+              style={styles.bigCounterBtn}
+              onPress={handleIncrement}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.bigCounterNumber}>{activeCounter?.count || 0}</Text>
+              <Text style={styles.bigCounterLabel}>{isComplete ? 'Complete' : 'Tap'}</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </LinearGradient>
+
+        <Card style={[styles.progressCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.sm]}>
+          <View style={styles.progressHeader}>
+            <View>
+              <Text style={[typography.title, { color: colors.textPrimary }]}>Today’s progress</Text>
+              <Text style={[typography.xs, { color: colors.textSecondary, marginTop: 3 }]}>
+                {activeCounter?.count || 0} of {activeCounter?.target || 0} counts
+              </Text>
+            </View>
+            <View style={[styles.percentBadge, { backgroundColor: colors.primarySoft }]}>
+              <Text style={[typography.xs, { color: colors.primary, fontWeight: '800' }]}>
+                {Math.round(progressPercent)}%
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.progressBar, { backgroundColor: colors.chipBackground }]}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width: `${progressPercent}%`,
+                  backgroundColor: isComplete ? colors.success : colors.primary,
+                },
+              ]}
+            />
+          </View>
+
+          <TouchableOpacity
+            testID="tasbih-reset-btn"
+            style={[styles.resetBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
+            onPress={handleReset}
+          >
+            <Ionicons name="refresh" size={18} color={colors.textSecondary} />
+            <Text style={[styles.resetText, { color: colors.textSecondary }]}>Reset count</Text>
+          </TouchableOpacity>
+        </Card>
+      </ScrollView>
 
       {/* Add Counter Modal */}
       <Modal visible={showAddModal} transparent animationType="slide">
@@ -265,38 +267,112 @@ export default function TasbihScreen() {
 }
 
 const styles = StyleSheet.create({
-  bigCounterBtn: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 8,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    marginBottom: 48,
+  content: {
+    paddingHorizontal: 16,
+    paddingBottom: 96,
   },
-  bigCounterNumber: { fontSize: 56, fontWeight: '700' },
-  bigCounterLabel: { fontSize: 13, marginTop: 4 },
-  progressBar: {
-    width: '80%',
-    height: 6,
-    borderRadius: 3,
+  counterList: {
+    gap: 8,
+    paddingBottom: 16,
+  },
+  counterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    borderWidth: 1,
+    borderRadius: 9999,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  heroCard: {
+    borderRadius: 32,
+    padding: 24,
+    minHeight: 430,
     overflow: 'hidden',
     marginBottom: 16,
   },
-  progressFill: { height: '100%', borderRadius: 3 },
-  progressText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 48,
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
+  heroPill: {
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 9999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  heroPillText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+  },
+  heroTarget: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  heroTitle: {
+    color: '#FFFFFF',
+    fontSize: 32,
+    fontWeight: '900',
+    letterSpacing: -0.7,
+    marginTop: 34,
+  },
+  heroSubtitle: {
+    color: 'rgba(255,255,255,0.84)',
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 8,
+  },
+  counterWrap: {
+    alignItems: 'center',
+    marginTop: 38,
+  },
+  bigCounterBtn: {
+    width: 214,
+    height: 214,
+    borderRadius: 72,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+  },
+  bigCounterNumber: { color: '#FFFFFF', fontSize: 68, fontWeight: '900', letterSpacing: -1 },
+  bigCounterLabel: { color: 'rgba(255,255,255,0.82)', fontSize: 13, fontWeight: '800', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1.2 },
+  progressCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 18,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16,
+  },
+  percentBadge: {
+    borderRadius: 9999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  progressBar: {
+    height: 9,
+    borderRadius: 9999,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  progressFill: { height: '100%', borderRadius: 9999 },
   resetBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 11,
     borderRadius: 9999,
     borderWidth: 1,
     gap: 8,

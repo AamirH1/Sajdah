@@ -156,6 +156,26 @@ export function getPrayerTimes(
     { name: 'isha', label: 'Isha', time: new Date(hoursToDate(isha).getTime() + ishaOffset * 60000), isNext: false },
   ];
 
+  const fajrPrayer = prayers.find((prayer) => prayer.name === 'fajr');
+  const sunrisePrayer = prayers.find((prayer) => prayer.name === 'sunrise');
+  const maghribPrayer = prayers.find((prayer) => prayer.name === 'maghrib');
+  const ishaPrayer = prayers.find((prayer) => prayer.name === 'isha');
+
+  if (fajrPrayer && sunrisePrayer && maghribPrayer && ishaPrayer) {
+    const fajrMinutes = fajrPrayer.time.getHours() * 60 + fajrPrayer.time.getMinutes();
+    const ishaMinutes = ishaPrayer.time.getHours() * 60 + ishaPrayer.time.getMinutes();
+    const converged = Math.abs(fajrMinutes - ishaMinutes) <= 1;
+
+    if (converged) {
+      const dayDuration = maghribPrayer.time.getTime() - sunrisePrayer.time.getTime();
+      const nightDurationMs = (24 * 60 * 60 * 1000) - dayDuration;
+      const nightPortionMs = nightDurationMs / 7;
+
+      fajrPrayer.time = new Date(sunrisePrayer.time.getTime() - nightPortionMs + fajrOffset * 60000);
+      ishaPrayer.time = new Date(maghribPrayer.time.getTime() + nightPortionMs + ishaOffset * 60000);
+    }
+  }
+
   let nextFound = false;
   for (const prayer of prayers) {
     if (!nextFound && prayer.time > now) {

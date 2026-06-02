@@ -29,7 +29,7 @@ export default function SettingsScreen() {
   const [backendStatus, setBackendStatus] = useState<{ message: string, success: boolean } | null>(null);
   const [notificationStatus, setNotificationStatus] = useState<{ message: string, success: boolean } | null>(null);
   const [isPinging, setIsPinging] = useState(false);
-  const [isSyncingNotifications, setIsSyncingNotifications] = useState(false);
+  const [, setIsSyncingNotifications] = useState(false);
   const [deviceId, setDeviceId] = useState<string | null>(null);
 
   const methods = ['Karachi', 'MuslimWorldLeague', 'Egyptian', 'UmmAlQura', 'Dubai', 'NorthAmerica'] as const;
@@ -121,7 +121,17 @@ export default function SettingsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <ScreenHeader title="Settings" />
 
-        <Text style={styles.sectionSpacer} />
+        <View style={[styles.settingsHero, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+          <View style={[styles.heroIcon, { backgroundColor: colors.primarySoft }]}>
+            <Ionicons name="options-outline" size={24} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>Make Sajdah feel right for you</Text>
+            <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>
+              Prayer, language, reminders, and privacy controls in one place.
+            </Text>
+          </View>
+        </View>
 
 
         {/* Prayer Settings */}
@@ -164,15 +174,10 @@ export default function SettingsScreen() {
                   <TouchableOpacity
                     key={m}
                     testID={`method-${m}`}
-                    style={[
-                      styles.methodChip,
-                      selected
-                        ? { backgroundColor: colors.primarySoft, borderColor: colors.primarySoft }
-                        : { backgroundColor: colors.surface, borderColor: colors.border },
-                    ]}
-                    onPress={() => settings.setCalculationMethod(m)}
-                  >
-                    <Text style={[styles.methodChipText, { color: selected ? colors.primary : colors.textPrimary }]}>
+                  style={[styles.choiceBtn, selected ? { backgroundColor: colors.primarySoft, borderColor: colors.primary } : { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => settings.setCalculationMethod(m)}
+                >
+                    <Text style={[styles.choiceText, { color: selected ? colors.primary : colors.textPrimary }]}>
                       {m.replace('MuslimWorldLeague', 'MWL').replace('NorthAmerica', 'ISNA')}
                     </Text>
                   </TouchableOpacity>
@@ -223,7 +228,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.madhhabBtn,
                     settings.madhhab === m
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primarySoft }
+                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
                   onPress={() => settings.setMadhhab(m)}
@@ -234,7 +239,7 @@ export default function SettingsScreen() {
                       size={14}
                       color={settings.madhhab === m ? colors.primary : colors.textSecondary}
                     />
-                    <Text style={[styles.madhhabBtnText, { color: settings.madhhab === m ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.madhhab === m ? colors.primary : colors.textPrimary }]}>
                       {m}
                     </Text>
                   </View>
@@ -288,13 +293,13 @@ export default function SettingsScreen() {
                 disabled={!canUseSmartFajr}
               />
             </View>
+            {notificationStatus && (
+              <Text style={{ ...typography.xs, color: notificationStatus.success ? '#10B981' : '#EF4444', marginTop: spacing.md, paddingHorizontal: 4 }}>
+                {notificationStatus.message}
+              </Text>
+            )}
           </View>
         </View>
-        {notificationStatus && (
-          <Text style={{ ...typography.xs, color: notificationStatus.success ? '#10B981' : '#EF4444', marginTop: spacing.sm, paddingHorizontal: 4 }}>
-            {notificationStatus.message}
-          </Text>
-        )}
 
         {/* Translation Language */}
         <View style={styles.section}>
@@ -322,7 +327,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.quranChoiceBtn,
                     settings.translationLang === lang
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primarySoft }
+                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
                   onPress={() => settings.setTranslationLang(lang)}
@@ -333,7 +338,7 @@ export default function SettingsScreen() {
                       size={14}
                       color={settings.translationLang === lang ? colors.primary : colors.textSecondary}
                     />
-                    <Text style={[styles.quranChoiceText, { color: settings.translationLang === lang ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.translationLang === lang ? colors.primary : colors.textPrimary }]}>
                       {getAsmaUlHusnaLanguageLabel(lang)}
                     </Text>
                   </View>
@@ -347,7 +352,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.quranChoiceBtn,
                     settings.translationLang === lang
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primarySoft }
+                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                     { opacity: canUseMultiLang ? 1 : 0.5 }
                   ]}
@@ -372,7 +377,7 @@ export default function SettingsScreen() {
                       size={14}
                       color={settings.translationLang === lang ? colors.primary : colors.textSecondary}
                     />
-                    <Text style={[styles.quranChoiceText, { color: settings.translationLang === lang ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.translationLang === lang ? colors.primary : colors.textPrimary }]}>
                       {getAsmaUlHusnaLanguageLabel(lang)}
                     </Text>
                     {!canUseMultiLang && <Ionicons name="lock-closed" size={10} color={settings.translationLang === lang ? colors.primary : colors.textSecondary} />}
@@ -405,7 +410,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.quranChoiceBtn,
                     settings.quranScript === s
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primarySoft }
+                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
                   onPress={() => settings.setQuranScript(s)}
@@ -416,7 +421,7 @@ export default function SettingsScreen() {
                       size={14}
                       color={settings.quranScript === s ? colors.primary : colors.textSecondary}
                     />
-                    <Text style={[styles.quranChoiceText, { color: settings.quranScript === s ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.quranScript === s ? colors.primary : colors.textPrimary }]}>
                       {s}
                     </Text>
                   </View>
@@ -442,7 +447,7 @@ export default function SettingsScreen() {
                     styles.valueBtn,
                     styles.themeChoiceBtn,
                     settings.theme === t
-                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primarySoft }
+                      ? { backgroundColor: colors.primarySoft, borderColor: colors.primary }
                       : { backgroundColor: colors.surface, borderColor: colors.border },
                   ]}
                   onPress={() => settings.setTheme(t)}
@@ -453,7 +458,7 @@ export default function SettingsScreen() {
                       size={14}
                       color={settings.theme === t ? colors.primary : colors.textSecondary}
                     />
-                    <Text style={[styles.themeChoiceText, { color: settings.theme === t ? colors.primary : colors.textPrimary }]}>
+                    <Text style={[styles.choiceText, { color: settings.theme === t ? colors.primary : colors.textPrimary }]}>
                       {t.charAt(0).toUpperCase() + t.slice(1)}
                     </Text>
                   </View>
@@ -491,24 +496,41 @@ export default function SettingsScreen() {
 
           {/* Backup Card */}
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginTop: spacing.md }]}>
-             <View style={styles.settingRow}>
-               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                 <Ionicons name="cloud-done" size={24} color={colors.primary} />
-                 <View>
-                   <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Private Backup</Text>
-                   <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
-                     {deviceId ? 'Ready to protect your settings' : 'Preparing backup...'}
-                   </Text>
-                 </View>
-               </View>
-             </View>
-             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-            <TouchableOpacity 
-              style={{ alignItems: 'center', paddingVertical: spacing.xs }}
-              onPress={() => Alert.alert('Coming Soon', 'You will be able to connect your email and restore your settings on another device soon.')}
-            >
-                <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>Connect Email</Text>
-             </TouchableOpacity>
+            <View style={styles.backupHeader}>
+              <View style={[styles.iconTile, { backgroundColor: colors.primarySoft }]}>
+                <Ionicons name="cloud-done-outline" size={22} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Private Backup</Text>
+                <Text style={[styles.settingValue, { color: colors.textSecondary, marginTop: 3 }]}>
+                  {deviceId ? 'Ready to protect your settings' : 'Preparing backup...'}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.backupActions}>
+              <TouchableOpacity
+                testID="ping-backend-btn"
+                style={[styles.backupPrimaryBtn, { backgroundColor: isPinging ? colors.border : colors.primary }]}
+                onPress={handlePingBackend}
+                disabled={isPinging}
+              >
+                {isPinging ? <ActivityIndicator size="small" color={colors.onPrimary} /> : <Ionicons name="cloud-upload-outline" size={15} color={colors.onPrimary} />}
+                <Text style={[styles.valueText, { color: colors.onPrimary }]}>Back Up Now</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.backupSecondaryBtn, { backgroundColor: colors.chipBackground }]}
+                activeOpacity={0.8}
+                onPress={() => Alert.alert('Coming Soon', 'You will be able to connect your email and restore your settings on another device soon.')}
+              >
+                <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>Connect Email</Text>
+              </TouchableOpacity>
+            </View>
+            {backendStatus && (
+              <Text style={{ ...typography.xs, color: backendStatus.success ? '#10B981' : '#EF4444', marginTop: spacing.md }}>
+                {backendStatus.message}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -517,8 +539,8 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>PRIVACY & LEGAL</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <Link href="/privacy" asChild>
-              <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+              <TouchableOpacity style={styles.linkRow}>
+                <View style={styles.settingLabelWithIcon}>
                   <Ionicons name="shield-checkmark-outline" size={20} color={colors.textSecondary} />
                   <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Privacy Policy</Text>
                 </View>
@@ -529,8 +551,8 @@ export default function SettingsScreen() {
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <Link href="/terms" asChild>
-              <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+              <TouchableOpacity style={styles.linkRow}>
+                <View style={styles.settingLabelWithIcon}>
                   <Ionicons name="document-text-outline" size={20} color={colors.textSecondary} />
                   <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Terms & Conditions</Text>
                 </View>
@@ -541,8 +563,8 @@ export default function SettingsScreen() {
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <Link href="/analytics" asChild>
-              <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+              <TouchableOpacity style={styles.linkRow}>
+                <View style={styles.settingLabelWithIcon}>
                   <Ionicons name="stats-chart-outline" size={20} color={colors.textSecondary} />
                   <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Analytics Data (EU)</Text>
                 </View>
@@ -556,8 +578,8 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>SUPPORT & FEEDBACK</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-            <TouchableOpacity onPress={() => {}} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            <TouchableOpacity onPress={() => {}} style={styles.linkRow}>
+              <View style={styles.settingLabelWithIcon}>
                 <Ionicons name="star-outline" size={20} color={colors.textSecondary} />
                 <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Rate the App</Text>
               </View>
@@ -566,8 +588,8 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
-            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com?subject=Sajdah%20Feedback')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com?subject=Sajdah%20Feedback')} style={styles.linkRow}>
+              <View style={styles.settingLabelWithIcon}>
                 <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
                 <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Feedback</Text>
               </View>
@@ -576,8 +598,8 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
-            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com?subject=Sajdah%20Bug%20Report')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com?subject=Sajdah%20Bug%20Report')} style={styles.linkRow}>
+              <View style={styles.settingLabelWithIcon}>
                 <Ionicons name="bug-outline" size={20} color={colors.textSecondary} />
                 <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Report a Bug</Text>
               </View>
@@ -586,8 +608,8 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
-            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com')} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            <TouchableOpacity onPress={() => Linking.openURL('mailto:hello.aamirdev@gmail.com')} style={styles.linkRow}>
+              <View style={styles.settingLabelWithIcon}>
                 <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
                 <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Contact Us</Text>
               </View>
@@ -601,14 +623,20 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>APP INFO</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
             <View style={styles.settingRow}>
-              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>App Name</Text>
+              <View style={styles.settingLabelWithIcon}>
+                <Ionicons name="sparkles-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>App Name</Text>
+              </View>
               <Text style={[styles.settingValue, { color: colors.textSecondary }]}>Sajdah</Text>
             </View>
 
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
             <View style={styles.settingRow}>
-              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Built By</Text>
+              <View style={styles.settingLabelWithIcon}>
+                <Ionicons name="person-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Built By</Text>
+              </View>
               <Text style={[styles.settingValue, { color: colors.textSecondary }]}>Aamir Hussain</Text>
             </View>
 
@@ -616,39 +644,14 @@ export default function SettingsScreen() {
 
             <TouchableOpacity
               onPress={() => Linking.openURL('https://www.aamirdev.co.uk/about')}
-              style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm }}
+              style={styles.linkRow}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+              <View style={styles.settingLabelWithIcon}>
                 <Ionicons name="globe-outline" size={20} color={colors.textSecondary} />
                 <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Website</Text>
               </View>
               <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
             </TouchableOpacity>
-
-            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-
-            <View style={styles.settingRow}>
-              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Backup</Text>
-              <TouchableOpacity
-                testID="ping-backend-btn"
-                style={[styles.valueBtn, { backgroundColor: isPinging ? colors.border : colors.primary }]}
-                onPress={handlePingBackend}
-                disabled={isPinging}
-              >
-                {isPinging ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="cloud-upload-outline" size={14} color="#fff" />}
-                <Text style={[styles.valueText, { color: '#fff', marginLeft: 4 }]}>Sync Now</Text>
-              </TouchableOpacity>
-            </View>
-            {backendStatus && (
-              <Text style={{ ...typography.xs, color: backendStatus.success ? '#10B981' : '#EF4444', marginTop: spacing.sm }}>
-                {backendStatus.message}
-              </Text>
-            )}
-            {isSyncingNotifications && (
-              <Text style={{ ...typography.xs, color: colors.textSecondary, marginTop: spacing.xs }}>
-                Updating prayer reminders...
-              </Text>
-            )}
           </View>
         </View>
       </ScrollView>
@@ -657,53 +660,73 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 96 },
-  sectionSpacer: { height: 8 },
-
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 24 },
-  section: { marginBottom: 40 },
+  settingsHero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderRadius: 28,
+    borderWidth: 1,
+    padding: 18,
+    marginBottom: 24,
+  },
+  heroIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroTitle: { fontSize: 19, fontWeight: '800', lineHeight: 25 },
+  heroSubtitle: { ...typography.xs, lineHeight: 18, marginTop: 4 },
+  section: { marginBottom: 28 },
   sectionTitle: { fontSize: 11, fontWeight: '600', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10, paddingLeft: 4 },
-  card: { borderRadius: 20, padding: 24, borderWidth: 1 },
+  card: { borderRadius: 24, padding: 18, borderWidth: 1 },
 
-  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
+  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
+  settingLabelWithIcon: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, flexShrink: 1 },
   settingLabel: { ...typography.body, fontWeight: '500' },
   settingValue: { ...typography.label },
-  valueBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.full, gap: 4 },
+  valueBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: 10, borderRadius: 16, gap: 4 },
   locationValueBtn: { flexShrink: 1, maxWidth: '72%', minHeight: 36, justifyContent: 'center' },
   locationValueContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, minWidth: 0 },
   locationCityText: { flexShrink: 1, includeFontPadding: false, textAlignVertical: 'center' },
   prayerActionBtn: { flexShrink: 1, maxWidth: '72%', minHeight: 36, justifyContent: 'center' },
   prayerActionText: { flexShrink: 1, includeFontPadding: false, textAlignVertical: 'center' },
   valueText: { ...typography.xs, fontWeight: '600' },
-  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm },
-  divider: { height: 1, marginVertical: spacing.sm },
-  methodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm, marginTop: spacing.xs },
-  methodChip: {
+  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
+  divider: { height: 1, marginVertical: 10 },
+  methodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm, marginTop: spacing.sm },
+  choiceBtn: {
+    minHeight: 42,
+    justifyContent: 'center',
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
+    paddingVertical: 10,
+    borderRadius: 16,
     borderWidth: 1,
   },
-  methodChipText: { fontSize: 12, fontWeight: '600' },
-  madhhabRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
-  madhhabBtn: { flex: 1, minHeight: 40, justifyContent: 'center', borderWidth: 1 },
-  madhhabBtnText: { fontSize: 12, fontWeight: '600' },
+  choiceText: { fontSize: 12, fontWeight: '700' },
+  madhhabRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  madhhabBtn: { flex: 1, minHeight: 42, justifyContent: 'center', borderWidth: 1 },
   quranChoiceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.xs },
-  quranChoiceBtn: { minHeight: 40, justifyContent: 'center', borderWidth: 1, flexShrink: 1 },
-  quranChoiceText: { fontSize: 12, fontWeight: '600' },
+  quranChoiceBtn: { minHeight: 42, justifyContent: 'center', borderWidth: 1, flexShrink: 1 },
   activeLanguageBadge: { borderRadius: radius.full, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   comingSoonText: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
   translationNote: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, borderRadius: radius.lg, padding: spacing.md, marginTop: spacing.md },
   themeChoiceGrid: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
   themeChoiceBtn: { flex: 1, minHeight: 42, justifyContent: 'center', borderWidth: 1 },
-  themeChoiceText: { fontSize: 12, fontWeight: '600' },
   proBadgeInline: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
   proText: { fontSize: 10, fontWeight: '700' },
-  proCard: { borderRadius: 20, padding: 24, borderWidth: 1 },
+  proCard: { borderRadius: 24, padding: 18, borderWidth: 1 },
   proCardContent: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
   planTitle: { ...typography.body, fontWeight: '700' },
   planDesc: { ...typography.label, marginTop: 2 },
-  upgradeBtn: { borderRadius: radius.full, paddingVertical: spacing.md, alignItems: 'center' },
+  upgradeBtn: { borderRadius: 18, paddingVertical: spacing.md, alignItems: 'center' },
   upgradeBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  linkRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
+  iconTile: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  backupHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  backupActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
+  backupPrimaryBtn: { flex: 1, minHeight: 46, borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
+  backupSecondaryBtn: { flex: 1, minHeight: 46, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
 });

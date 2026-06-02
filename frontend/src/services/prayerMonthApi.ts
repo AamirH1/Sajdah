@@ -111,19 +111,19 @@ const buildCacheKey = (
 const normalizeDay = (raw: unknown, index: number): MonthlyPrayerTimesDay => {
   const item = asRecord(raw);
   const dateSource = asRecord(item.gregorian || item.date || item.day || item);
-  const prayerSource = asRecord(item.prayer_times || item.prayers || item.times || item.timing || item.data || item);
+  const prayerSource = asRecord(item.prayer_times || item.prayerTimes || item.prayers || item.times || item.timing || item.timings || item.data || item);
   const prayerDatetimesSource = asRecord(item.prayer_datetimes || item.prayerDatetimes || item.datetimes || item.timestamps);
 
   return {
     gregorianDate: pickString(dateSource, ['date', 'gregorian_date', 'gregorianDate']) || pickString(item, ['date']) || `day-${index + 1}`,
     hijriDate: pickString(item, ['hijri_date', 'hijriDate', 'islamic_date', 'hijri']),
     dayLabel: pickString(dateSource, ['formatted', 'label', 'day_label', 'dayLabel', 'day_of_week', 'day_name']),
-    fajr: pickPrayerTime(prayerSource, ['fajr', 'fajr_time', 'fajrTime']),
-    sunrise: pickPrayerTime(prayerSource, ['sunrise', 'sunrise_time', 'sunriseTime']),
-    dhuhr: pickPrayerTime(prayerSource, ['dhuhr', 'dhuhr_time', 'dhuhrTime']),
-    asr: pickPrayerTime(prayerSource, ['asr', 'asr_time', 'asrTime']),
-    maghrib: pickPrayerTime(prayerSource, ['maghrib', 'maghrib_time', 'maghribTime']),
-    isha: pickPrayerTime(prayerSource, ['isha', 'isha_time', 'ishaTime']),
+    fajr: pickPrayerTime(prayerSource, ['fajr', 'Fajr', 'fajr_time', 'fajrTime']),
+    sunrise: pickPrayerTime(prayerSource, ['sunrise', 'Sunrise', 'sunrise_time', 'sunriseTime']),
+    dhuhr: pickPrayerTime(prayerSource, ['dhuhr', 'Dhuhr', 'dhuhr_time', 'dhuhrTime', 'zuhr', 'Zuhr']),
+    asr: pickPrayerTime(prayerSource, ['asr', 'Asr', 'asr_time', 'asrTime']),
+    maghrib: pickPrayerTime(prayerSource, ['maghrib', 'Maghrib', 'maghrib_time', 'maghribTime']),
+    isha: pickPrayerTime(prayerSource, ['isha', 'Isha', 'isha_time', 'ishaTime']),
     prayerDatetimes: Object.keys(prayerDatetimesSource).length > 0 ? prayerDatetimesSource : undefined,
   };
 };
@@ -194,7 +194,7 @@ const buildLocalMonthlyFallback = (
     yearLabel: String(year),
     locationLabel: `Lat ${latitude.toFixed(4)}, Lng ${longitude.toFixed(4)}`,
     days,
-    note: 'Using local calculation fallback.',
+    note: 'Times are calculated on your device for this month.',
   };
 };
 

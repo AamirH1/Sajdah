@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,7 +9,7 @@ import { useTheme } from '../../src/ui/hooks/useTheme';
 import { ScreenContainer, Card } from '../../src/ui/components';
 
 export default function HomeScreen() {
-  const { colors, typography, spacing, radius, isDark } = useTheme();
+  const { colors, typography, spacing, isDark } = useTheme();
   const router = useRouter();
   const { location, calculationMethod, madhhab, offsets } = useSettings();
 
@@ -50,9 +50,9 @@ export default function HomeScreen() {
   // Extract string to reliably trigger memoized schedule recalculations only when the calendar day changes
   const todayStr = now.toLocaleDateString();
 
-  const calculateTimes = (date: Date): PrayerTimeResult[] => {
+  const calculateTimes = useCallback((date: Date): PrayerTimeResult[] => {
     try {
-      const rawTimes = getPrayerTimes(
+      return getPrayerTimes(
         date,
         location.latitude,
         location.longitude,
@@ -60,38 +60,7 @@ export default function HomeScreen() {
         madhhab,
         offsets
       );
-
-      // Clone times so we can safely mutate the Date objects
-      const times = rawTimes.map(p => ({ ...p, time: new Date(p.time) }));
-      
-      const fajr = times.find(t => t.name === 'fajr');
-      const sunrise = times.find(t => t.name === 'sunrise');
-      const maghrib = times.find(t => t.name === 'maghrib');
-      const isha = times.find(t => t.name === 'isha');
-
-      if (fajr && isha && maghrib && sunrise) {
-        const fH = fajr.time.getHours();
-        const fM = fajr.time.getMinutes();
-        const iH = isha.time.getHours();
-        const iM = isha.time.getMinutes();
-        
-        // High Latitude Bug Fix:
-        // For extreme latitudes (like London) in summer, standard calculation fallbacks
-        // force Fajr and Isha to converge to the exact same minute (e.g., 12:58 AM).
-        // We intercept this and apply the trusted 'Seventh of the Night' calculation.
-        if (fH === iH && Math.abs(fM - iM) <= 1) {
-          const dayDuration = maghrib.time.getTime() - sunrise.time.getTime();
-          const nightDurationMs = (24 * 3600000) - dayDuration;
-          const portionMs = nightDurationMs / 7;
-
-          isha.time = new Date(maghrib.time.getTime() + portionMs);
-          fajr.time = new Date(sunrise.time.getTime() - portionMs);
-        }
-      }
-
-      return times;
-    } catch (e) {
-      // Fallback prayer times
+    } catch {
       const base = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       return [
         { name: 'fajr' as const, label: 'Fajr', time: new Date(base.getTime() + 5 * 3600000), isNext: false },
@@ -102,15 +71,19 @@ export default function HomeScreen() {
         { name: 'isha' as const, label: 'Isha', time: new Date(base.getTime() + 20 * 3600000), isNext: false },
       ];
     }
-  };
+  }, [calculationMethod, location.latitude, location.longitude, madhhab, offsets]);
 
-  const todayPrayerTimes = useMemo(() => calculateTimes(new Date()), [todayStr, location.latitude, location.longitude, calculationMethod, madhhab, offsets]);
+  const todayPrayerTimes = useMemo(() => {
+    void todayStr;
+    return calculateTimes(new Date());
+  }, [todayStr, calculateTimes]);
   
   const tomorrowPrayerTimes = useMemo(() => {
+    void todayStr;
     const tmrw = new Date();
     tmrw.setDate(tmrw.getDate() + 1);
     return calculateTimes(tmrw);
-  }, [todayStr, location.latitude, location.longitude, calculationMethod, madhhab, offsets]);
+  }, [todayStr, calculateTimes]);
 
   const nextPrayer = useMemo<PrayerTimeResult | null>(() => {
     // Find the first prayer strictly AFTER the exact current time
@@ -317,7 +290,13 @@ export default function HomeScreen() {
               testID={action.testID}
               style={styles.quickActionCard}
               activeOpacity={0.7}
-              onPress={() => router.push(action.href as any)}
+              onPress={() => {
+                if (action.testID === 'quick-action-morning-azkar') {
+                  router.push({ pathname: '/azkar/[categoryId]', params: { categoryId: 'morning' } } as any);
+                  return;
+                }
+                router.push(action.href as any);
+              }}
             >
               <View style={[styles.quickActionIconContainer, { backgroundColor: colors.chipBackground }]}>
                 <Ionicons name={action.icon} size={28} color={colors.primary} />

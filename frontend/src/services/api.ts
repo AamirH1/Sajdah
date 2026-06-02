@@ -67,7 +67,7 @@ export interface SyncPayload {
     translationLang: string;
   };
   tasbih: {
-    counters: Array<{ id: string; name: string; count: number; target: number; lastUsed: string }>;
+    counters: { id: string; name: string; count: number; target: number; lastUsed: string }[];
     activeCounterId: string | null;
   };
 }
@@ -80,61 +80,51 @@ export interface SyncResponse {
 }
 
 export const pingBackend = async (): Promise<StatusCheck> => {
-  try {
-    const deviceId = await getDeviceId();
-    const response = await fetch(`${API_BASE_URL}/status`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Device-ID': deviceId },
-      body: JSON.stringify({ client_name: `Sajdah-${Platform.OS}`, device_id: deviceId }),
-    });
-    if (!response.ok) throw new Error('Network response was not ok');
-    return await response.json();
-  } catch (error) {
-    console.error("Backend connection error:", error);
-    throw error;
-  }
+  const deviceId = await getDeviceId();
+  const response = await fetch(`${API_BASE_URL}/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Device-ID': deviceId },
+    body: JSON.stringify({ client_name: `Sajdah-${Platform.OS}`, device_id: deviceId }),
+  });
+  if (!response.ok) throw new Error('Backup is not reachable right now');
+  return await response.json();
 };
 
 export const syncBackup = async (): Promise<SyncResponse> => {
-  try {
-    const deviceId = await getDeviceId();
-    const settingsState = useSettings.getState();
-    const tasbihState = useTasbih.getState();
-    const payload: SyncPayload = {
-      device_id: deviceId,
-      client_name: `Sajdah-${Platform.OS}`,
-      settings: {
-        theme: settingsState.theme,
-        calculationMethod: settingsState.calculationMethod,
-        madhhab: settingsState.madhhab,
-        offsets: settingsState.offsets,
-        notifications: settingsState.notifications,
-        location: settingsState.location,
-        quranScript: settingsState.quranScript,
-        translationLang: settingsState.translationLang,
-      },
-      tasbih: {
-        counters: tasbihState.counters,
-        activeCounterId: tasbihState.activeCounterId,
-      },
-    };
+  const deviceId = await getDeviceId();
+  const settingsState = useSettings.getState();
+  const tasbihState = useTasbih.getState();
+  const payload: SyncPayload = {
+    device_id: deviceId,
+    client_name: `Sajdah-${Platform.OS}`,
+    settings: {
+      theme: settingsState.theme,
+      calculationMethod: settingsState.calculationMethod,
+      madhhab: settingsState.madhhab,
+      offsets: settingsState.offsets,
+      notifications: settingsState.notifications,
+      location: settingsState.location,
+      quranScript: settingsState.quranScript,
+      translationLang: settingsState.translationLang,
+    },
+    tasbih: {
+      counters: tasbihState.counters,
+      activeCounterId: tasbihState.activeCounterId,
+    },
+  };
 
-    const response = await fetch(`${API_BASE_URL}/sync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Device-ID': deviceId,
-      },
-      body: JSON.stringify(payload),
-    });
+  const response = await fetch(`${API_BASE_URL}/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Device-ID': deviceId,
+    },
+    body: JSON.stringify(payload),
+  });
 
-    if (!response.ok) {
-      throw new Error('Backup request failed');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Sync backup error:', error);
-    throw error;
+  if (!response.ok) {
+    throw new Error('Backup is not reachable right now');
   }
+
+  return await response.json();
 };

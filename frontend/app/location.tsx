@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Modal, FlatList, Alert, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useTheme } from '../src/ui/hooks/useTheme';
@@ -71,7 +72,7 @@ export default function LocationPickerScreen() {
         city: cityName,
       });
       Alert.alert('Location Updated', `Prayer times set for ${cityName}`);
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Unable to get your location. Please select a city manually.');
     }
     setLoading(false);

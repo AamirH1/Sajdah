@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { FlatList, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useThemeColors } from '../../src/hooks/useThemeColors';
-import { spacing, radius, typography } from '../../src/theme';
+import { useTheme } from '../../src/ui/hooks/useTheme';
+import { spacing, radius, typography } from '../../src/ui/theme';
+import { ScreenContainer } from '../../src/ui/components';
 import { AZKAR_CATEGORIES, AZKAR_ITEMS } from '../../src/data/azkar';
 
 export default function AzkarDetailScreen() {
   const { categoryId } = useLocalSearchParams<{ categoryId: string }>();
-  const colors = useThemeColors();
+  const { colors } = useTheme();
   const router = useRouter();
   const [completedCounts, setCompletedCounts] = useState<Record<string, number>>({});
 
@@ -27,8 +28,58 @@ export default function AzkarDetailScreen() {
     setCompletedCounts((prev) => ({ ...prev, [itemId]: 0 }));
   };
 
+  const renderItem = ({ item, index }: { item: typeof items[number]; index: number }) => {
+    const completed = completedCounts[item.id] || 0;
+    const isDone = completed >= item.repeat;
+
+    return (
+      <View
+        testID={`dhikr-item-${item.id}`}
+        style={[styles.dhikrCard, { backgroundColor: colors.surfaceAlt, borderColor: isDone ? colors.success : colors.border }]}
+      >
+        <View style={styles.counterRow}>
+          <View style={[styles.indexBadge, { backgroundColor: colors.chipBackground }]}>
+            <Text style={[styles.indexText, { color: colors.primary }]}>{index + 1}</Text>
+          </View>
+          <View style={[styles.repeatBadge, { backgroundColor: colors.primarySoft }]}>
+            <Text style={[styles.repeatText, { color: colors.primary }]}>
+              {completed}/{item.repeat}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={[styles.arabicText, { color: colors.textPrimary }]}>{item.arabic}</Text>
+        <Text style={[styles.transliteration, { color: colors.textSecondary }]}>{item.transliteration}</Text>
+        <Text style={[styles.translation, { color: colors.textPrimary }]}>{item.translation}</Text>
+        <Text style={[styles.reference, { color: colors.textMuted }]}>— {item.reference}</Text>
+
+        <View style={styles.actionRow}>
+          <TouchableOpacity
+            testID={`dhikr-tap-${item.id}`}
+            style={[styles.tapBtn, { backgroundColor: isDone ? colors.success : colors.primary }]}
+            onPress={() => handleTap(item.id, item.repeat)}
+            disabled={isDone}
+            activeOpacity={0.7}
+          >
+            <Ionicons name={isDone ? 'checkmark-circle' : 'add'} size={20} color={colors.onPrimary} />
+            <Text style={[styles.tapBtnText, { color: colors.onPrimary }]}>{isDone ? 'Done' : 'Tap'}</Text>
+          </TouchableOpacity>
+          {completed > 0 && (
+            <TouchableOpacity
+              testID={`dhikr-reset-${item.id}`}
+              style={[styles.resetBtn, { borderColor: colors.border }]}
+              onPress={() => handleReset(item.id)}
+            >
+              <Ionicons name="refresh" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScreenContainer scrollable={false}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity testID="azkar-back-btn" onPress={() => router.back()} style={styles.backBtn}>
@@ -41,74 +92,20 @@ export default function AzkarDetailScreen() {
         <View style={{ width: 32 }} />
       </View>
 
-      {/* Items */}
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
-        {items.map((item, index) => {
-          const completed = completedCounts[item.id] || 0;
-          const isDone = completed >= item.repeat;
-
-          return (
-            <View
-              key={item.id}
-              testID={`dhikr-item-${item.id}`}
-              style={[styles.dhikrCard, { backgroundColor: colors.surface, borderColor: isDone ? colors.success : colors.border }]}
-            >
-              {/* Counter Badge */}
-              <View style={styles.counterRow}>
-                <View style={[styles.indexBadge, { backgroundColor: colors.surfaceElevated }]}>
-                  <Text style={[styles.indexText, { color: colors.primary }]}>{index + 1}</Text>
-                </View>
-                <View style={[styles.repeatBadge, { backgroundColor: colors.accentLight }]}>
-                  <Text style={[styles.repeatText, { color: colors.primary }]}>
-                    {completed}/{item.repeat}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Arabic */}
-              <Text style={[styles.arabicText, { color: colors.textPrimary }]}>{item.arabic}</Text>
-
-              {/* Transliteration */}
-              <Text style={[styles.transliteration, { color: colors.textSecondary }]}>{item.transliteration}</Text>
-
-              {/* Translation */}
-              <Text style={[styles.translation, { color: colors.textPrimary }]}>{item.translation}</Text>
-
-              {/* Reference */}
-              <Text style={[styles.reference, { color: colors.textMuted }]}>— {item.reference}</Text>
-
-              {/* Actions */}
-              <View style={styles.actionRow}>
-                <TouchableOpacity
-                  testID={`dhikr-tap-${item.id}`}
-                  style={[styles.tapBtn, { backgroundColor: colors.primary }]}
-                  onPress={() => handleTap(item.id, item.repeat)}
-                  disabled={isDone}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name={isDone ? 'checkmark-circle' : 'add'} size={20} color={colors.onPrimary} />
-                  <Text style={[styles.tapBtnText, { color: colors.onPrimary }]}>{isDone ? 'Done' : 'Tap'}</Text>
-                </TouchableOpacity>
-                {completed > 0 && (
-                  <TouchableOpacity
-                    testID={`dhikr-reset-${item.id}`}
-                    style={[styles.resetBtn, { borderColor: colors.border }]}
-                    onPress={() => handleReset(item.id)}
-                  >
-                    <Ionicons name="refresh" size={16} color={colors.textSecondary} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          );
-        })}
-      </ScrollView>
-    </SafeAreaView>
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        initialNumToRender={4}
+        windowSize={5}
+      />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderBottomWidth: 1 },
   backBtn: { padding: spacing.xs },
   headerCenter: { flex: 1, alignItems: 'center' },

@@ -98,7 +98,7 @@ export default function PrayerTimesMonthScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <Text style={[typography.label, { color: colors.screenTextSecondary, lineHeight: 22, marginBottom: spacing.lg }]}>
-          Get prayer times for every day of the month. Great for caching in mobile apps.
+          See prayer times for every day of the current month.
         </Text>
 
         {error && (
@@ -110,7 +110,7 @@ export default function PrayerTimesMonthScreen() {
         <Card style={[styles.heroCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.md]}>
           <View style={styles.heroTopRow}>
             <View style={[styles.heroPill, { backgroundColor: colors.primarySoft }]}>
-              <Text style={[typography.xs, { color: colors.primary, letterSpacing: 1 }]}>MONTHLY CACHE</Text>
+              <Text style={[typography.xs, { color: colors.primary, letterSpacing: 1 }]}>MONTH VIEW</Text>
             </View>
             <Ionicons name="time-outline" size={18} color={colors.primary} />
           </View>
@@ -136,7 +136,7 @@ export default function PrayerTimesMonthScreen() {
                 </Text>
               ) : null}
               <Text style={[typography.xs, { color: colors.textMuted, marginTop: 8 }]}>
-                Using {location.city} · {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                Based on {location.city}
               </Text>
               {data?.note ? (
                 <Text style={[typography.xs, { color: colors.textMuted, marginTop: 10, lineHeight: 18 }]}>
