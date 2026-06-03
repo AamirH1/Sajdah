@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ViewStyle, ActivityIndicator, StyleProp } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from './hooks/useTheme';
@@ -8,8 +8,15 @@ import { useTheme } from './hooks/useTheme';
 // 1. Screen Container
 export const ScreenContainer = ({ children, scrollable = true, heroGradient, style }: { children: React.ReactNode, scrollable?: boolean, heroGradient?: readonly [string, string], style?: StyleProp<ViewStyle> }) => {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const content = scrollable ? (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, style]}>{children}</ScrollView>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      // Add runtime bottom inset so scrollable screens clear Android system navigation.
+      contentContainerStyle={[styles.scrollContent, { paddingBottom: 48 + insets.bottom }, style]}
+    >
+      {children}
+    </ScrollView>
   ) : (
     <View style={[styles.staticContent, style]}>{children}</View>
   );

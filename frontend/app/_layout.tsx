@@ -5,6 +5,7 @@ import { useColorScheme } from 'react-native';
 import { useEffect } from 'react';
 import { checkOnboardingComplete } from './onboarding';
 import { usePrayerNotificationSync } from '../src/hooks/usePrayerNotificationSync';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 function OnboardingLaunchGate() {
   const router = useRouter();
@@ -13,6 +14,9 @@ function OnboardingLaunchGate() {
 
   useEffect(() => {
     if (!navigationState?.key) return; // Ensure navigation tree is ready
+
+    let isActive = true;
+    let redirectTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const verifyOnboarding = async () => {
       const inOnboarding = segments[0] === 'onboarding';
@@ -23,17 +27,21 @@ function OnboardingLaunchGate() {
 
       const completed = await checkOnboardingComplete();
 
-      if (!completed) {
-        const timeout = setTimeout(() => {
+      if (!completed && isActive) {
+        redirectTimeout = setTimeout(() => {
+          if (!isActive) return;
           router.replace('/onboarding');
         }, 0);
-        return () => clearTimeout(timeout);
       }
     };
 
-    const cleanupPromise = verifyOnboarding();
+    verifyOnboarding();
+
     return () => {
-      cleanupPromise.then((cleanup) => cleanup?.());
+      isActive = false;
+      if (redirectTimeout) {
+        clearTimeout(redirectTimeout);
+      }
     };
   }, [navigationState?.key, router, segments]);
 
@@ -48,7 +56,8 @@ export default function RootLayout() {
   usePrayerNotificationSync();
 
   return (
-    <>
+    <SafeAreaProvider>
+      {/* SafeAreaProvider supplies Android system navigation insets to the tab bar and screen content. */}
       <StatusBar style={effectiveTheme === 'dark' ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
@@ -65,6 +74,6 @@ export default function RootLayout() {
         <Stack.Screen name="prayer-times-month" options={{ headerShown: false, presentation: 'card' }} />
       </Stack>
       <OnboardingLaunchGate />
-    </>
+    </SafeAreaProvider>
   );
 }

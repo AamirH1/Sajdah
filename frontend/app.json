@@ -19,7 +19,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#EAE6DE"
       },
-      "edgeToEdgeEnabled": true,
+      "edgeToEdgeEnabled": false,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -40,8 +40,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/sajdah-splash.png",
-          "imageWidth": 320,
-          "resizeMode": "contain",
+          "resizeMode": "cover",
           "backgroundColor": "#EAE6DE"
         }
       ],

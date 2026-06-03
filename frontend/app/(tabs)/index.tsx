@@ -7,10 +7,13 @@ import { getPrayerTimes, formatPrayerTime, PrayerName, PrayerTimeResult } from '
 import { getTodayHijri, HijriDateResult } from '../../src/services/hijriApi';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { ScreenContainer, Card } from '../../src/ui/components';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getFloatingTabBarContentPadding } from '../../src/ui/tabBarMetrics';
 
 export default function HomeScreen() {
   const { colors, typography, spacing, isDark } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { location, calculationMethod, madhhab, offsets } = useSettings();
 
   const [now, setNow] = useState(new Date());
@@ -179,7 +182,11 @@ export default function HomeScreen() {
   const currentHijriYear = todayHijri ? `${todayHijri.hijriYear} AH` : '';
 
   return (
-    <ScreenContainer heroGradient={getPrayerGradient(nextPrayer?.name)}>
+    <ScreenContainer
+      heroGradient={getPrayerGradient(nextPrayer?.name)}
+      // Match scroll padding to the floating tab bar so Home content remains tappable above Android navigation.
+      style={{ paddingBottom: getFloatingTabBarContentPadding(insets.bottom) }}
+    >
       <View style={{ paddingHorizontal: spacing.lg, flex: 1 }}>
         
         {/* Header */}

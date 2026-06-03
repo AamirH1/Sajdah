@@ -1,28 +1,55 @@
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { getPrayerTimes, PrayerTimeResult } from './prayer';
 import type { PrayerOffset } from './prayer';
 import type { CalculationMethod, Madhhab } from '../store/useSettings';
+import type * as ExpoNotifications from 'expo-notifications';
 
 const PRAYER_NOTIFICATION_CHANNEL_ID = 'prayer-times';
 const PRAYER_NOTIFICATION_ID_PREFIX = 'sajdah-prayer';
 const PRAYER_NOTIFICATION_DAYS_TO_SCHEDULE = 7;
+const NOTIFICATIONS_UNAVAILABLE_MESSAGE = 'Prayer reminders are available in the installed app build.';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+type NotificationsModule = typeof ExpoNotifications;
+
+let notificationHandlerConfigured = false;
+
+const isExpoGoOnAndroid = () => Platform.OS === 'android' && Constants.appOwnership === 'expo';
+
+async function getNotificationsModule(): Promise<NotificationsModule | null> {
+  if (isExpoGoOnAndroid()) {
+    return null;
+  }
+
+  const Notifications = await import('expo-notifications');
+
+  if (!notificationHandlerConfigured) {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+    notificationHandlerConfigured = true;
+  }
+
+  return Notifications;
+}
 
 export async function hasNotificationPermission(): Promise<boolean> {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) return false;
+
   const { status } = await Notifications.getPermissionsAsync();
   return status === 'granted';
 }
 
 async function ensurePrayerNotificationChannel(): Promise<void> {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) return;
+
   if (Platform.OS !== 'android') {
     return;
   }
@@ -36,6 +63,9 @@ async function ensurePrayerNotificationChannel(): Promise<void> {
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) return false;
+
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
 
@@ -56,7 +86,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
 const createPrayerNotificationIdentifier = (date: Date, prayerName: string, variant = 'time') =>
   `${PRAYER_NOTIFICATION_ID_PREFIX}:${date.toISOString()}:${prayerName}:${variant}`;
 
-const createDateTrigger = (date: Date): Notifications.DateTriggerInput => ({
+const createDateTrigger = (date: Date, Notifications: NotificationsModule): ExpoNotifications.DateTriggerInput => ({
   type: Notifications.SchedulableTriggerInputTypes.DATE,
   date,
   channelId: PRAYER_NOTIFICATION_CHANNEL_ID,
@@ -84,6 +114,9 @@ export async function scheduleDailyPrayerNotifications(
   enabledPrayers: Record<string, boolean>,
   smartFajr: boolean
 ): Promise<void> {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) throw new Error(NOTIFICATIONS_UNAVAILABLE_MESSAGE);
+
   const now = new Date();
 
   for (const prayer of prayerTimes) {
@@ -106,7 +139,7 @@ export async function scheduleDailyPrayerNotifications(
             priority: Notifications.AndroidNotificationPriority.MAX,
             data: { type: PRAYER_NOTIFICATION_ID_PREFIX, prayer: prayer.name, variant: 'smart-fajr' },
           },
-          trigger: createDateTrigger(earlyTrigger),
+          trigger: createDateTrigger(earlyTrigger, Notifications),
         });
       }
     }
@@ -122,7 +155,7 @@ export async function scheduleDailyPrayerNotifications(
           : Notifications.AndroidNotificationPriority.HIGH,
         data: { type: PRAYER_NOTIFICATION_ID_PREFIX, prayer: prayer.name, variant: 'time' },
       },
-      trigger: createDateTrigger(trigger),
+      trigger: createDateTrigger(trigger, Notifications),
     });
   }
 }
@@ -131,6 +164,9 @@ export async function schedulePrayerNotificationsFromSettings(
   input: PrayerNotificationSettingsInput,
   options: { requestPermission?: boolean } = {}
 ): Promise<void> {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) throw new Error(NOTIFICATIONS_UNAVAILABLE_MESSAGE);
+
   const permissionGranted = options.requestPermission
     ? await requestNotificationPermission()
     : await hasNotificationPermission();
@@ -177,9 +213,9 @@ export async function schedulePrayerNotificationsFromSettings(
               sound: 'default',
               priority: Notifications.AndroidNotificationPriority.MAX,
               data: { type: PRAYER_NOTIFICATION_ID_PREFIX, prayer: prayer.name, variant: 'smart-fajr' },
-            },
-            trigger: createDateTrigger(earlyTrigger),
-          });
+              },
+              trigger: createDateTrigger(earlyTrigger, Notifications),
+            });
         }
       }
 
@@ -194,32 +230,32 @@ export async function schedulePrayerNotificationsFromSettings(
             : Notifications.AndroidNotificationPriority.HIGH,
           data: { type: PRAYER_NOTIFICATION_ID_PREFIX, prayer: prayer.name, variant: 'time' },
         },
-        trigger: createDateTrigger(trigger),
+        trigger: createDateTrigger(trigger, Notifications),
       });
     }
   }
 }
 
 export async function cancelPrayerNotifications(): Promise<void> {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) return;
+
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
 
   const prayerNotifications = scheduled.filter((item) => {
-    const request = 'request' in item ? item.request : item;
-    const identifier = request?.identifier;
-    const type = request?.content?.data?.type;
+    const identifier = item.identifier;
+    const type = item.content.data?.type;
     return identifier?.startsWith(PRAYER_NOTIFICATION_ID_PREFIX) || type === PRAYER_NOTIFICATION_ID_PREFIX;
   });
 
   await Promise.all(
-    prayerNotifications.map((item) => {
-      const request = 'request' in item ? item.request : item;
-      return request?.identifier
-        ? Notifications.cancelScheduledNotificationAsync(request.identifier)
-        : Promise.resolve();
-    })
+    prayerNotifications.map((item) => Notifications.cancelScheduledNotificationAsync(item.identifier))
   );
 }
 
 export async function getScheduledNotifications() {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) return [];
+
   return await Notifications.getAllScheduledNotificationsAsync();
 }

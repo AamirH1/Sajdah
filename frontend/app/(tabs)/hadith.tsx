@@ -5,6 +5,8 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
 import { ScreenContainer, ScreenHeader, Card } from '../../src/ui/components';
 import { getDynamicScreenGradient } from '../../src/ui/colorUtils';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getFloatingTabBarContentPadding } from '../../src/ui/tabBarMetrics';
 
 const HADITH_BOOKS = [
   { id: 'bukhari', name: 'Sahih al-Bukhari', arabic: 'صحيح البخاري', count: 7563, color: '#F59E0B' },
@@ -18,6 +20,7 @@ const HADITH_BOOKS = [
 export default function HadithScreen() {
   const { colors, typography, spacing, radius, isDark } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const screenGradient = getDynamicScreenGradient(colors, isDark);
 
   const renderBook = ({ item }: { item: typeof HADITH_BOOKS[0] }) => (
@@ -54,7 +57,8 @@ export default function HadithScreen() {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
-        contentContainerStyle={styles.listContent}
+        // Match grid padding to the floating tab bar so the Hadith cards stay tappable.
+        contentContainerStyle={[styles.listContent, { paddingBottom: getFloatingTabBarContentPadding(insets.bottom) }]}
         showsVerticalScrollIndicator={false}
       />
     </ScreenContainer>

@@ -20,6 +20,8 @@ import { getDynamicScreenGradient } from '../../src/ui/colorUtils';
 import { spacing, radius, typography } from '../../src/theme';
 import { useSettings } from '../../src/store/useSettings';
 import { QuranReciter, getQuranReciters, getSurahAudioUrls } from '../../src/services/quranReciters';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getFloatingTabBarContentPadding } from '../../src/ui/tabBarMetrics';
 
 const FALLBACK_RECITERS: QuranReciter[] = [
   { id: 1, name: 'Mishary Rashid Alafasy', fallbackServer: 'server8', fallbackPath: 'afs' },
@@ -31,6 +33,7 @@ const FALLBACK_RECITERS: QuranReciter[] = [
 export default function QuranScreen() {
   const { colors, typography, isDark } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { quranReciterId, quranReciterName, setQuranReciter } = useSettings();
   const screenGradient = getDynamicScreenGradient(colors, isDark);
 
@@ -299,7 +302,8 @@ export default function QuranScreen() {
         data={filteredSurahs}
         renderItem={renderSurah}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
+        // Match list padding to the floating tab bar so the final Surah row stays tappable.
+        contentContainerStyle={[styles.listContent, { paddingBottom: getFloatingTabBarContentPadding(insets.bottom) }]}
         showsVerticalScrollIndicator={false}
         initialNumToRender={114}
         maxToRenderPerBatch={114}
@@ -344,7 +348,8 @@ export default function QuranScreen() {
               testID="reciter-list"
               data={reciters}
               keyExtractor={(item) => String(item.id)}
-              contentContainerStyle={styles.reciterListContent}
+              // Add runtime bottom inset so the reciter picker remains clear of Android navigation.
+              contentContainerStyle={[styles.reciterListContent, { paddingBottom: spacing.huge + insets.bottom }]}
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => {
                 const isSelected = selectedReciter?.id === item.id;

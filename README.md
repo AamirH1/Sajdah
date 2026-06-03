@@ -20,7 +20,7 @@ This project consists of a React Native (Expo) frontend and a Python (FastAPI) b
 
 ## End-to-End Setup Instructions
 
-### Prerequisites
+### Prerequisites - eas build --profile preview --platform android --clear-cache
 
 - Node.js (v18+ recommended)
 - Python (v3.9+ recommended)

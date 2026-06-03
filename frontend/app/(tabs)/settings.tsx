@@ -6,6 +6,8 @@ import { useTheme } from '../../src/ui/hooks/useTheme';
 import { spacing, typography, radius } from '../../src/ui/theme';
 import { ScreenContainer, ScreenHeader } from '../../src/ui/components';
 import { getDynamicScreenGradient, hexToRgba } from '../../src/ui/colorUtils';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getFloatingTabBarContentPadding } from '../../src/ui/tabBarMetrics';
 
 import { useSettings } from '../../src/store/useSettings';
 import { useEntitlements } from '../../src/store/useEntitlements';
@@ -19,6 +21,7 @@ export default function SettingsScreen() {
   const { colors, isDark } = useTheme();
   const settings = useSettings();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const plan = useEntitlements((state) => state.plan);
   const togglePlan = useEntitlements((state) => state.togglePlan);
   const canUseHijri = plan === 'pro';
@@ -107,7 +110,11 @@ export default function SettingsScreen() {
 
   return (
     <ScreenContainer scrollable heroGradient={screenGradient}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        // Match scroll padding to the floating tab bar so Settings actions stay tappable.
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: getFloatingTabBarContentPadding(insets.bottom) }]}
+      >
         <ScreenHeader title="Settings" />
 
         <View style={[styles.settingsHero, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>

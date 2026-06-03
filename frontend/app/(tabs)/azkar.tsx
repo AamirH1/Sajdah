@@ -7,10 +7,13 @@ import { ScreenContainer } from '../../src/ui/components';
 import { getDynamicScreenGradient, hexToRgba } from '../../src/ui/colorUtils';
 import { spacing, radius, typography } from '../../src/theme';
 import { AZKAR_CATEGORIES } from '../../src/data/azkar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getFloatingTabBarContentPadding } from '../../src/ui/tabBarMetrics';
 
 export default function AzkarScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const screenTitleColor = isDark ? colors.screenTextPrimary : colors.textPrimary;
   const screenSubtitleColor = isDark ? colors.screenTextSecondary : colors.textSecondary;
   const screenGradient = getDynamicScreenGradient(colors, isDark);
@@ -61,7 +64,8 @@ export default function AzkarScreen() {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
-        contentContainerStyle={styles.listContent}
+        // Match list padding to the floating tab bar so the last Azkar card stays tappable.
+        contentContainerStyle={[styles.listContent, { paddingBottom: getFloatingTabBarContentPadding(insets.bottom) }]}
         showsVerticalScrollIndicator={false}
       />
     </ScreenContainer>

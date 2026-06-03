@@ -70,7 +70,7 @@ const STEPS: OnboardingStep[] = [
   },
 ];
 
-const ONBOARDING_KEY = 'onboarding_complete_v2' //'onboarding_complete';
+const ONBOARDING_KEY = 'onboarding_complete_sajdah_v1';
 
 export async function checkOnboardingComplete(): Promise<boolean> {
   try {
