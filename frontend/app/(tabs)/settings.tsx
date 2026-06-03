@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, ActivityIndicator, Linking, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import { useTheme } from '../../src/ui/hooks/useTheme';
@@ -9,7 +9,6 @@ import { getDynamicScreenGradient, hexToRgba } from '../../src/ui/colorUtils';
 
 import { useSettings } from '../../src/store/useSettings';
 import { useEntitlements } from '../../src/store/useEntitlements';
-import { getDeviceId, syncBackup } from '../../src/services/api';
 import { getAsmaUlHusnaLanguageLabel } from '../../src/services/asmaUlHusnaApi';
 import {
   requestNotificationPermission,
@@ -27,11 +26,8 @@ export default function SettingsScreen() {
   const canUseMultiLang = plan === 'pro';
   const canUseSmartFajr = plan === 'pro';
   
-  const [backendStatus, setBackendStatus] = useState<{ message: string, success: boolean } | null>(null);
   const [notificationStatus, setNotificationStatus] = useState<{ message: string, success: boolean } | null>(null);
-  const [isPinging, setIsPinging] = useState(false);
   const [, setIsSyncingNotifications] = useState(false);
-  const [deviceId, setDeviceId] = useState<string | null>(null);
 
   const methods = ['Karachi', 'MuslimWorldLeague', 'Egyptian', 'UmmAlQura', 'Dubai', 'NorthAmerica'] as const;
   const madhhabOptions = ['Hanafi', 'Shafi'] as const;
@@ -48,10 +44,6 @@ export default function SettingsScreen() {
     backgroundColor: isDark ? colors.dateBadgeBg : hexToRgba(colors.primary, 0.16),
     borderColor: isDark ? colors.cardBorder : colors.border,
   };
-
-  useEffect(() => {
-    getDeviceId().then(setDeviceId);
-  }, []);
 
   const handleNotificationToggle = async (
     prayer: keyof typeof settings.notifications,
@@ -88,19 +80,6 @@ export default function SettingsScreen() {
       } finally {
         setIsSyncingNotifications(false);
       }
-    }
-  };
-
-  const handlePingBackend = async () => {
-    setIsPinging(true);
-    setBackendStatus(null);
-    try {
-      await syncBackup();
-      setBackendStatus({ message: 'Your backup is up to date.', success: true });
-    } catch {
-      setBackendStatus({ message: 'We could not back up your data right now. Please try again later.', success: false });
-    } finally {
-      setIsPinging(false);
     }
   };
 
@@ -504,44 +483,6 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Backup Card */}
-          <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginTop: spacing.md }]}>
-            <View style={styles.backupHeader}>
-              <View style={[styles.iconTile, dynamicIconTileStyle]}>
-                <Ionicons name="cloud-done-outline" size={22} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Private Backup</Text>
-                <Text style={[styles.settingValue, { color: colors.textSecondary, marginTop: 3 }]}>
-                  {deviceId ? 'Ready to protect your settings' : 'Preparing backup...'}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.backupActions}>
-              <TouchableOpacity
-                testID="ping-backend-btn"
-                style={[styles.backupPrimaryBtn, { backgroundColor: isPinging ? colors.border : colors.primary }]}
-                onPress={handlePingBackend}
-                disabled={isPinging}
-              >
-                {isPinging ? <ActivityIndicator size="small" color={colors.onPrimary} /> : <Ionicons name="cloud-upload-outline" size={15} color={colors.onPrimary} />}
-                <Text style={[styles.valueText, { color: colors.onPrimary }]}>Back Up Now</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.backupSecondaryBtn, { backgroundColor: colors.chipBackground }]}
-                activeOpacity={0.8}
-                onPress={() => Alert.alert('Coming Soon', 'You will be able to connect your email and restore your settings on another device soon.')}
-              >
-                <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>Connect Email</Text>
-              </TouchableOpacity>
-            </View>
-            {backendStatus && (
-              <Text style={{ ...typography.xs, color: backendStatus.success ? '#10B981' : '#EF4444', marginTop: spacing.md }}>
-                {backendStatus.message}
-              </Text>
-            )}
-          </View>
         </View>
 
         {/* Privacy & Legal */}
@@ -736,8 +677,4 @@ const styles = StyleSheet.create({
   upgradeBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   linkRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
   iconTile: { width: 44, height: 44, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  backupHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  backupActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
-  backupPrimaryBtn: { flex: 1, minHeight: 46, borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
-  backupSecondaryBtn: { flex: 1, minHeight: 46, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
 });

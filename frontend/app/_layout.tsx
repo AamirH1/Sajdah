@@ -6,30 +6,46 @@ import { useEffect } from 'react';
 import { checkOnboardingComplete } from './onboarding';
 import { usePrayerNotificationSync } from '../src/hooks/usePrayerNotificationSync';
 
-export default function RootLayout() {
-  const { theme } = useSettings();
-  const systemScheme = useColorScheme();
-  const effectiveTheme = theme === 'system' ? (systemScheme || 'light') : theme;
-
+function OnboardingLaunchGate() {
   const router = useRouter();
   const segments = useSegments();
   const navigationState = useRootNavigationState();
-  usePrayerNotificationSync();
 
   useEffect(() => {
     if (!navigationState?.key) return; // Ensure navigation tree is ready
 
     const verifyOnboarding = async () => {
-      const completed = await checkOnboardingComplete();
       const inOnboarding = segments[0] === 'onboarding';
 
-      if (!completed && !inOnboarding) {
-        router.replace('/onboarding');
+      if (inOnboarding) {
+        return;
+      }
+
+      const completed = await checkOnboardingComplete();
+
+      if (!completed) {
+        const timeout = setTimeout(() => {
+          router.replace('/onboarding');
+        }, 0);
+        return () => clearTimeout(timeout);
       }
     };
 
-    verifyOnboarding();
+    const cleanupPromise = verifyOnboarding();
+    return () => {
+      cleanupPromise.then((cleanup) => cleanup?.());
+    };
   }, [navigationState?.key, router, segments]);
+
+  return null;
+}
+
+export default function RootLayout() {
+  const { theme } = useSettings();
+  const systemScheme = useColorScheme();
+  const effectiveTheme = theme === 'system' ? (systemScheme || 'light') : theme;
+
+  usePrayerNotificationSync();
 
   return (
     <>
@@ -48,6 +64,7 @@ export default function RootLayout() {
         <Stack.Screen name="islamic-events" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="prayer-times-month" options={{ headerShown: false, presentation: 'card' }} />
       </Stack>
+      <OnboardingLaunchGate />
     </>
   );
 }
