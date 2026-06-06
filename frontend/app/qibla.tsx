@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Animated, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { View, Text, StyleSheet, Animated, TouchableOpacity, ActivityIndicator, Linking, useWindowDimensions } from 'react-native';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,13 +9,13 @@ import { ScreenContainer, Card } from '../src/ui/components';
 import { getQiblaLookup } from '../src/services/qiblaApi';
 import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 
-const { width, height } = Dimensions.get('window');
-const compassSize = Math.min(width * 0.85, height < 760 ? 292 : 340);
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
 
 export default function QiblaScreen() {
   const { colors, typography, spacing, shadows, isDark } = useTheme();
   const router = useRouter();
   const { location } = useSettings();
+  const { width, height } = useWindowDimensions();
   
   const [heading, setHeading] = useState(0);
   const [qiblaDirection, setQiblaDirection] = useState(0);
@@ -28,6 +28,27 @@ export default function QiblaScreen() {
   const lastHeading = useRef(0);
   const prevCompassRot = useRef(0);
   const prevQiblaRot = useRef(0);
+  const layout = useMemo(() => {
+    const compactHeight = height < 760;
+    const largeHeight = height >= 860;
+    const compassSize = clamp(
+      Math.min(width * (compactHeight ? 0.76 : 0.82), height * (compactHeight ? 0.33 : 0.37)),
+      compactHeight ? 270 : 300,
+      largeHeight ? 360 : 340
+    );
+    const centerDisplaySize = clamp(compassSize * 0.38, 108, 130);
+
+    return {
+      compassSize,
+      centerDisplaySize,
+      instructionGap: compactHeight ? 28 : largeHeight ? 50 : 42,
+      infoCardGap: compactHeight ? 18 : largeHeight ? 30 : 24,
+      contentPaddingTop: compactHeight ? 4 : 8,
+      contentPaddingBottom: compactHeight ? 12 : 20,
+      arrowPaddingTop: clamp(compassSize * 0.13, 36, 45),
+      instructionMaxWidth: Math.min(320, width - 48),
+    };
+  }, [height, width]);
 
   useEffect(() => {
     let cancelled = false;
@@ -210,7 +231,7 @@ export default function QiblaScreen() {
         </View>
       </View>
 
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingTop: layout.contentPaddingTop, paddingBottom: layout.contentPaddingBottom }]}>
         {loading ? (
           <View style={styles.centerContent}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -232,11 +253,23 @@ export default function QiblaScreen() {
         ) : (
           <>
             <View style={styles.compassSection}>
-              <Text style={[typography.body, styles.instructions, { color: colors.textSecondary }]}>
+              <Text style={[typography.body, styles.instructions, { color: colors.textSecondary, maxWidth: layout.instructionMaxWidth, marginBottom: layout.instructionGap }]}>
                 Align the arrow with the Kaaba to face Qibla.
               </Text>
               
-              <View style={[styles.compassWrapper, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, ...shadows.md }]}>
+              <View
+                style={[
+                  styles.compassWrapper,
+                  {
+                    width: layout.compassSize,
+                    height: layout.compassSize,
+                    borderRadius: layout.compassSize / 2,
+                    backgroundColor: colors.surfaceAlt,
+                    borderColor: colors.border,
+                    ...shadows.md,
+                  },
+                ]}
+              >
                 {/* Phone Forward indicator (fixed at top) */}
                 <View style={[styles.forwardMarker, { borderBottomColor: colors.primary }]} />
                 
@@ -246,13 +279,24 @@ export default function QiblaScreen() {
                 </Animated.View>
 
                 {/* Center Display */}
-                <View style={[styles.centerDisplay, { backgroundColor: colors.surface, ...shadows.sm }]}>
+                <View
+                  style={[
+                    styles.centerDisplay,
+                    {
+                      width: layout.centerDisplaySize,
+                      height: layout.centerDisplaySize,
+                      borderRadius: layout.centerDisplaySize / 2,
+                      backgroundColor: colors.surface,
+                      ...shadows.sm,
+                    },
+                  ]}
+                >
                    <Text style={[typography.displayLg, { color: colors.textPrimary, fontSize: 36, lineHeight: 40 }]}>{Math.round(heading)}°</Text>
                    <Text style={[typography.label, { color: colors.textSecondary }]}>{getDirectionLabel(heading)}</Text>
                 </View>
 
                 {/* Qibla Arrow */}
-                <Animated.View style={[styles.qiblaArrowContainer, qiblaTransform]}>
+                <Animated.View style={[styles.qiblaArrowContainer, { paddingTop: layout.arrowPaddingTop }, qiblaTransform]}>
                    <View style={styles.qiblaArrowIndicator}>
                       <Text style={styles.kaabaIcon}>🕋</Text>
                       <View style={[styles.triangle, { borderBottomColor: colors.primary }]} />
@@ -262,7 +306,7 @@ export default function QiblaScreen() {
               </View>
             </View>
 
-            <Card style={[styles.infoCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.sm]}>
+            <Card style={[styles.infoCard, { marginTop: layout.infoCardGap, backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.sm]}>
               <View style={styles.infoHeader}>
                 <View style={[styles.infoIconBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <Ionicons name="navigate" size={22} color={colors.primary} />
@@ -351,7 +395,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, paddingTop: 8, paddingBottom: 20 },
+  content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   centerContent: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   compassSection: {
     width: '100%',
@@ -360,10 +404,8 @@ const styles = StyleSheet.create({
   },
   instructions: {
     width: '100%',
-    maxWidth: 320,
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 48,
   },
   settingsBtn: {
     marginTop: 24,
@@ -373,11 +415,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   compassWrapper: {
-    width: compassSize,
-    height: compassSize,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: compassSize / 2,
     borderWidth: 1,
   },
   compassRing: {
@@ -406,9 +445,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 130,
-    height: 130,
-    borderRadius: 65,
     zIndex: 10,
   },
   qiblaArrowContainer: {
@@ -418,7 +454,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     width: '100%',
-    paddingTop: 45, // clear the compass text
   },
   qiblaArrowIndicator: {
     alignItems: 'center',
@@ -455,7 +490,6 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     width: '100%',
-    marginTop: 26,
     padding: 16,
     gap: 12,
   },
