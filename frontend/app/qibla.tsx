@@ -9,7 +9,8 @@ import { ScreenContainer, Card } from '../src/ui/components';
 import { getQiblaLookup } from '../src/services/qiblaApi';
 import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const compassSize = Math.min(width * 0.85, height < 760 ? 292 : 340);
 
 export default function QiblaScreen() {
   const { colors, typography, spacing, shadows, isDark } = useTheme();
@@ -230,33 +231,35 @@ export default function QiblaScreen() {
           </View>
         ) : (
           <>
-            <Text style={[typography.body, styles.instructions, { color: colors.textSecondary }]}>
-              Align the arrow with the Kaaba to face Qibla.
-            </Text>
-            
-            <View style={[styles.compassWrapper, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, ...shadows.md }]}>
-              {/* Phone Forward indicator (fixed at top) */}
-              <View style={[styles.forwardMarker, { borderBottomColor: colors.primary }]} />
+            <View style={styles.compassSection}>
+              <Text style={[typography.body, styles.instructions, { color: colors.textSecondary }]}>
+                Align the arrow with the Kaaba to face Qibla.
+              </Text>
               
-              {/* Compass Ring */}
-              <Animated.View style={[styles.compassRing, compassTransform]}>
-                 {renderCompassMarks()}
-              </Animated.View>
+              <View style={[styles.compassWrapper, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, ...shadows.md }]}>
+                {/* Phone Forward indicator (fixed at top) */}
+                <View style={[styles.forwardMarker, { borderBottomColor: colors.primary }]} />
+                
+                {/* Compass Ring */}
+                <Animated.View style={[styles.compassRing, compassTransform]}>
+                   {renderCompassMarks()}
+                </Animated.View>
 
-              {/* Center Display */}
-              <View style={[styles.centerDisplay, { backgroundColor: colors.surface, ...shadows.sm }]}>
-                 <Text style={[typography.displayLg, { color: colors.textPrimary, fontSize: 36, lineHeight: 40 }]}>{Math.round(heading)}°</Text>
-                 <Text style={[typography.label, { color: colors.textSecondary }]}>{getDirectionLabel(heading)}</Text>
+                {/* Center Display */}
+                <View style={[styles.centerDisplay, { backgroundColor: colors.surface, ...shadows.sm }]}>
+                   <Text style={[typography.displayLg, { color: colors.textPrimary, fontSize: 36, lineHeight: 40 }]}>{Math.round(heading)}°</Text>
+                   <Text style={[typography.label, { color: colors.textSecondary }]}>{getDirectionLabel(heading)}</Text>
+                </View>
+
+                {/* Qibla Arrow */}
+                <Animated.View style={[styles.qiblaArrowContainer, qiblaTransform]}>
+                   <View style={styles.qiblaArrowIndicator}>
+                      <Text style={styles.kaabaIcon}>🕋</Text>
+                      <View style={[styles.triangle, { borderBottomColor: colors.primary }]} />
+                      <View style={[styles.arrowLine, { backgroundColor: colors.primary }]} />
+                   </View>
+                </Animated.View>
               </View>
-
-              {/* Qibla Arrow */}
-              <Animated.View style={[styles.qiblaArrowContainer, qiblaTransform]}>
-                 <View style={styles.qiblaArrowIndicator}>
-                    <Text style={styles.kaabaIcon}>🕋</Text>
-                    <View style={[styles.triangle, { borderBottomColor: colors.primary }]} />
-                    <View style={[styles.arrowLine, { backgroundColor: colors.primary }]} />
-                 </View>
-              </Animated.View>
             </View>
 
             <Card style={[styles.infoCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }, shadows.sm]}>
@@ -348,9 +351,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  content: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, paddingTop: 8, paddingBottom: 20 },
   centerContent: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  instructions: { textAlign: 'center', marginTop: -30, marginBottom: 78 },
+  compassSection: {
+    width: '100%',
+    alignItems: 'center',
+    flexShrink: 1,
+  },
+  instructions: {
+    width: '100%',
+    maxWidth: 320,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 48,
+  },
   settingsBtn: {
     marginTop: 24,
     paddingHorizontal: 24,
@@ -359,11 +373,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   compassWrapper: {
-    width: width * 0.85,
-    height: width * 0.85,
+    width: compassSize,
+    height: compassSize,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: width * 0.425,
+    borderRadius: compassSize / 2,
     borderWidth: 1,
   },
   compassRing: {
@@ -441,7 +455,7 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     width: '100%',
-    marginTop: 36,
+    marginTop: 26,
     padding: 16,
     gap: 12,
   },

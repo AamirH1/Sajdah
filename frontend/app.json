@@ -8,6 +8,11 @@
     "scheme": "sajdah",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/sajdah-splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#EAE6DE"
+    },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
