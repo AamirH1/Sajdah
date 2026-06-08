@@ -36,7 +36,7 @@ export default function SettingsScreen() {
   const madhhabOptions = ['Hanafi', 'Shafi'] as const;
   const themeOptions = ['light', 'dark', 'system'] as const;
   const standardLanguages = ['english', 'urdu'] as const;
-  const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'] as const;
+  const proLanguages = ['hindi', 'bangla', 'tamil', 'malayalam', 'gujarati', 'telugu', 'kannada'] as const;
   const comingSoonLanguages = new Set(['telugu', 'kannada']);
   const screenGradient = getDynamicScreenGradient(colors, isDark);
   const selectedChipColor = isDark ? colors.dateBadgeBg : colors.chipBackground;
@@ -580,13 +580,13 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textLabel }]}>APP INFO</Text>
           <View style={[styles.card, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-            <View style={styles.settingRow}>
+            <TouchableOpacity onPress={() => router.push('/about')} style={styles.linkRow}>
               <View style={styles.settingLabelWithIcon}>
-                <Ionicons name="sparkles-outline" size={20} color={colors.textSecondary} />
-                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>App Name</Text>
+                <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>About</Text>
               </View>
-              <Text style={[styles.settingValue, { color: colors.textSecondary }]}>Sajdah</Text>
-            </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
 
             <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 

@@ -143,11 +143,13 @@ export default function HomeScreen() {
   };
 
   const quickActions = [
+    { icon: 'information-circle-outline' as const, label: 'About', testID: 'quick-action-about', href: '/about' as const },
     { icon: 'book-outline' as const, label: 'Quran', testID: 'quick-action-quran', href: '/quran' as const },
     { icon: 'compass-outline' as const, label: 'Qibla', testID: 'quick-action-qibla', href: '/qibla' as const },
     { icon: 'calendar-outline' as const, label: 'Hijri', testID: 'quick-action-hijri', href: '/hijri' as const },
     { icon: 'calendar-number-outline' as const, label: 'Events', testID: 'quick-action-islamic-events', href: '/islamic-events' as const },
     { icon: 'time-outline' as const, label: 'Prayer Month', testID: 'quick-action-prayer-times-month', href: '/prayer-times-month' as const },
+    { icon: 'cash-outline' as const, label: 'Zakat', testID: 'quick-action-zakat', href: '/zakat' as const },
     { icon: 'sunny-outline' as const, label: 'Azkar', testID: 'quick-action-morning-azkar', href: '/azkar/morning' as const },
     { icon: 'radio-button-on-outline' as const, label: 'Tasbih', testID: 'quick-action-tasbih', href: '/tasbih' as const },
     { icon: 'sparkles-outline' as const, label: '99 Names', testID: 'quick-action-asma-ul-husna', href: '/asma-ul-husna' as const },

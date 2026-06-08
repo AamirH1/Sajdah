@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { assertApiSuccess, fetchJson } from './http';
 
 export type HadithCollectionKey = 'bukhari' | 'muslim' | 'abudawud' | 'tirmidhi' | 'ibnmajah' | 'nasai' | 'malik';
 
@@ -53,11 +54,6 @@ const cacheKeyForHadith = (collection: HadithCollectionKey, number: string) =>
   `hadith_item_${collection}_${number}`;
 
 const normalizeCollectionKey = (collection: string): HadithCollectionKey => collection as HadithCollectionKey;
-const requestTimeout = (ms: number) =>
-  new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Hadith request timed out')), ms);
-  });
-
 const getTextFromAny = (value: unknown): string => {
   if (typeof value === 'string') return value;
   if (!value || typeof value !== 'object') return '';
@@ -104,26 +100,6 @@ const normalizeCollection = (raw: unknown): HadithCollection => {
   };
 };
 
-const fetchJson = async <T,>(url: string): Promise<ApiEnvelope<T>> => {
-  try {
-    const response = await Promise.race([
-      fetch(url),
-      requestTimeout(REQUEST_TIMEOUT_MS),
-    ]);
-
-    if (!response || !('ok' in response)) {
-      throw new Error('Hadith request failed');
-    }
-
-    if (!response.ok) {
-      throw new Error(`Hadith request failed: ${response.status}`);
-    }
-    return response.json();
-  } catch (error) {
-    throw error;
-  }
-};
-
 export async function getHadithCollections(): Promise<HadithCollection[]> {
   const cached = await AsyncStorage.getItem(COLLECTION_CACHE_KEY);
   if (cached) {
@@ -134,7 +110,8 @@ export async function getHadithCollections(): Promise<HadithCollection[]> {
     }
   }
 
-  const json = await fetchJson<unknown>(`${BASE_URL}/collections`);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/collections`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(json, 'Unable to load hadith collections');
   const rawData = Array.isArray(json.data)
     ? json.data
     : Array.isArray((json.data as any)?.collections)
@@ -183,7 +160,8 @@ export async function getHadithCollectionPage(
     }
   }
 
-  const json = await fetchJson<unknown>(`${BASE_URL}/${collection}?page=${page}&limit=${limit}`);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/${collection}?page=${page}&limit=${limit}`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(json, 'Unable to load hadith collection');
   const rawData = Array.isArray(json.data)
     ? json.data
     : Array.isArray((json.data as any)?.hadiths)
@@ -238,7 +216,8 @@ export async function getHadith(
     }
   }
 
-  const json = await fetchJson<unknown>(`${BASE_URL}/${collection}/${number}`);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/${collection}/${number}`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(json, 'Unable to load hadith');
   const payload = Array.isArray(json.data) ? json.data[0] : json.data;
   if (!payload) {
     return null;
@@ -253,7 +232,8 @@ export async function getRandomHadith(collection?: HadithCollectionKey): Promise
   const collectionParam = collection ? `?collection=${encodeURIComponent(collection)}` : '';
 
   try {
-    const json = await fetchJson<unknown>(`${BASE_URL}/random${collectionParam}`);
+    const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/random${collectionParam}`, REQUEST_TIMEOUT_MS);
+    assertApiSuccess(json, 'Unable to load random hadith');
     const payload = Array.isArray(json.data) ? json.data[0] : json.data;
     if (!payload) return null;
     return normalizeHadith(payload, collection || 'bukhari');
@@ -303,7 +283,8 @@ export async function searchHadiths(query: string, collection?: HadithCollection
     params.set('collection', collection);
   }
 
-  const json = await fetchJson<unknown>(`${BASE_URL}/search?${params.toString()}`);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/search?${params.toString()}`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(json, 'Unable to search hadith');
   const searchData = json.data && typeof json.data === 'object' ? (json.data as Record<string, any>) : null;
   const rawData = Array.isArray(json.data)
     ? json.data

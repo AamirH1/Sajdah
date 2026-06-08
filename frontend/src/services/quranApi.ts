@@ -1,8 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ayah } from '../data/quran';
 import type { TranslationLang } from '../store/useSettings';
+import { assertApiSuccess, fetchJson } from './http';
 
-const LANGUAGE_CODES: Record<TranslationLang, string> = {
+type QuranTranslationLang = Exclude<TranslationLang, 'gujarati'>;
+
+const LANGUAGE_CODES: Record<QuranTranslationLang, string> = {
   english: 'en',
   urdu: 'ur',
   hindi: 'hi',
@@ -13,7 +16,7 @@ const LANGUAGE_CODES: Record<TranslationLang, string> = {
   kannada: 'kn',
 };
 
-const PREFERRED_EDITIONS: Record<TranslationLang, string[]> = {
+const PREFERRED_EDITIONS: Record<QuranTranslationLang, string[]> = {
   english: ['en.sahih', 'en.asad', 'en.pickthall'],
   urdu: ['ur.jalandhry', 'ur.jawadi', 'ur.kanzuliman', 'ur.qadri', 'ur.junagarhi', 'ur.maududi', 'ur.ahmedali'],
   hindi: ['hi.hindi', 'hi.farooq'],
@@ -43,15 +46,11 @@ interface ApiSurahEdition {
 
 const EDITION_CACHE_PREFIX = 'quran_edition_cache_v1';
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-  return response.json() as Promise<T>;
+export function isQuranTranslationLanguageSupported(language: TranslationLang): language is QuranTranslationLang {
+  return language !== 'gujarati';
 }
 
-async function resolveEdition(language: TranslationLang): Promise<string> {
+async function resolveEdition(language: QuranTranslationLang): Promise<string> {
   const cacheKey = `${EDITION_CACHE_PREFIX}_${language}`;
   const cached = await AsyncStorage.getItem(cacheKey);
   if (cached) return cached;
@@ -60,7 +59,8 @@ async function resolveEdition(language: TranslationLang): Promise<string> {
   const preferred = PREFERRED_EDITIONS[language] || PREFERRED_EDITIONS.english;
 
   try {
-    const json = await fetchJson<{ data?: ApiEdition[] }>(`https://api.alquran.cloud/v1/edition/language/${languageCode}`);
+    const json = await fetchJson(`https://api.alquran.cloud/v1/edition/language/${languageCode}`, 12000) as { data?: ApiEdition[] };
+    assertApiSuccess(json, 'Unable to load Quran translations');
     const editions = Array.isArray(json.data) ? json.data : [];
     const translationEditions = editions.filter((edition) =>
       typeof edition.identifier === 'string' &&
@@ -81,7 +81,8 @@ async function resolveEdition(language: TranslationLang): Promise<string> {
 }
 
 export async function getSurah(surahId: number, language: TranslationLang): Promise<Ayah[]> {
-  const cacheKey = `surah_cache_${surahId}_${language}`;
+  const quranLanguage = isQuranTranslationLanguageSupported(language) ? language : 'english';
+  const cacheKey = `surah_cache_${surahId}_${quranLanguage}`;
   
   try {
     // 1. Check local cache first (Offline Support)
@@ -91,10 +92,9 @@ export async function getSurah(surahId: number, language: TranslationLang): Prom
     }
 
     // 2. Fetch from Alquran.cloud API (Uthmani Arabic + Target Translation)
-    const edition = await resolveEdition(language);
-    const json = await fetchJson<{ code?: number; data?: ApiSurahEdition[] }>(
-      `https://api.alquran.cloud/v1/surah/${surahId}/editions/quran-uthmani,${edition}`
-    );
+    const edition = await resolveEdition(quranLanguage);
+    const json = await fetchJson(`https://api.alquran.cloud/v1/surah/${surahId}/editions/quran-uthmani,${edition}`, 12000) as { code?: number; data?: ApiSurahEdition[] };
+    assertApiSuccess(json, 'Unable to load Quran surah');
 
     const editions = Array.isArray(json.data) ? json.data : [];
     const arabicEdition = editions.find((entry) => entry.edition?.identifier === 'quran-uthmani') || editions[0];
@@ -108,7 +108,7 @@ export async function getSurah(surahId: number, language: TranslationLang): Prom
         number: ayah.numberInSurah || index + 1,
         arabic: ayah.text || '',
         translations: {
-          [language]: translationAyahs[index]?.text || translationAyahs[0]?.text || '',
+          [quranLanguage]: translationAyahs[index]?.text || translationAyahs[0]?.text || '',
         },
       }));
 

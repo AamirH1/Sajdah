@@ -6,7 +6,7 @@ export type CalculationMethod = 'Karachi' | 'MuslimWorldLeague' | 'Egyptian' | '
 export type Madhhab = 'Shafi' | 'Hanafi';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type QuranScript = 'Madani' | 'IndoPak';
-export type TranslationLang = 'english' | 'urdu' | 'hindi' | 'bangla' | 'tamil' | 'malayalam' | 'telugu' | 'kannada';
+export type TranslationLang = 'english' | 'urdu' | 'hindi' | 'bangla' | 'tamil' | 'malayalam' | 'telugu' | 'kannada' | 'gujarati';
 
 interface PrayerOffset {
   fajr: number;

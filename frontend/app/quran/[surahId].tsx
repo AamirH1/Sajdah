@@ -7,7 +7,7 @@ import { SURAHS, Ayah } from '../../src/data/quran';
 import { useSettings } from '../../src/store/useSettings';
 import { useEntitlements } from '../../src/store/useEntitlements';
 import { ScreenContainer, Card } from '../../src/ui/components';
-import { getSurah } from '../../src/services/quranApi';
+import { getSurah, isQuranTranslationLanguageSupported } from '../../src/services/quranApi';
 
 export default function QuranReaderScreen() {
   const { surahId } = useLocalSearchParams<{ surahId: string }>();
@@ -23,20 +23,23 @@ export default function QuranReaderScreen() {
   const [loading, setLoading] = useState(true);
 
   const canUseMultiLang = plan === 'pro';
-  const isProLang = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada'].includes(translationLang);
+  const isProLang = ['hindi', 'bangla', 'tamil', 'malayalam', 'telugu', 'kannada', 'gujarati'].includes(translationLang);
   const isComingSoonLang = ['telugu', 'kannada'].includes(translationLang);
-  const showTranslation = !isProLang || (canUseMultiLang && !isComingSoonLang);
+  const isQuranSupportedLang = isQuranTranslationLanguageSupported(translationLang);
+  const showTranslation = !isProLang || (canUseMultiLang && !isComingSoonLang && isQuranSupportedLang);
   const effectiveLang = showTranslation ? translationLang : 'english';
 
   useEffect(() => {
-    if (!canUseMultiLang || !isComingSoonLang) return;
+    if (!canUseMultiLang || (!isComingSoonLang && translationLang !== 'gujarati')) return;
 
     Alert.alert(
-      'Coming Soon',
-      'Telugu and Kannada are coming soon. Please choose another language for now.',
+      translationLang === 'gujarati' ? 'Gujarati not ready for Quran' : 'Coming Soon',
+      translationLang === 'gujarati'
+        ? 'Gujarati is available for 99 Names, but Quran translations are not available yet. English is shown for now.'
+        : 'Telugu and Kannada are coming soon. Please choose another language for now.',
       [{ text: 'OK' }]
     );
-  }, [canUseMultiLang, isComingSoonLang]);
+  }, [canUseMultiLang, isComingSoonLang, translationLang]);
 
   useEffect(() => {
     const loadSurahData = async () => {
@@ -80,6 +83,13 @@ export default function QuranReaderScreen() {
             <Ionicons name="time-outline" size={16} color="#D97706" />
             <Text style={styles.proWarningText}>
               Telugu and Kannada are coming soon. English is shown for now.
+            </Text>
+          </View>
+        ) : translationLang === 'gujarati' && canUseMultiLang ? (
+          <View style={[styles.proWarning, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.lg }]}>
+            <Ionicons name="language-outline" size={16} color="#D97706" />
+            <Text style={styles.proWarningText}>
+              Gujarati is available for 99 Names, but Quran translations are not available yet. English is shown for now.
             </Text>
           </View>
         ) : isProLang && !canUseMultiLang && (

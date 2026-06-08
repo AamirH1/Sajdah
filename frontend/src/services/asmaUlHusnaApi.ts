@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TranslationLang } from '../store/useSettings';
+import { assertApiSuccess, fetchJson } from './http';
 
 const BASE_URL = 'https://islamicapi.com/api/v1/asma-ul-husna';
 const REQUEST_TIMEOUT_MS = 12000;
@@ -22,6 +23,7 @@ const LANGUAGE_CODES: Record<Exclude<TranslationLang, 'english'>, string> = {
   malayalam: 'ml',
   telugu: 'te',
   kannada: 'kn',
+  gujarati: 'gu',
 };
 
 const LANGUAGE_LABELS: Record<TranslationLang, string> = {
@@ -33,31 +35,10 @@ const LANGUAGE_LABELS: Record<TranslationLang, string> = {
   malayalam: 'Malayalam',
   telugu: 'Telugu',
   kannada: 'Kannada',
+  gujarati: 'Gujarati',
 };
 
 const API_KEY = process.env.EXPO_PUBLIC_ISLAMIC_API_KEY?.trim() || '';
-
-const requestTimeout = (ms: number) =>
-  new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Request timed out')), ms);
-  });
-
-const fetchJson = async (url: string): Promise<unknown> => {
-  const response = await Promise.race([
-    fetch(url),
-    requestTimeout(REQUEST_TIMEOUT_MS),
-  ]);
-
-  if (!response || !('ok' in response)) {
-    throw new Error('Network request failed');
-  }
-
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-
-  return response.json();
-};
 
 const asRecord = (value: unknown): Record<string, any> => (
   value && typeof value === 'object' ? value as Record<string, any> : {}
@@ -143,7 +124,8 @@ export async function getAsmaUlHusnaByLanguage(language: TranslationLang, forceR
   }
 
   const languageCode = LANGUAGE_CODES[language];
-  const payload = await fetchJson(`${BASE_URL}/?language=${encodeURIComponent(languageCode)}&api_key=${encodeURIComponent(API_KEY)}`);
+  const payload = await fetchJson(`${BASE_URL}/?language=${encodeURIComponent(languageCode)}&api_key=${encodeURIComponent(API_KEY)}`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(payload, 'Unable to load Asma ul Husna translations');
   const items = extractItems(payload).map(normalizeItem).filter((item) => item.number > 0);
   await AsyncStorage.setItem(cacheKey, JSON.stringify(items));
   return items;

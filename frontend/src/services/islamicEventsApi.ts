@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { assertApiSuccess, fetchJson } from './http';
 
 const BASE_URL = 'https://ummahapi.com/api/islamic-events';
 const CACHE_KEY = 'islamic_events_cache_v1';
@@ -47,28 +48,6 @@ export interface IslamicEventsResponse {
   events: IslamicEventEntry[];
   note?: string;
 }
-
-const requestTimeout = (ms: number) =>
-  new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Request timed out')), ms);
-  });
-
-const fetchJson = async (url: string): Promise<unknown> => {
-  const response = await Promise.race([
-    fetch(url),
-    requestTimeout(REQUEST_TIMEOUT_MS),
-  ]);
-
-  if (!response || !('ok' in response)) {
-    throw new Error('Network request failed');
-  }
-
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-
-  return response.json();
-};
 
 const asRecord = (value: unknown): Record<string, any> => (
   value && typeof value === 'object' ? value as Record<string, any> : {}
@@ -144,7 +123,8 @@ export async function getIslamicEvents(forceRefresh = false): Promise<IslamicEve
     }
   }
 
-  const payload = await fetchJson(BASE_URL);
+  const payload = await fetchJson(BASE_URL, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(payload, 'Unable to load Islamic events');
   const normalized = normalizeResponse(payload);
   await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(normalized));
   return normalized;

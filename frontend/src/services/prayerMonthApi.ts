@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getPrayerTimes, formatPrayerTime } from './prayer';
 import type { CalculationMethod, Madhhab } from '../store/useSettings';
+import { assertApiSuccess, fetchJson } from './http';
 
 const BASE_URL = 'https://ummahapi.com/api/prayer-times/month';
 const CACHE_KEY_PREFIX = 'prayer_times_month_cache_v2';
@@ -34,28 +35,6 @@ export interface MonthlyPrayerTimesOptions {
   madhab?: string;
   timezone?: string;
 }
-
-const requestTimeout = (ms: number) =>
-  new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Request timed out')), ms);
-  });
-
-const fetchJson = async (url: string): Promise<unknown> => {
-  const response = await Promise.race([
-    fetch(url),
-    requestTimeout(REQUEST_TIMEOUT_MS),
-  ]);
-
-  if (!response || !('ok' in response)) {
-    throw new Error('Network request failed');
-  }
-
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-
-  return response.json();
-};
 
 const asRecord = (value: unknown): Record<string, any> => (
   value && typeof value === 'object' ? value as Record<string, any> : {}
@@ -231,7 +210,8 @@ export async function getMonthlyPrayerTimes(
 
   const url = `${BASE_URL}?${params.toString()}`;
   try {
-    const payload = await fetchJson(url);
+    const payload = await fetchJson(url, REQUEST_TIMEOUT_MS);
+    assertApiSuccess(payload, 'Unable to load monthly prayer times');
     const normalized = normalizeResponse(payload);
 
     if (normalized.days.length === 0) {

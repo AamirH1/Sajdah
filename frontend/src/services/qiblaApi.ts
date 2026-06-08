@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Coordinates, Qibla } from 'adhan';
+import { assertApiSuccess, fetchJson } from './http';
 
 const BASE_URL = 'https://ummahapi.com/api/qibla';
 const REQUEST_TIMEOUT_MS = 10000;
@@ -23,30 +24,10 @@ const roundCoord = (value: number) => Math.round(value * 1000) / 1000;
 const cacheKeyForLocation = (latitude: number, longitude: number) =>
   `${CACHE_PREFIX}_${roundCoord(latitude)}_${roundCoord(longitude)}`;
 
-const fetchJson = async <T,>(url: string): Promise<ApiEnvelope<T>> => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    if (!response.ok) {
-      throw new Error(`Qibla request failed: ${response.status}`);
-    }
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Qibla request timed out');
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
-};
-
 const localQibla = (latitude: number, longitude: number): QiblaLookupResult => {
-  const qibla = new Qibla(new Coordinates(latitude, longitude));
+  const direction = Qibla(new Coordinates(latitude, longitude));
   return {
-    direction: Number.isFinite(qibla.direction) ? qibla.direction : 0,
+    direction: Number.isFinite(direction) ? direction : 0,
     source: 'local',
   };
 };
@@ -99,7 +80,8 @@ export async function getQiblaLookup(latitude: number, longitude: number, forceR
   }
 
   try {
-    const json = await fetchJson<unknown>(`${BASE_URL}?lat=${encodeURIComponent(latitude)}&lng=${encodeURIComponent(longitude)}`);
+    const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}?lat=${encodeURIComponent(latitude)}&lng=${encodeURIComponent(longitude)}`, REQUEST_TIMEOUT_MS);
+    assertApiSuccess(json, 'Unable to load Qibla direction');
     const normalized = normalizeQiblaResponse(json.data ?? json);
     if (normalized && typeof normalized.direction === 'number') {
       const result: QiblaLookupResult = {

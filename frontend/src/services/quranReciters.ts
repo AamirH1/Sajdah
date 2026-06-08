@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { assertApiSuccess, fetchJson } from './http';
 
 const RECITERS_CACHE_KEY = 'quran_reciters_cache_v1';
 const BASE_URL = 'https://ummahapi.com/api/quran';
@@ -24,26 +25,6 @@ const RECITER_AUDIO_FALLBACKS: Record<number, Pick<QuranReciter, 'fallbackServer
   6: { fallbackServer: 'server7', fallbackPath: 's_gmd' },
   8: { fallbackServer: 'server11', fallbackPath: 'shatri' },
   10: { fallbackServer: 'server7', fallbackPath: 'shur' },
-};
-
-const fetchJson = async <T,>(url: string): Promise<T> => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    if (!response.ok) {
-      throw new Error(`Request failed: ${response.status}`);
-    }
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Request timed out');
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
 };
 
 const normalizeReciter = (item: unknown): QuranReciter => {
@@ -76,7 +57,8 @@ export async function getQuranReciters(forceRefresh = false): Promise<QuranRecit
     }
   }
 
-  const json = await fetchJson<any>(`${BASE_URL}/reciters`);
+  const json = await fetchJson<Record<string, any>>(`${BASE_URL}/reciters`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(json, 'Unable to load reciters');
   const rawData = Array.isArray(json?.data)
     ? json.data
     : Array.isArray(json?.data?.reciters)
@@ -93,7 +75,9 @@ export async function getQuranReciters(forceRefresh = false): Promise<QuranRecit
 }
 
 const getSurahAudioPayload = async (surahId: number, reciterId: number): Promise<any> => {
-  return await fetchJson<any>(`${BASE_URL}/audio/${surahId}?reciter=${reciterId}`);
+  const payload = await fetchJson<Record<string, any>>(`${BASE_URL}/audio/${surahId}?reciter=${reciterId}`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(payload, 'Unable to load reciter audio');
+  return payload;
 };
 
 const addUrl = (urls: string[], value: unknown) => {

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { assertApiSuccess, fetchJson } from './http';
 
 const BASE_URL = 'https://ummahapi.com/api';
 const REQUEST_TIMEOUT_MS = 10000;
@@ -55,26 +56,6 @@ interface ApiEnvelope<T> {
   data?: T;
   timestamp?: string;
 }
-
-const fetchJson = async <T,>(url: string): Promise<ApiEnvelope<T>> => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    if (!response.ok) {
-      throw new Error(`Hijri request failed: ${response.status}`);
-    }
-    return response.json();
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Hijri request timed out');
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
-};
 
 const normalizeHijriDate = (payload: unknown): HijriDateResult | null => {
   if (!payload || typeof payload !== 'object') return null;
@@ -177,7 +158,8 @@ export async function getTodayHijri(forceRefresh = false): Promise<HijriDateResu
     }
   }
 
-  const json = await fetchJson<unknown>(`${BASE_URL}/today-hijri`);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/today-hijri`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(json, 'Unable to load Hijri date');
   const normalized = normalizeHijriDate(json.data ?? json);
   if (!normalized) {
     throw new Error('Unable to parse Hijri date response');
@@ -205,7 +187,8 @@ export async function convertGregorianToHijri(date: Date, forceRefresh = false):
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
-  const json = await fetchJson<unknown>(`${BASE_URL}/hijri-date?date=${encodeURIComponent(`${yyyy}-${mm}-${dd}`)}`);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/hijri-date?date=${encodeURIComponent(`${yyyy}-${mm}-${dd}`)}`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(json, 'Unable to convert Gregorian date');
   const normalized = normalizeHijriDate(json.data ?? json);
   if (!normalized) {
     throw new Error('Unable to parse Hijri conversion response');
@@ -230,7 +213,8 @@ export async function getIslamicMonths(forceRefresh = false): Promise<IslamicMon
     }
   }
 
-  const json = await fetchJson<unknown>(`${BASE_URL}/islamic-months`);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/islamic-months`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(json, 'Unable to load Islamic months');
   const months = getMonthNameFromResponse(json.data ?? json).map((month, index) => normalizeIslamicMonth(month, index));
   if (months.length > 0) {
     await AsyncStorage.setItem(cacheKey, JSON.stringify(months));

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { assertApiSuccess, fetchJson } from './http';
 
 const BASE_URL = 'https://ummahapi.com/api';
 const REQUEST_TIMEOUT_MS = 12000;
@@ -22,28 +23,6 @@ export interface DuaSearchItem {
   category: string;
   reference: string;
 }
-
-const requestTimeout = (ms: number) =>
-  new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Request timed out')), ms);
-  });
-
-const fetchJson = async (url: string): Promise<unknown> => {
-  const response = await Promise.race([
-    fetch(url),
-    requestTimeout(REQUEST_TIMEOUT_MS),
-  ]);
-
-  if (!response || !('ok' in response)) {
-    throw new Error('Network request failed');
-  }
-
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-
-  return response.json();
-};
 
 const asRecord = (value: unknown): Record<string, any> => (
   value && typeof value === 'object' ? value as Record<string, any> : {}
@@ -140,7 +119,8 @@ export async function getAsmaUlHusna(forceRefresh = false): Promise<AsmaUlHusnaI
     }
   }
 
-  const payload = await fetchJson(`${BASE_URL}/asma-ul-husna`);
+  const payload = await fetchJson(`${BASE_URL}/asma-ul-husna`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(payload, 'Unable to load Asma ul Husna');
   const items = extractItems(payload).map(normalizeAsmaItem).filter((item) => item.nameArabic || item.transliteration || item.meaning);
   await AsyncStorage.setItem(ASMA_CACHE_KEY, JSON.stringify(items));
   return items;
@@ -158,7 +138,8 @@ export async function searchDuas(query: string): Promise<DuaSearchItem[]> {
     return cached;
   }
 
-  const payload = await fetchJson(`${BASE_URL}/duas/search?q=${encodeURIComponent(normalizedQuery)}`);
+  const payload = await fetchJson(`${BASE_URL}/duas/search?q=${encodeURIComponent(normalizedQuery)}`, REQUEST_TIMEOUT_MS);
+  assertApiSuccess(payload, 'Unable to search duas');
   const items = extractItems(payload).map(normalizeDuaItem).filter((item) => item.title || item.translation || item.arabic);
   await AsyncStorage.setItem(cacheKey, JSON.stringify(items));
   return items;

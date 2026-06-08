@@ -65,6 +65,7 @@ export default function RootLayout() {
         <Stack.Screen name="quran/[surahId]" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="azkar/[categoryId]" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="tasbih" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="about" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="hadith/[bookId]" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="location" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="hijri" options={{ headerShown: false, presentation: 'card' }} />
@@ -72,6 +73,7 @@ export default function RootLayout() {
         <Stack.Screen name="dua-search" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="islamic-events" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="prayer-times-month" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="zakat" options={{ headerShown: false, presentation: 'card' }} />
       </Stack>
       <OnboardingLaunchGate />
     </SafeAreaProvider>
