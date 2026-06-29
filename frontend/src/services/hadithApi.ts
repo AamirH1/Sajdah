@@ -110,7 +110,10 @@ export async function getHadithCollections(): Promise<HadithCollection[]> {
     }
   }
 
-  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/collections`, REQUEST_TIMEOUT_MS);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/collections`, REQUEST_TIMEOUT_MS, {
+    cacheKey: COLLECTION_CACHE_KEY,
+    cacheTtlMs: 7 * 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(json, 'Unable to load hadith collections');
   const rawData = Array.isArray(json.data)
     ? json.data
@@ -160,7 +163,10 @@ export async function getHadithCollectionPage(
     }
   }
 
-  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/${collection}?page=${page}&limit=${limit}`, REQUEST_TIMEOUT_MS);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/${collection}?page=${page}&limit=${limit}`, REQUEST_TIMEOUT_MS, {
+    cacheKey,
+    cacheTtlMs: 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(json, 'Unable to load hadith collection');
   const rawData = Array.isArray(json.data)
     ? json.data
@@ -216,7 +222,10 @@ export async function getHadith(
     }
   }
 
-  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/${collection}/${number}`, REQUEST_TIMEOUT_MS);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/${collection}/${number}`, REQUEST_TIMEOUT_MS, {
+    cacheKey,
+    cacheTtlMs: 30 * 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(json, 'Unable to load hadith');
   const payload = Array.isArray(json.data) ? json.data[0] : json.data;
   if (!payload) {
@@ -232,7 +241,10 @@ export async function getRandomHadith(collection?: HadithCollectionKey): Promise
   const collectionParam = collection ? `?collection=${encodeURIComponent(collection)}` : '';
 
   try {
-    const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/random${collectionParam}`, REQUEST_TIMEOUT_MS);
+    const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/random${collectionParam}`, REQUEST_TIMEOUT_MS, {
+      cacheKey: `hadith_random_${collection || 'all'}`,
+      cacheTtlMs: 6 * 60 * 60 * 1000,
+    });
     assertApiSuccess(json, 'Unable to load random hadith');
     const payload = Array.isArray(json.data) ? json.data[0] : json.data;
     if (!payload) return null;
@@ -283,7 +295,10 @@ export async function searchHadiths(query: string, collection?: HadithCollection
     params.set('collection', collection);
   }
 
-  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/search?${params.toString()}`, REQUEST_TIMEOUT_MS);
+  const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}/search?${params.toString()}`, REQUEST_TIMEOUT_MS, {
+    cacheKey,
+    cacheTtlMs: 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(json, 'Unable to search hadith');
   const searchData = json.data && typeof json.data === 'object' ? (json.data as Record<string, any>) : null;
   const rawData = Array.isArray(json.data)

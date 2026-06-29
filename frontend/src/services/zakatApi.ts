@@ -47,7 +47,10 @@ export const fetchZakatNisab = async (
     api_key: apiKey.trim(),
   });
 
-  const json = (await fetchJson(`${BASE_URL}?${params.toString()}`, REQUEST_TIMEOUT_MS)) as ZakatNisabResponse;
+  const json = (await fetchJson(`${BASE_URL}?${params.toString()}`, REQUEST_TIMEOUT_MS, {
+    cacheKey: `zakat_nisab_${standard}_${currency.toLowerCase()}_${unit}`,
+    cacheTtlMs: 15 * 60 * 1000,
+  })) as ZakatNisabResponse;
   assertApiSuccess(json, 'Unable to fetch zakat nisab values');
 
   return json;

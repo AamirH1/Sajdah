@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { assertApiSuccess, fetchJson } from './http';
+import { getLocalHijriDate, ISLAMIC_MONTH_NAMES_ARABIC } from './hijriApi';
 
 const BASE_URL = 'https://ummahapi.com/api/islamic-events';
 const CACHE_KEY = 'islamic_events_cache_v1';
@@ -63,6 +64,50 @@ const normalizeEvent = (raw: unknown): IslamicEventEntry => {
   };
 };
 
+const applyLocalCurrentHijriDate = (response: IslamicEventsResponse): IslamicEventsResponse => {
+  const now = new Date();
+  const localHijri = getLocalHijriDate(now);
+  if (!localHijri) return response;
+
+  const gregorianFormatted = now.toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  return {
+    ...response,
+    currentHijriDate: {
+      ...response.currentHijriDate,
+      gregorian: {
+        date: localHijri.gregorianDate || '',
+        formatted: gregorianFormatted,
+        dayOfWeek: now.toLocaleDateString(undefined, { weekday: 'long' }),
+        day: now.getDate(),
+        month: now.getMonth() + 1,
+        monthName: now.toLocaleDateString(undefined, { month: 'long' }),
+        year: now.getFullYear(),
+      },
+      hijri: {
+        date: `${localHijri.hijriYear}-${String(localHijri.hijriMonth).padStart(2, '0')}-${String(localHijri.hijriDay).padStart(2, '0')}`,
+        formatted: `${localHijri.hijriDay} ${localHijri.hijriMonthName} ${localHijri.hijriYear} AH`,
+        day: localHijri.hijriDay,
+        month: localHijri.hijriMonth,
+        monthName: localHijri.hijriMonthName || '',
+        monthNameArabic: ISLAMIC_MONTH_NAMES_ARABIC[localHijri.hijriMonth - 1] || '',
+        year: localHijri.hijriYear,
+        era: 'AH',
+      },
+      islamicInfo: {
+        ...response.currentHijriDate.islamicInfo,
+        calendarType: 'Calculated Hijri calendar',
+        note: 'Hijri dates can vary by local moon sighting.',
+      },
+    },
+  };
+};
+
 const normalizeResponse = (payload: unknown): IslamicEventsResponse => {
   const source = asRecord(payload);
   const data = asRecord(source.data);
@@ -116,16 +161,19 @@ export async function getIslamicEvents(forceRefresh = false): Promise<IslamicEve
     const cached = await AsyncStorage.getItem(CACHE_KEY);
     if (cached) {
       try {
-        return JSON.parse(cached) as IslamicEventsResponse;
+        return applyLocalCurrentHijriDate(JSON.parse(cached) as IslamicEventsResponse);
       } catch {
         // Ignore malformed cache.
       }
     }
   }
 
-  const payload = await fetchJson(BASE_URL, REQUEST_TIMEOUT_MS);
+  const payload = await fetchJson(BASE_URL, REQUEST_TIMEOUT_MS, {
+    cacheKey: CACHE_KEY,
+    cacheTtlMs: 7 * 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(payload, 'Unable to load Islamic events');
-  const normalized = normalizeResponse(payload);
+  const normalized = applyLocalCurrentHijriDate(normalizeResponse(payload));
   await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(normalized));
   return normalized;
 }

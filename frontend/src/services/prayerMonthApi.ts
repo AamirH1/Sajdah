@@ -210,7 +210,10 @@ export async function getMonthlyPrayerTimes(
 
   const url = `${BASE_URL}?${params.toString()}`;
   try {
-    const payload = await fetchJson(url, REQUEST_TIMEOUT_MS);
+    const payload = await fetchJson(url, REQUEST_TIMEOUT_MS, {
+      cacheKey,
+      cacheTtlMs: 24 * 60 * 60 * 1000,
+    });
     assertApiSuccess(payload, 'Unable to load monthly prayer times');
     const normalized = normalizeResponse(payload);
 

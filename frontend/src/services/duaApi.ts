@@ -119,7 +119,10 @@ export async function getAsmaUlHusna(forceRefresh = false): Promise<AsmaUlHusnaI
     }
   }
 
-  const payload = await fetchJson(`${BASE_URL}/asma-ul-husna`, REQUEST_TIMEOUT_MS);
+  const payload = await fetchJson(`${BASE_URL}/asma-ul-husna`, REQUEST_TIMEOUT_MS, {
+    cacheKey: 'dua_asma_ul_husna_v1',
+    cacheTtlMs: 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(payload, 'Unable to load Asma ul Husna');
   const items = extractItems(payload).map(normalizeAsmaItem).filter((item) => item.nameArabic || item.transliteration || item.meaning);
   await AsyncStorage.setItem(ASMA_CACHE_KEY, JSON.stringify(items));
@@ -138,7 +141,10 @@ export async function searchDuas(query: string): Promise<DuaSearchItem[]> {
     return cached;
   }
 
-  const payload = await fetchJson(`${BASE_URL}/duas/search?q=${encodeURIComponent(normalizedQuery)}`, REQUEST_TIMEOUT_MS);
+  const payload = await fetchJson(`${BASE_URL}/duas/search?q=${encodeURIComponent(normalizedQuery)}`, REQUEST_TIMEOUT_MS, {
+    cacheKey: `dua_search_${normalizedQuery}`,
+    cacheTtlMs: 7 * 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(payload, 'Unable to search duas');
   const items = extractItems(payload).map(normalizeDuaItem).filter((item) => item.title || item.translation || item.arabic);
   await AsyncStorage.setItem(cacheKey, JSON.stringify(items));

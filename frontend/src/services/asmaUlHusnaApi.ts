@@ -124,7 +124,14 @@ export async function getAsmaUlHusnaByLanguage(language: TranslationLang, forceR
   }
 
   const languageCode = LANGUAGE_CODES[language];
-  const payload = await fetchJson(`${BASE_URL}/?language=${encodeURIComponent(languageCode)}&api_key=${encodeURIComponent(API_KEY)}`, REQUEST_TIMEOUT_MS);
+  const payload = await fetchJson(
+    `${BASE_URL}/?language=${encodeURIComponent(languageCode)}&api_key=${encodeURIComponent(API_KEY)}`,
+    REQUEST_TIMEOUT_MS,
+    {
+      cacheKey: `asma_ul_husna_lang_${language}`,
+      cacheTtlMs: 7 * 24 * 60 * 60 * 1000,
+    }
+  );
   assertApiSuccess(payload, 'Unable to load Asma ul Husna translations');
   const items = extractItems(payload).map(normalizeItem).filter((item) => item.number > 0);
   await AsyncStorage.setItem(cacheKey, JSON.stringify(items));

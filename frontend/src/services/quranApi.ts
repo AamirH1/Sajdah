@@ -59,7 +59,10 @@ async function resolveEdition(language: QuranTranslationLang): Promise<string> {
   const preferred = PREFERRED_EDITIONS[language] || PREFERRED_EDITIONS.english;
 
   try {
-    const json = await fetchJson(`https://api.alquran.cloud/v1/edition/language/${languageCode}`, 12000) as { data?: ApiEdition[] };
+    const json = await fetchJson(`https://api.alquran.cloud/v1/edition/language/${languageCode}`, 12000, {
+      cacheKey: `quran_editions_${languageCode}`,
+      cacheTtlMs: 30 * 24 * 60 * 60 * 1000,
+    }) as { data?: ApiEdition[] };
     assertApiSuccess(json, 'Unable to load Quran translations');
     const editions = Array.isArray(json.data) ? json.data : [];
     const translationEditions = editions.filter((edition) =>
@@ -93,7 +96,10 @@ export async function getSurah(surahId: number, language: TranslationLang): Prom
 
     // 2. Fetch from Alquran.cloud API (Uthmani Arabic + Target Translation)
     const edition = await resolveEdition(quranLanguage);
-    const json = await fetchJson(`https://api.alquran.cloud/v1/surah/${surahId}/editions/quran-uthmani,${edition}`, 12000) as { code?: number; data?: ApiSurahEdition[] };
+    const json = await fetchJson(`https://api.alquran.cloud/v1/surah/${surahId}/editions/quran-uthmani,${edition}`, 12000, {
+      cacheKey: `quran_surah_${surahId}_${edition}`,
+      cacheTtlMs: 30 * 24 * 60 * 60 * 1000,
+    }) as { code?: number; data?: ApiSurahEdition[] };
     assertApiSuccess(json, 'Unable to load Quran surah');
 
     const editions = Array.isArray(json.data) ? json.data : [];

@@ -80,7 +80,10 @@ export async function getQiblaLookup(latitude: number, longitude: number, forceR
   }
 
   try {
-    const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}?lat=${encodeURIComponent(latitude)}&lng=${encodeURIComponent(longitude)}`, REQUEST_TIMEOUT_MS);
+    const json = await fetchJson<ApiEnvelope<any>>(`${BASE_URL}?lat=${encodeURIComponent(latitude)}&lng=${encodeURIComponent(longitude)}`, REQUEST_TIMEOUT_MS, {
+      cacheKey,
+      cacheTtlMs: 30 * 24 * 60 * 60 * 1000,
+    });
     assertApiSuccess(json, 'Unable to load Qibla direction');
     const normalized = normalizeQiblaResponse(json.data ?? json);
     if (normalized && typeof normalized.direction === 'number') {

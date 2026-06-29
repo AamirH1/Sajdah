@@ -57,7 +57,10 @@ export async function getQuranReciters(forceRefresh = false): Promise<QuranRecit
     }
   }
 
-  const json = await fetchJson<Record<string, any>>(`${BASE_URL}/reciters`, REQUEST_TIMEOUT_MS);
+  const json = await fetchJson<Record<string, any>>(`${BASE_URL}/reciters`, REQUEST_TIMEOUT_MS, {
+    cacheKey: RECITERS_CACHE_KEY,
+    cacheTtlMs: 30 * 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(json, 'Unable to load reciters');
   const rawData = Array.isArray(json?.data)
     ? json.data
@@ -75,7 +78,10 @@ export async function getQuranReciters(forceRefresh = false): Promise<QuranRecit
 }
 
 const getSurahAudioPayload = async (surahId: number, reciterId: number): Promise<any> => {
-  const payload = await fetchJson<Record<string, any>>(`${BASE_URL}/audio/${surahId}?reciter=${reciterId}`, REQUEST_TIMEOUT_MS);
+  const payload = await fetchJson<Record<string, any>>(`${BASE_URL}/audio/${surahId}?reciter=${reciterId}`, REQUEST_TIMEOUT_MS, {
+    cacheKey: `quran_audio_${surahId}_${reciterId}`,
+    cacheTtlMs: 30 * 24 * 60 * 60 * 1000,
+  });
   assertApiSuccess(payload, 'Unable to load reciter audio');
   return payload;
 };

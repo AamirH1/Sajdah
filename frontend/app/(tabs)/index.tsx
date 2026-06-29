@@ -19,6 +19,8 @@ export default function HomeScreen() {
   const [now, setNow] = useState(new Date());
   const [todayHijri, setTodayHijri] = useState<HijriDateResult | null>(null);
   const [hijriLoading, setHijriLoading] = useState(true);
+  // Extract string to reliably trigger memoized schedule and Hijri date recalculations only when the calendar day changes
+  const todayStr = now.toLocaleDateString();
 
   // Keep 'now' continuously in sync with the device clock every second
   useEffect(() => {
@@ -43,15 +45,13 @@ export default function HomeScreen() {
       }
     };
 
+    setHijriLoading(true);
     loadTodayHijri();
 
     return () => {
       active = false;
     };
-  }, []);
-
-  // Extract string to reliably trigger memoized schedule recalculations only when the calendar day changes
-  const todayStr = now.toLocaleDateString();
+  }, [todayStr]);
 
   const calculateTimes = useCallback((date: Date): PrayerTimeResult[] => {
     try {
