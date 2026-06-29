@@ -11,6 +11,11 @@ import { getDynamicScreenGradient } from '../src/ui/colorUtils';
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
 
+type QiblaLocationSource = 'gps' | 'saved';
+
+const hasValidCoordinates = (candidate?: { latitude?: number; longitude?: number } | null) =>
+  Number.isFinite(candidate?.latitude) && Number.isFinite(candidate?.longitude);
+
 export default function QiblaScreen() {
   const { colors, typography, spacing, shadows, isDark } = useTheme();
   const router = useRouter();
@@ -20,8 +25,12 @@ export default function QiblaScreen() {
   const [heading, setHeading] = useState(0);
   const [qiblaDirection, setQiblaDirection] = useState(0);
   const [qiblaDistanceKm, setQiblaDistanceKm] = useState<number | null>(null);
+  const [qiblaLocationLabel, setQiblaLocationLabel] = useState(location.city || 'Saved location');
+  const [qiblaLocationSource, setQiblaLocationSource] = useState<QiblaLocationSource>('saved');
+  const [qiblaAccuracyM, setQiblaAccuracyM] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [compassReady, setCompassReady] = useState(false);
+  const [qiblaLoading, setQiblaLoading] = useState(true);
 
   const compassSpin = useRef(new Animated.Value(0)).current;
   const qiblaSpin = useRef(new Animated.Value(0)).current;
@@ -54,21 +63,53 @@ export default function QiblaScreen() {
     let cancelled = false;
 
     const loadQibla = async () => {
-      if (location?.latitude == null || location?.longitude == null) {
+      setQiblaLoading(true);
+
+      if (!hasValidCoordinates(location)) {
         setQiblaDirection(0);
         setQiblaDistanceKm(null);
+        setQiblaLoading(false);
         return;
       }
 
       try {
-        const result = await getQiblaLookup(location.latitude, location.longitude);
+        let lookupLatitude = location.latitude;
+        let lookupLongitude = location.longitude;
+        let lookupLabel = location.city || 'Saved location';
+        let lookupSource: QiblaLocationSource = 'saved';
+        let lookupAccuracy: number | null = null;
+
+        try {
+          const permission = await Location.requestForegroundPermissionsAsync();
+          if (permission.status === 'granted') {
+            const currentPosition = await Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+            });
+            lookupLatitude = currentPosition.coords.latitude;
+            lookupLongitude = currentPosition.coords.longitude;
+            lookupLabel = 'Current location';
+            lookupSource = 'gps';
+            lookupAccuracy = typeof currentPosition.coords.accuracy === 'number' ? currentPosition.coords.accuracy : null;
+          }
+        } catch {
+          // Keep the saved app location as the production fallback.
+        }
+
+        const result = await getQiblaLookup(lookupLatitude, lookupLongitude);
         if (cancelled) return;
         setQiblaDirection(Number.isFinite(result.direction) ? result.direction : 0);
         setQiblaDistanceKm(typeof result.distanceKm === 'number' ? result.distanceKm : null);
+        setQiblaLocationLabel(lookupLabel);
+        setQiblaLocationSource(lookupSource);
+        setQiblaAccuracyM(lookupAccuracy);
       } catch {
         if (cancelled) return;
         setQiblaDirection(0);
         setQiblaDistanceKm(null);
+      } finally {
+        if (!cancelled) {
+          setQiblaLoading(false);
+        }
       }
     };
 
@@ -87,7 +128,7 @@ export default function QiblaScreen() {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setError('Location permission is required for the compass.');
-          setLoading(false);
+          setCompassReady(true);
           return;
         }
 
@@ -103,11 +144,11 @@ export default function QiblaScreen() {
           
           lastHeading.current = smoothed;
           setHeading(smoothed);
-          setLoading(false);
+          setCompassReady(true);
         });
       } catch {
         setError('This device cannot use the compass right now.');
-        setLoading(false);
+        setCompassReady(true);
       }
     };
 
@@ -179,6 +220,7 @@ export default function QiblaScreen() {
     }
   };
   const screenGradient = getDynamicScreenGradient(colors, isDark);
+  const loading = !compassReady || qiblaLoading;
 
   const renderCompassMarks = () => {
     return Array.from({ length: 24 }).map((_, index) => {
@@ -254,7 +296,9 @@ export default function QiblaScreen() {
           <>
             <View style={styles.compassSection}>
               <Text style={[typography.body, styles.instructions, { color: colors.textSecondary, maxWidth: layout.instructionMaxWidth, marginBottom: layout.instructionGap }]}>
-                Align the arrow with the Kaaba to face Qibla.
+                {qiblaLocationSource === 'gps'
+                  ? 'Align the arrow with the Kaaba to face Qibla.'
+                  : 'Using saved location. Align the arrow with the Kaaba to face Qibla.'}
               </Text>
               
               <View
@@ -339,7 +383,7 @@ export default function QiblaScreen() {
                     <Text style={[styles.infoTileLabel, { color: colors.textSecondary }]}>Location</Text>
                   </View>
                   <Text numberOfLines={1} style={[styles.infoTileValue, { color: colors.textPrimary }]}>
-                    {location.city || 'Unknown'}
+                    {qiblaLocationLabel}
                   </Text>
                 </View>
               </View>
@@ -347,7 +391,9 @@ export default function QiblaScreen() {
               <View style={[styles.infoHint, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Ionicons name="phone-portrait-outline" size={16} color={colors.primary} />
                 <Text style={[typography.xs, { color: colors.textSecondary, flex: 1, lineHeight: 18 }]}>
-                  Hold your phone flat and rotate until the Kaaba marker points forward.
+                  {qiblaLocationSource === 'gps'
+                    ? `Hold your phone flat and rotate until the Kaaba marker points forward.${qiblaAccuracyM ? ` GPS accuracy ~${Math.round(qiblaAccuracyM)} m.` : ''}`
+                    : 'Hold your phone flat and rotate until the Kaaba marker points forward. Enable location permission for live GPS Qibla.'}
                 </Text>
               </View>
             </Card>
